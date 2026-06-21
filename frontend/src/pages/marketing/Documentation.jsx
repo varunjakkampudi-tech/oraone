@@ -859,7 +859,7 @@ export default function DocumentationPage() {
                     data-testid="faq-empty"
                     className="text-sm text-[#64748B] py-4"
                   >
-                    No results for "{faqQuery}". Try a different phrase or contact support.
+                    No results for &quot;{faqQuery}&quot;. Try a different phrase or contact support.
                   </p>
                 )}
                 {filteredFaqs.map((f, idx) => {

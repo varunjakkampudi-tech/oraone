@@ -22,6 +22,7 @@ import {
 import { useSEO } from "@/lib/seo";
 import { BrandMark } from "@/components/marketing/Logo";
 import { LIVE_TRANSCRIPT } from "@/lib/mockData";
+import { VoiceAgentDemo, ChatAgentDemo, WhatsAppAgentDemo } from "@/components/marketing/ProductLiveDemos";
 
 const fadeUp = {
   initial: { opacity: 0, y: 20 },
@@ -176,6 +177,11 @@ export default function ProductsPage() {
           </div>
         </div>
       </section>
+
+      {/* ============ LIVE PRODUCT DEMOS ============ */}
+      <VoiceAgentDemo />
+      <ChatAgentDemo />
+      <WhatsAppAgentDemo />
 
       {/* ============ COMPARE PRODUCTS ============ */}
       <section className="pb-20">
