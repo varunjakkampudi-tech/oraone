@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useSEO } from "@/lib/seo";
 import { BrandMark } from "@/components/marketing/Logo";
+import SmartImg from "@/components/ui/SmartImg";
 
 const fadeUp = {
   initial: { opacity: 0, y: 20 },
@@ -187,10 +188,9 @@ export default function SolutionsPage() {
                   <div className="absolute top-4 left-4 z-10 size-11 rounded-xl grid place-items-center shadow-sm" style={{ background: ind.iconBg }}>
                     <ind.icon size={20} style={{ color: ind.iconColor }} />
                   </div>
-                  <img
+                  <SmartImg
                     src={ind.image}
                     alt={ind.name}
-                    loading="lazy"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   {/* Floating notification tag */}

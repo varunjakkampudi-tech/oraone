@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { useSEO } from "@/lib/seo";
+import SmartImg from "@/components/ui/SmartImg";
 
 const fadeUp = {
   initial: { opacity: 0, y: 20 },
@@ -190,14 +191,14 @@ function BrandLogo({ name }) {
         className="size-12 rounded-2xl grid place-items-center shrink-0"
         style={{ background: cfg.tile }}
       >
-        <img src={src} alt={`${name} logo`} className="size-7" loading="lazy" />
+        <SmartImg src={src} alt={`${name} logo`} className="size-7" />
       </div>
     );
   }
 
   return (
     <div className="size-12 rounded-2xl bg-white grid place-items-center shrink-0">
-      <img src={src} alt={`${name} logo`} className="size-10" loading="lazy" />
+      <SmartImg src={src} alt={`${name} logo`} className="size-10" />
     </div>
   );
 }

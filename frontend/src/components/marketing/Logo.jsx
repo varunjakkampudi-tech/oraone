@@ -1,4 +1,5 @@
 import React from "react";
+import SmartImg from "@/components/ui/SmartImg";
 
 // Official OraOne brand mark — the latest brand asset (dark-background version)
 export const BRAND_MARK_URL =
@@ -18,9 +19,10 @@ export function BrandMark({ size = 36, className = "" }) {
       style={{ width: size, height: size }}
       aria-hidden="true"
     >
-      <img
+      <SmartImg
         src={BRAND_MARK_URL}
         alt=""
+        eager
         draggable="false"
         style={{
           width: "180%",

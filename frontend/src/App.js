@@ -3,6 +3,7 @@ import "@/App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/lib/auth";
+import OraOneLoader from "@/components/ui/OraOneLoader";
 
 // Layouts (kept eager — small and shared)
 import MarketingLayout from "@/layouts/MarketingLayout";
@@ -55,16 +56,7 @@ const Team = lazy(() => import("@/pages/dashboard/Team"));
 const Settings = lazy(() => import("@/pages/dashboard/Settings"));
 
 function RouteFallback() {
-  return (
-    <div
-      role="status"
-      aria-live="polite"
-      aria-label="Loading page"
-      className="min-h-[50vh] flex items-center justify-center"
-    >
-      <div className="size-10 rounded-full border-2 border-[#E2E8F0] border-t-[#2563EB] animate-spin" />
-    </div>
-  );
+  return <OraOneLoader label="Loading page…" />;
 }
 
 function App() {

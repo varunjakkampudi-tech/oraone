@@ -2,6 +2,7 @@ import React from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { BRAND_MARK_URL } from "@/components/marketing/Logo";
+import SmartImg from "@/components/ui/SmartImg";
 import { MessageCircle, Phone, BarChart3, Star } from "lucide-react";
 
 /**
@@ -38,9 +39,10 @@ export default function AuthLayout() {
 
         {/* Top: brand */}
         <Link to="/" className="relative z-10 flex items-center gap-3" data-testid="auth-brand-link">
-          <img
+          <SmartImg
             src={BRAND_MARK_URL}
             alt="OraOne"
+            eager
             className="size-14 rounded-2xl object-cover"
             style={{ objectPosition: "center 22%" }}
             draggable="false"
@@ -110,12 +112,11 @@ export default function AuthLayout() {
         <div className="relative z-10 flex items-center gap-4 mt-4">
           <div className="flex -space-x-3">
             {[12, 32, 47, 14].map((id) => (
-              <img
+              <SmartImg
                 key={id}
                 src={`https://i.pravatar.cc/64?img=${id}`}
                 alt=""
                 className="size-9 rounded-full border-2 border-[#05060E] object-cover"
-                loading="lazy"
               />
             ))}
           </div>
@@ -144,9 +145,10 @@ export default function AuthLayout() {
               className="lg:hidden mb-8 inline-flex items-center gap-2.5"
               data-testid="auth-brand-link-mobile"
             >
-              <img
+              <SmartImg
                 src={BRAND_MARK_URL}
                 alt="OraOne"
+                eager
                 className="size-10 rounded-xl object-cover"
                 style={{ objectPosition: "center 22%" }}
               />
@@ -315,7 +317,7 @@ function CenterPedestal() {
           border: "1px solid rgba(255,255,255,0.18)",
         }}
       >
-        <img
+        <SmartImg
           src={BRAND_MARK_URL}
           alt="OraOne mark"
           className="absolute inset-0 w-full h-full object-cover"

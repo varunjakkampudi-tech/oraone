@@ -110,6 +110,12 @@ See `/app/memory/test_credentials.md`
 - **New "Enterprise-Grade Security" section** — 6 badges (AES-256, Secure Auth, GDPR, AWS Hosted, 99.9% Uptime, Audit Logs).
 - Testimonials and Final CTA preserved; FAQ moved to **2-column grid** layout.
 
+### 2026-02 — Lazy images with fallback + branded loader
+- Added **`/app/frontend/src/components/ui/SmartImg.jsx`** — drop-in `<img>` replacement that defaults to `loading="lazy"`, `decoding="async"`, supports `eager` prop for above-the-fold LCP images (sets `fetchPriority="high"`), and on `onError` swaps to a tasteful inline-SVG "IMAGE UNAVAILABLE" placeholder.
+- Swapped every `<img>` across `Logo.jsx` (eager — site-wide brand), `AuthLayout.jsx` (header + mobile logo + pedestal mark eager, pravatar avatars lazy), `Solutions.jsx` (industry images lazy), `Integrations.jsx` (CDN brand-icon tiles lazy).
+- Added **`/app/frontend/src/components/ui/OraOneLoader.jsx`** — OraOne-branded route loader: the dark-tile brand mark sits inside a spinning cyan→indigo orbit ring with a soft pulse halo and "OraOne / Loading page…" caption. `role="status"` + `aria-live="polite"`. New `ping-slow` keyframe added to `index.css`.
+- `App.js`: `<Suspense>` fallback now renders `OraOneLoader` instead of the generic blue spinner.
+
 ### 2026-02 — Production quality pass (SEO / Perf / a11y / Responsive)
 - **SEO**
   - `public/index.html`: added preconnect to known CDNs, canonical link, full Open Graph (`og:url`, `og:site_name`, `og:image:alt`, `og:locale`), Twitter image tag, `robots` meta, replaced broken `/og-image.png` with the real brand asset, embedded **JSON-LD `Organization` + `SoftwareApplication`** structured data.
