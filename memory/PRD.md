@@ -133,6 +133,14 @@ See `/app/memory/test_credentials.md`
   - Verified Contact / Book Demo at 768×1024 (tablet) — single-column stack, top-right CTAs visible.
 - Verified SEO via `curl` — title, description, OG, Twitter, canonical, and both JSON-LD blocks all present on the home page response.
 
+### 2026-02 — Production polish pass (security, SEO, error handling)
+- **Backend security headers** (`security_headers_mw` in `server.py`): X-Frame-Options: DENY, X-Content-Type-Options: nosniff, Referrer-Policy: strict-origin-when-cross-origin, Permissions-Policy (camera/microphone/geolocation/payment/usb=()), Cross-Origin-Opener-Policy: same-origin, X-XSS-Protection: 0.
+- **ErrorBoundary** (`/app/frontend/src/components/ErrorBoundary.jsx`) wraps the whole app inside BrowserRouter; shows branded "Something went wrong" fallback with retry + go-home actions.
+- **Branded `/500` ServerError page** (`/app/frontend/src/pages/ServerError.jsx`) — paired with the existing `/404` NotFound page, both noindex.
+- **Reusable UI primitives**: `<Skeleton>`, `<CardSkeleton>`, `<RowSkeleton>` (shimmer keyframe in `index.css`), `<EmptyState>` (icon + title + description + CTA, tone-aware).
+- **SEO upgrades**: `useSEO()` now accepts `breadcrumbs`, `faq`, and `jsonLd` and injects a per-page JSON-LD container. Static `index.html` now ships three JSON-LD blocks: Organization, WebSite+SearchAction, SoftwareApplication.
+- Verified via pytest + Playwright (testing_agent_v3_fork iteration_3): 5/5 backend tests pass, all polish-pass frontend checks pass, prior responsive matrix regression also green.
+
 ### 2026-02 — Dashboard mobile/tablet responsive navigation
 - Refactored `/app/frontend/src/components/dashboard/Sidebar.jsx` into a desktop `<aside>` (`hidden lg:flex`) PLUS an off-canvas mobile drawer (`lg:hidden`, slides in from the left with backdrop, traps focus via `role="dialog"`).
 - Added a hamburger toggle [data-testid='dashboard-menu-btn'] to `TopBar.jsx` (visible only `<lg`). TopBar also collapses search to an icon-only button on `<md`, and the Create Agent button shows icon-only on `<sm`.
