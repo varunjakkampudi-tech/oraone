@@ -1,19 +1,20 @@
 import React from "react";
 
-// Official OraOne brand mark — sourced from the brand asset
+// Official OraOne brand mark — the latest brand asset (dark-background version)
 export const BRAND_MARK_URL =
-  "https://customer-assets.emergentagent.com/job_ora-one-v1/artifacts/7qrvj8gv_image.png";
+  "https://customer-assets.emergentagent.com/job_ora-one-v1/artifacts/jozmlir6_ChatGPT%20Image%20Jun%2021%2C%202026%2C%2009_07_48%20PM.png";
 
 /**
- * OraOne brand mark only (no wordmark).
- * Crops the supplied logo asset to show ONLY the icon portion (top ~55%).
+ * OraOne brand mark only (icon, no wordmark).
  *
- * `light=true` wraps the mark in a white rounded tile so it stays visible on dark surfaces.
+ * The supplied asset has a black background, so we render it inside a small
+ * dark-navy rounded tile — turning the dark backdrop into a deliberate premium
+ * "badge" treatment that reads cleanly on both light and dark surfaces.
  */
-export function BrandMark({ size = 36, light = false, className = "" }) {
+export function BrandMark({ size = 36, className = "" }) {
   return (
     <div
-      className={`flex-shrink-0 overflow-hidden rounded-xl ${light ? "bg-white p-0.5 shadow-[0_4px_14px_-4px_rgba(0,0,0,0.4)]" : ""} ${className}`}
+      className={`flex-shrink-0 overflow-hidden rounded-xl bg-[#0F172A] shadow-[0_4px_14px_-4px_rgba(15,23,42,0.35)] ${className}`}
       style={{ width: size, height: size }}
       aria-hidden="true"
     >
@@ -22,12 +23,11 @@ export function BrandMark({ size = 36, light = false, className = "" }) {
         alt=""
         draggable="false"
         style={{
-          width: "170%",
-          height: "170%",
+          width: "180%",
+          height: "180%",
           objectFit: "cover",
-          objectPosition: "center 18%",
+          objectPosition: "center 22%",
           display: "block",
-          borderRadius: light ? "0.625rem" : 0,
         }}
       />
     </div>
@@ -35,11 +35,11 @@ export function BrandMark({ size = 36, light = false, className = "" }) {
 }
 
 /**
- * OraOne Logo — mark + "Ora One" wordmark + tagline.
+ * OraOne Logo — brand-mark tile + "Ora One" wordmark + tagline.
  *
- * - `light=true` switches wordmark/tagline to white for dark surfaces.
- * - `size` controls the mark size in px.
- * - `showText={false}` renders just the mark.
+ * - `light=true` switches the wordmark/tagline text to white (for dark surfaces).
+ * - `size` controls the brand-mark tile size in px.
+ * - `showText={false}` renders just the mark tile.
  */
 export function Logo({ size = 36, light = false, showText = true, className = "" }) {
   const oraColor = light ? "text-white" : "text-[#0F172A]";
@@ -49,7 +49,7 @@ export function Logo({ size = 36, light = false, showText = true, className = ""
 
   return (
     <div className={`flex items-center gap-2.5 ${className}`}>
-      <BrandMark size={size} light={light} />
+      <BrandMark size={size} />
 
       {showText && (
         <div className="leading-none">
