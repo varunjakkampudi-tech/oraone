@@ -2,89 +2,155 @@ import React from "react";
 import { Phone, MessageCircle, MessageSquare, Mail, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
 
+/**
+ * Hero Orb — asymmetric composition matching the OraOne reference design.
+ *
+ * Layout (within a square canvas, percentages relative to canvas):
+ *   • Three concentric circles centered around 45% / 42% (slightly upper-left)
+ *   • Central blue gradient orb is OFFSET to the bottom-right (~62% / 60%)
+ *   • Channel icons orbit on/around the outer ring
+ *   • Audio wave bars + "AI Listening..." pill sit below-left of the orb
+ *   • Calendar icon overlaps the bottom-right edge of the orb
+ */
 export default function HeroOrb() {
-  // Animated orb with channel icons floating around
-  const channels = [
-    { icon: MessageCircle, top: "8%", left: "50%", bg: "#22C55E", delay: 0 },
-    { icon: Phone, top: "30%", left: "8%", bg: "#3B82F6", delay: 0.2 },
-    { icon: MessageSquare, top: "30%", right: "8%", bg: "#06B6D4", delay: 0.4 },
-    { icon: Mail, top: "75%", left: "12%", bg: "#F59E0B", delay: 0.6 },
-    { icon: Calendar, top: "75%", right: "12%", bg: "#8B5CF6", delay: 0.8 },
-  ];
+  const orb = { cx: "62%", cy: "60%", size: "44%" }; // bottom-right offset
 
   return (
-    <div className="relative w-full aspect-square max-w-[560px] mx-auto">
-      {/* Glow rings */}
-      <div className="absolute inset-[15%] rounded-full" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.18) 0%, rgba(59,130,246,0) 70%)" }} />
-      <div className="absolute inset-[25%] rounded-full" style={{ background: "radial-gradient(circle, rgba(6,182,212,0.18) 0%, rgba(6,182,212,0) 70%)" }} />
-
-      {/* Concentric circles */}
-      <svg className="absolute inset-0" viewBox="0 0 400 400" fill="none">
-        <circle cx="200" cy="200" r="170" stroke="rgba(37,99,235,0.08)" strokeWidth="1" strokeDasharray="3 6" />
-        <circle cx="200" cy="200" r="135" stroke="rgba(37,99,235,0.12)" strokeWidth="1" />
-        <circle cx="200" cy="200" r="100" stroke="rgba(37,99,235,0.15)" strokeWidth="1" strokeDasharray="2 4" />
+    <div className="relative w-full aspect-square max-w-[620px] mx-auto select-none">
+      {/* ---------- Concentric rings (centered upper-left of canvas) ---------- */}
+      <svg
+        className="absolute inset-0"
+        viewBox="0 0 400 400"
+        fill="none"
+        aria-hidden="true"
+      >
+        <defs>
+          <radialGradient id="ringFill" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#EFF6FF" stopOpacity="0.85" />
+            <stop offset="60%" stopColor="#EFF6FF" stopOpacity="0.25" />
+            <stop offset="100%" stopColor="#EFF6FF" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+        {/* Outer light fill (asymmetric upper-left bias) */}
+        <circle cx="180" cy="170" r="155" fill="url(#ringFill)" />
+        {/* Outer dashed ring */}
+        <circle cx="180" cy="170" r="155" stroke="#CBD5E1" strokeWidth="1" strokeDasharray="3 5" opacity="0.55" />
+        {/* Middle solid faint ring */}
+        <circle cx="180" cy="170" r="115" stroke="#CBD5E1" strokeWidth="1" opacity="0.45" />
+        {/* Inner dashed ring */}
+        <circle cx="180" cy="170" r="78" stroke="#CBD5E1" strokeWidth="1" strokeDasharray="2 4" opacity="0.5" />
       </svg>
 
-      {/* Central orb */}
+      {/* ---------- Floating channel icons ---------- */}
+      {/* WhatsApp / chat (top center, above outer ring) */}
+      <FloatIcon top="5%" left="44%" color="#22C55E" delay={0}>
+        <MessageCircle size={20} />
+      </FloatIcon>
+      {/* Phone (middle-left, on outer ring) */}
+      <FloatIcon top="28%" left="6%" color="#2563EB" delay={0.2}>
+        <Phone size={20} />
+      </FloatIcon>
+      {/* Message (upper-right) */}
+      <FloatIcon top="28%" left="78%" color="#06B6D4" delay={0.4}>
+        <MessageSquare size={20} />
+      </FloatIcon>
+      {/* Mail (lower-left) */}
+      <FloatIcon top="62%" left="10%" color="#F59E0B" delay={0.6}>
+        <Mail size={20} />
+      </FloatIcon>
+
+      {/* ---------- Central orb (offset bottom-right) ---------- */}
       <motion.div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-        animate={{ scale: [1, 1.04, 1] }}
+        className="absolute"
+        style={{
+          left: orb.cx,
+          top: orb.cy,
+          width: orb.size,
+          height: orb.size,
+          transform: "translate(-50%, -50%)",
+        }}
+        animate={{ scale: [1, 1.035, 1] }}
         transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
       >
+        {/* Soft glow halo */}
         <div
-          className="relative size-[180px] sm:size-[220px] rounded-full grid place-items-center"
+          className="absolute inset-[-18%] rounded-full"
           style={{
-            background: "linear-gradient(135deg, #2563EB 0%, #06B6D4 100%)",
-            boxShadow: "0 30px 80px -10px rgba(37,99,235,0.5), 0 0 0 1px rgba(255,255,255,0.4) inset",
+            background:
+              "radial-gradient(circle, rgba(37,99,235,0.18) 0%, rgba(6,182,212,0.10) 40%, transparent 70%)",
+          }}
+        />
+        <div
+          className="relative w-full h-full rounded-full grid place-items-center"
+          style={{
+            background: "linear-gradient(135deg, #2563EB 0%, #1E90F6 45%, #06B6D4 100%)",
+            boxShadow:
+              "0 32px 80px -12px rgba(37,99,235,0.55), inset 0 0 0 1px rgba(255,255,255,0.35), inset 0 -16px 40px rgba(15,23,42,0.18)",
           }}
         >
-          <svg viewBox="0 0 24 24" width="80" height="80" fill="none">
-            <path d="M12 3a9 9 0 1 0 9 9" stroke="white" strokeWidth="2.6" strokeLinecap="round" />
-            <circle cx="12" cy="12" r="3.5" fill="white" />
+          {/* "C-with-dot" mark to echo the brand */}
+          <svg viewBox="0 0 64 64" width="42%" height="42%" fill="none" aria-hidden="true">
+            <path
+              d="M48 32a16 16 0 1 1-6.4-12.8"
+              stroke="white"
+              strokeWidth="4.2"
+              strokeLinecap="round"
+            />
+            <circle cx="32" cy="32" r="4.2" fill="white" />
           </svg>
+
+          {/* Calendar icon overlapping bottom-right edge of orb */}
+          <div className="absolute -bottom-3 -right-3">
+            <div className="size-12 rounded-2xl bg-white grid place-items-center shadow-premium border border-[#E2E8F0]">
+              <Calendar size={20} className="text-[#8B5CF6]" />
+            </div>
+          </div>
         </div>
       </motion.div>
 
-      {/* Audio wave bars - bottom */}
-      <div className="absolute left-1/2 -translate-x-1/2 bottom-[8%] flex items-center gap-1.5">
-        {[0.4, 0.7, 1, 0.6, 0.9, 0.5, 0.8, 0.4].map((h, i) => (
-          <motion.span
-            key={i}
-            className="block rounded-full"
-            style={{
-              width: 3,
-              background: "linear-gradient(180deg, #3B82F6, #06B6D4)",
-            }}
-            animate={{ height: [`${h * 12}px`, `${h * 32}px`, `${h * 12}px`] }}
-            transition={{ duration: 1.2 + i * 0.05, repeat: Infinity, ease: "easeInOut", delay: i * 0.06 }}
-          />
-        ))}
+      {/* ---------- Wave bars + AI listening pill (bottom-left of orb) ---------- */}
+      <div className="absolute" style={{ left: "32%", top: "82%", transform: "translate(-50%, -50%)" }}>
+        <div className="flex items-end gap-[3px] h-8" aria-hidden="true">
+          {[0.4, 0.7, 1, 0.55, 0.9, 0.5, 0.85, 0.4, 0.7, 0.45, 0.9, 0.55].map((h, i) => (
+            <motion.span
+              key={i}
+              className="block rounded-full"
+              style={{
+                width: 3,
+                background: "linear-gradient(180deg, #3B82F6, #06B6D4)",
+              }}
+              animate={{ height: [`${h * 40}%`, `${h * 100}%`, `${h * 40}%`] }}
+              transition={{
+                duration: 1 + (i % 4) * 0.12,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: i * 0.06,
+              }}
+            />
+          ))}
+        </div>
       </div>
 
-      {/* Listening badge */}
-      <div className="absolute left-1/2 -translate-x-1/2 bottom-0">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#E2E8F0] shadow-premium text-xs font-medium text-[#2563EB]">
+      {/* AI Listening pill (just below wave bars, slightly right) */}
+      <div className="absolute" style={{ left: "38%", top: "92%", transform: "translate(-50%, -50%)" }}>
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#E2E8F0] shadow-premium text-xs font-medium text-[#2563EB] whitespace-nowrap">
           <span className="size-1.5 rounded-full bg-[#22C55E] animate-pulse" />
           AI Listening...
         </div>
       </div>
-
-      {/* Floating channel icons */}
-      {channels.map((c, i) => {
-        const Icon = c.icon;
-        const pos = { top: c.top, left: c.left, right: c.right };
-        return (
-          <motion.div
-            key={i}
-            className="absolute size-12 rounded-2xl bg-white grid place-items-center shadow-premium border border-[#E2E8F0]"
-            style={pos}
-            animate={{ y: [0, -8, 0] }}
-            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: c.delay }}
-          >
-            <Icon size={20} style={{ color: c.bg }} />
-          </motion.div>
-        );
-      })}
     </div>
+  );
+}
+
+function FloatIcon({ top, left, color, delay, children }) {
+  return (
+    <motion.div
+      className="absolute size-12 rounded-2xl bg-white grid place-items-center shadow-premium border border-[#E2E8F0]"
+      style={{ top, left }}
+      animate={{ y: [0, -8, 0] }}
+      transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut", delay }}
+    >
+      <span style={{ color }}>{children}</span>
+    </motion.div>
   );
 }
