@@ -36,6 +36,9 @@ import {
   UserPlus,
   BarChart3,
   Users,
+  Bot,
+  Plug,
+  Rocket,
 } from "lucide-react";
 import HeroOrb from "@/components/marketing/HeroOrb";
 import { useSEO } from "@/lib/seo";
@@ -129,11 +132,10 @@ const SUPPORTED_INTEGRATIONS = [
 ];
 
 const WORKS = [
-  { num: 1, title: "Connect Channels", desc: "Add your phone, website or WhatsApp.", icon: Phone },
-  { num: 2, title: "Create AI Agent", desc: "Train with your data & business goals.", icon: Sparkles },
-  { num: 3, title: "AI Handles Conversations", desc: "Engages, qualifies & captures leads.", icon: MessageSquare },
-  { num: 4, title: "No Coding Required", desc: "Set up in minutes, not months.", icon: Code2 },
-  { num: 5, title: "Scale & Grow", desc: "Enterprise security and performance.", icon: Activity },
+  { num: 1, title: "Create Agent",     desc: "Pick Voice, Chat or WhatsApp and configure your AI in minutes.", icon: Bot },
+  { num: 2, title: "Connect Channels", desc: "Plug in your phone number, website widget or WhatsApp Business.", icon: Plug },
+  { num: 3, title: "Upload Knowledge", desc: "Drop in PDFs, FAQs and docs — your agent learns instantly.",     icon: BookOpen },
+  { num: 4, title: "Go Live",          desc: "Launch your AI agent and start capturing conversations 24/7.",   icon: Rocket },
 ];
 
 const SECURITY = [
@@ -530,38 +532,102 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ====================== HOW IT WORKS ====================== */}
+      {/* ====================== GET STARTED IN MINUTES (STEPPER) ====================== */}
       <section className="py-14 sm:py-16 bg-[#F8FAFC]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto mb-12">
-            <h2 className="text-4xl sm:text-5xl font-bold tracking-tighter text-[#0F172A]">How OraOne Works</h2>
-            <p className="mt-4 text-[#64748B]">From setup to scale in five simple steps.</p>
+          <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto mb-14">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EFF6FF] text-[12px] font-semibold text-[#2563EB] tracking-wide uppercase">
+              <Rocket size={13} /> How OraOne Works
+            </span>
+            <h2 className="mt-4 text-4xl sm:text-5xl font-bold tracking-tighter text-[#0F172A]">
+              Get Started in Minutes
+            </h2>
+            <p className="mt-4 text-[#64748B]">
+              From signup to your first live AI conversation in four simple steps.
+            </p>
           </motion.div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr_auto_1fr] gap-5 lg:gap-2 items-stretch lg:items-center">
-            {WORKS.map((w, i) => (
-              <React.Fragment key={w.num}>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
+
+          {/* ---- Desktop / tablet stepper ---- */}
+          <div className="hidden md:block relative">
+            {/* Connecting dashed track behind icons */}
+            <div
+              aria-hidden="true"
+              className="absolute left-[10%] right-[10%] top-7 h-px"
+              style={{
+                backgroundImage:
+                  "repeating-linear-gradient(to right, #CBD5E1 0 6px, transparent 6px 12px)",
+              }}
+            />
+            <ol className="grid grid-cols-4 gap-6 relative">
+              {WORKS.map((w, i) => (
+                <motion.li
+                  key={w.num}
+                  initial={{ opacity: 0, y: 18 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.05 }}
-                  transition={{ delay: i * 0.06 }}
+                  transition={{ delay: i * 0.08, duration: 0.45 }}
                   className="text-center"
+                  data-testid={`step-card-${w.num}`}
                 >
-                  <div className="mx-auto size-14 rounded-2xl gradient-bg grid place-items-center mb-3 shadow-[0_10px_24px_-8px_rgba(37,99,235,0.55)]">
-                    <w.icon size={22} className="text-white" />
+                  <div className="relative mx-auto size-14 rounded-2xl gradient-bg grid place-items-center shadow-[0_10px_24px_-8px_rgba(37,99,235,0.55)] ring-4 ring-[#F8FAFC]">
+                    <w.icon size={22} className="text-white" aria-hidden="true" />
+                    <span className="absolute -bottom-1.5 -right-1.5 size-6 rounded-full bg-white border border-[#E2E8F0] grid place-items-center text-[11px] font-bold text-[#2563EB]">
+                      {w.num}
+                    </span>
                   </div>
-                  <p className="text-[10px] font-bold text-[#2563EB] tracking-[0.2em] mb-1">STEP {w.num}</p>
-                  <h3 className="text-[14px] font-semibold text-[#0F172A]">{w.title}</h3>
-                  <p className="mt-1 text-[12px] text-[#64748B] leading-snug max-w-[14rem] mx-auto">{w.desc}</p>
-                </motion.div>
-                {i < WORKS.length - 1 && (
-                  <div className="hidden lg:flex items-center justify-center text-[#94A3B8]">
-                    <ChevronRight size={22} />
-                  </div>
-                )}
-              </React.Fragment>
-            ))}
+                  <h3 className="mt-5 text-base font-semibold text-[#0F172A]">{w.title}</h3>
+                  <p className="mt-1.5 text-[13px] leading-relaxed text-[#64748B] max-w-[16rem] mx-auto">
+                    {w.desc}
+                  </p>
+                </motion.li>
+              ))}
+            </ol>
           </div>
+
+          {/* ---- Mobile vertical stepper ---- */}
+          <ol className="md:hidden relative pl-6 border-l-2 border-dashed border-[#CBD5E1] space-y-7">
+            {WORKS.map((w, i) => (
+              <motion.li
+                key={w.num}
+                initial={{ opacity: 0, x: -12 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, amount: 0.05 }}
+                transition={{ delay: i * 0.06 }}
+                className="relative"
+                data-testid={`step-card-mobile-${w.num}`}
+              >
+                <div className="absolute -left-[33px] top-0 size-11 rounded-2xl gradient-bg grid place-items-center shadow-[0_10px_24px_-8px_rgba(37,99,235,0.55)] ring-4 ring-[#F8FAFC]">
+                  <w.icon size={18} className="text-white" aria-hidden="true" />
+                </div>
+                <p className="text-[10px] font-bold text-[#2563EB] tracking-[0.2em]">STEP {w.num}</p>
+                <h3 className="mt-1 text-base font-semibold text-[#0F172A]">{w.title}</h3>
+                <p className="mt-1 text-[13px] text-[#64748B] leading-relaxed">{w.desc}</p>
+              </motion.li>
+            ))}
+          </ol>
+
+          {/* CTA under stepper */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.05 }}
+            className="mt-12 flex flex-wrap items-center justify-center gap-3"
+          >
+            <Link
+              to="/signup"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold transition-colors"
+              data-testid="get-started-cta"
+            >
+              Start Free <ArrowRight size={15} />
+            </Link>
+            <Link
+              to="/contact"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white border border-[#E2E8F0] hover:bg-[#F1F5F9] text-sm font-semibold text-[#0F172A] transition-colors"
+              data-testid="get-started-demo"
+            >
+              Book a Demo
+            </Link>
+          </motion.div>
         </div>
       </section>
 
