@@ -87,13 +87,13 @@ See `/app/memory/test_credentials.md`
 
 ## Recent Changes
 
-### 2026-02 — Auth pages visual redesign
-- Rebuilt `/app/frontend/src/layouts/AuthLayout.jsx`, `Login.jsx`, `Signup.jsx` to match user-supplied reference mocks.
-- Left panel: dark cosmic theme with OraOne brand mark (top), route-aware gradient headline (white + violet), 3 feature cards (signup only — All-in-one AI Platform, Built for Teams, Secure & Reliable), 3D pedestal showcasing the OraOne icon, floating accent chips, trust strip with avatars and 4.9/5 rating.
-- Right panel (signup): "14-day free trial" pill, Google + Phone social buttons (side-by-side), 2-column Name/Email row, Password + Confirm Password with eye toggles, lavender "Your data is safe with us" trust card with lock illustration, Terms checkbox, purple gradient `Create Account` CTA.
-- Right panel (login): Welcome back heading, Google + Phone buttons, Email + Password with Forgot link and eye toggle, Remember me, purple gradient `Log In` CTA, trust card, demo creds footer.
-- "use our logo only": both header brand and 3D pedestal now render the official OraOne `BRAND_MARK_URL`.
-- All existing data-testids preserved (loginGoogle, loginMicrosoft, loginEmail, loginPassword, loginSubmit, signupGoogle/Microsoft/FullName/Email/Password/Submit). `loginMicrosoft` / `signupMicrosoft` now wired to the "Continue with Phone" button.
+### 2026-02 — Auth pages visual redesign (v2: channel orbit)
+- Updated `/app/frontend/src/layouts/AuthLayout.jsx` left panel to a "channel orbit" scene matching the second reference:
+  - Top: OraOne logo + tagline
+  - Route-aware headline with blue→violet gradient on the accent line ("smarter conversations" for login, "unlock smarter AI" for signup)
+  - **Center**: Glowing 3D OraOne pedestal card surrounded by 4 channel icons — **Live Chat (purple), WhatsApp (green, real glyph), Voice Calls (amber), Analytics (violet)** — connected to the central card by curved dashed gradient lines
+  - Bottom: avatar trust strip + 4.9/5 rating
+- Removed the previous "feature cards" list (functionality now visualised by the orbit scene).
 
 ## Still Pending
 - Integrations page icons: previous agent's `cdn.simpleicons.org` slugs produced 404s for slack/webhooks/salesforce/microsoftoutlook/microsoftteams/pipedrive. User pivoted to auth pages; integration icons still need a fix (jsdelivr dashboard-icons CDN or inline SVGs).
