@@ -5,6 +5,32 @@
 ## Problem Statement
 Build OraOne V1: an AI Agent Platform (Voice, Chat, WhatsApp) that helps businesses automate customer conversations across channels. Premium SaaS quality similar to Haptik, Intercom, HubSpot, Retell AI, Bland AI, ElevenLabs.
 
+## Changelog — Feb 2026 (current fork)
+**Issue #3 — Documentation Page (DONE · tested)**
+- Full rebuild of `/documentation` with sticky left sidebar + scroll-spy, 7 sections (Quick Start, Product Docs, API Reference, Integrations, Security & Compliance, Help Center, Status & Support), code language tabs (cURL/JS/Python) with copy, expandable integration guides, FAQ search & accordion, system-status pill + incident history + 3-channel support cards.
+
+**Issue #4 — Integrations Dashboard (DONE · tested)**
+- `/app/integrations` rebuilt into a full marketplace + admin platform: 17-integration catalog with category filters + search, status pills (🟢 Connected / 🔴 Not Connected), per-integration detail drawer (Overview, OAuth Connect CTA, configuration toggles, Test / Disconnect), Integration Health monitoring with 3 health states, Sync Activity log table, Webhook Management (generate/regenerate/retry/delete), API Key management (show/copy/rotate/revoke) and an API Usage Dashboard (Requests Today, This Month, Error Rate, Avg Response Time + rate-limit bar).
+
+**Issue #5 — Product Live Demos (DONE · tested)**
+- New component `/components/marketing/ProductLiveDemos.jsx` wired into `/products`:
+  - **VoiceAgentDemo:** live animated transcript with audio bars + voice dashboard preview (lead details / sentiment / call summary) + 6-stage call flow.
+  - **ChatAgentDemo:** browser/website mockup with embedded chat widget playing the conversation + widget install snippet (copyable) + lead-capture funnel.
+  - **WhatsAppAgentDemo:** native-look phone mock with cycling chat bubbles + WhatsApp Business Dashboard (active conversations, response rate, leads, appointments, templates, CSAT, recent messages).
+- **`/templates` rebuilt:** 6 industry templates with Preview modal showing Agent Prompt (copyable), Conversation Flow, Use Cases, and One-Click Deploy.
+
+**Issue #6 — Dashboard Command Center (DONE · tested)**
+- `/app/overview` rebuilt with 9 sections: AI Business Snapshot (5 KPI cards), Needs Attention (4 alert cards with action buttons), Agent Performance Leaderboard (TOP badge), Live Activity feed, Lead Funnel (4 stages + 7-day trend area chart), Channel Breakdown donut chart, Quick Actions, Upcoming Tasks, ROI section (gradient blue card with Estimated Revenue Impact).
+
+**Issue #7 — RBAC Team Management (DONE · tested)**
+- `/app/team` rebuilt with stats cards, member table with search, Invitations table (Resend/Cancel), 9×4 Permission Matrix, switchable Role Access Preview (Can/Cannot), Recent Activity log, Audit Logs table (Actor / Action / Details / IP / When), and an Invite Modal.
+
+**OraOne Loader System (DONE · tested)**
+- `/components/ui/OraOneLoader.jsx` upgraded with full design system: FullPage (light/dark), ButtonSpinner, InlineLoader, DotsLoader, ChatTyping, Skeleton primitives (Skeleton, CardSkeleton, TableSkeleton), EmptyStateLoader, ProgressStages, TopProgressBar, PageTransition. Brand mark + halo + orbit ring + indeterminate progress bar with `One AI. Every Conversation.` tagline.
+
+**Screenshots:** 21 full-page PNGs at `/app/test_reports/screenshots/` (12 public routes + 9 dashboard routes).
+**Tests:** `/app/test_reports/iteration_4.json` — 100% frontend success rate, zero issues.
+
 ## Tech Stack (Final)
 - **Frontend:** React 19 + React Router 7 + Tailwind + Shadcn/UI + Framer Motion + Recharts + Lucide React
 - **Backend:** FastAPI + Motor (async MongoDB) + JWT (httpOnly cookies) + bcrypt
