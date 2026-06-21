@@ -98,6 +98,23 @@ See `/app/memory/test_credentials.md`
 ## Still Pending
 - Integrations page icons: previous agent's `cdn.simpleicons.org` slugs produced 404s for slack/webhooks/salesforce/microsoftoutlook/microsoftteams/pipedrive. User pivoted to auth pages; integration icons still need a fix (jsdelivr dashboard-icons CDN or inline SVGs).
 
+### 2026-02 — Production quality pass (SEO / Perf / a11y / Responsive)
+- **SEO**
+  - `public/index.html`: added preconnect to known CDNs, canonical link, full Open Graph (`og:url`, `og:site_name`, `og:image:alt`, `og:locale`), Twitter image tag, `robots` meta, replaced broken `/og-image.png` with the real brand asset, embedded **JSON-LD `Organization` + `SoftwareApplication`** structured data.
+  - `lib/seo.js`: extended to also set per-page `<link rel="canonical">`, `og:url`, `og:image`, `twitter:image`, and `noindex` option.
+  - `public/robots.txt`: blocked `/app/`, `/onboarding/`, `/verify-email`, `/reset-password` from indexing; added GPTBot / ClaudeBot / CCBot opt-outs.
+- **Performance**
+  - `App.js`: code-split every non-LCP route (marketing, auth, onboarding, dashboard, legal) with `React.lazy` + `Suspense` and a polite `aria-live` spinner fallback. Home stays eager for the best LCP.
+  - Added `<link rel="preconnect">` to `customer-assets.emergentagent.com` and `i.pravatar.cc`, plus `dns-prefetch` for `cdn.simpleicons.org`.
+- **Accessibility**
+  - `MarketingLayout`: added a visible-on-focus "Skip to main content" link; `<main id="main-content" tabIndex="-1">`.
+  - `Navbar`: mobile toggle now has `aria-label` reflecting open/closed state, `aria-expanded`, `aria-controls="mobile-menu"`; mobile menu wrapped in `<nav aria-label="Mobile">` and includes Login + Book Demo + Start Free CTAs.
+  - `index.css`: global `:focus-visible` ring (2px blue, 2px offset) + suppression of mouse-click outlines + `prefers-reduced-motion` reset.
+- **Responsive**
+  - Verified Home renders correctly at 390×844 (mobile) — hero stacks, hamburger menu visible, agent cards single-column.
+  - Verified Contact / Book Demo at 768×1024 (tablet) — single-column stack, top-right CTAs visible.
+- Verified SEO via `curl` — title, description, OG, Twitter, canonical, and both JSON-LD blocks all present on the home page response.
+
 ### 2026-02 — Book Demo page redesign
 - Rebuilt `/app/frontend/src/pages/marketing/Contact.jsx` (route `/contact`) to match the user-supplied reference.
 - Left column: `BOOK A DEMO` pill, large hero heading, description, 3 Email/Phone/Office info cards, lavender-blue "Why book a demo?" benefits card with 3 checkmarks.

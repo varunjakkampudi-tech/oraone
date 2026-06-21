@@ -72,7 +72,9 @@ export default function Navbar() {
                 data-testid={NAV.mobileToggle}
                 onClick={() => setOpen(!open)}
                 className="lg:hidden p-2 rounded-lg text-[#0F172A] hover:bg-[#F1F5F9]"
-                aria-label="Toggle menu"
+                aria-label={open ? "Close menu" : "Open menu"}
+                aria-expanded={open}
+                aria-controls="mobile-menu"
               >
                 {open ? <X size={20} /> : <Menu size={20} />}
               </button>
@@ -84,12 +86,13 @@ export default function Navbar() {
       <AnimatePresence>
         {open && (
           <motion.div
+            id="mobile-menu"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             className="lg:hidden bg-white border-b border-[#E2E8F0] shadow-lg"
           >
-            <div className="px-4 py-3 flex flex-col">
+            <nav aria-label="Mobile" className="px-4 py-3 flex flex-col">
               {links.map((l) => (
                 <NavLink
                   key={l.to}
@@ -103,7 +106,21 @@ export default function Navbar() {
               <Link to="/login" onClick={() => setOpen(false)} className="py-3 text-[#0F172A] text-base font-medium">
                 Login
               </Link>
-            </div>
+              <Link
+                to="/contact"
+                onClick={() => setOpen(false)}
+                className="mt-2 inline-flex items-center justify-center px-4 py-3 rounded-xl text-sm font-semibold text-[#0F172A] bg-white border border-[#E2E8F0]"
+              >
+                Book Demo
+              </Link>
+              <Link
+                to="/signup"
+                onClick={() => setOpen(false)}
+                className="mt-2 inline-flex items-center justify-center px-4 py-3 rounded-xl text-sm font-semibold text-white bg-[#2563EB] shadow-[0_4px_14px_-2px_rgba(37,99,235,0.45)]"
+              >
+                Start Free
+              </Link>
+            </nav>
           </motion.div>
         )}
       </AnimatePresence>

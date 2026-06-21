@@ -1,34 +1,70 @@
 import { useEffect } from "react";
 
-export function useSEO({ title, description, ogImage }) {
+const SITE_NAME = "OraOne — One AI. Every Conversation.";
+const SITE_BASE = "https://oraone.ai";
+const DEFAULT_OG_IMAGE =
+  "https://customer-assets.emergentagent.com/job_ora-one-v1/artifacts/jozmlir6_ChatGPT%20Image%20Jun%2021%2C%202026%2C%2009_07_48%20PM.png";
+
+/**
+ * useSEO — keeps document title, meta description, canonical URL and OG/Twitter
+ * tags in sync with the current route. Safe to call from any component.
+ *
+ * @param {{title?: string, description?: string, ogImage?: string, noindex?: boolean}} opts
+ */
+export function useSEO({ title, description, ogImage, noindex } = {}) {
   useEffect(() => {
-    if (title) document.title = `${title} | OraOne — One AI. Every Conversation.`;
+    if (title) document.title = `${title} | ${SITE_NAME}`;
+
+    const upsert = (selector, create, attrs) => {
+      let tag = document.head.querySelector(selector);
+      if (!tag) {
+        tag = create();
+        document.head.appendChild(tag);
+      }
+      Object.entries(attrs).forEach(([k, v]) => tag.setAttribute(k, v));
+      return tag;
+    };
+
     const setMeta = (name, content) => {
       if (!content) return;
-      let tag = document.querySelector(`meta[name="${name}"]`);
-      if (!tag) {
-        tag = document.createElement("meta");
-        tag.setAttribute("name", name);
-        document.head.appendChild(tag);
-      }
-      tag.setAttribute("content", content);
+      upsert(
+        `meta[name="${name}"]`,
+        () => document.createElement("meta"),
+        { name, content }
+      );
     };
-    const setOg = (prop, content) => {
+
+    const setOg = (property, content) => {
       if (!content) return;
-      let tag = document.querySelector(`meta[property="${prop}"]`);
-      if (!tag) {
-        tag = document.createElement("meta");
-        tag.setAttribute("property", prop);
-        document.head.appendChild(tag);
-      }
-      tag.setAttribute("content", content);
+      upsert(
+        `meta[property="${property}"]`,
+        () => document.createElement("meta"),
+        { property, content }
+      );
     };
+
+    const image = ogImage || DEFAULT_OG_IMAGE;
+    const canonicalUrl = `${SITE_BASE}${window.location.pathname}`;
+
     setMeta("description", description);
-    setOg("og:title", title);
+    setMeta("robots", noindex ? "noindex, nofollow" : "index, follow, max-image-preview:large");
+
+    setOg("og:title", title ? `${title} | OraOne` : SITE_NAME);
     setOg("og:description", description);
-    if (ogImage) setOg("og:image", ogImage);
+    setOg("og:image", image);
+    setOg("og:url", canonicalUrl);
+    setOg("og:type", "website");
+
     setMeta("twitter:card", "summary_large_image");
-    setMeta("twitter:title", title);
+    setMeta("twitter:title", title ? `${title} | OraOne` : SITE_NAME);
     setMeta("twitter:description", description);
-  }, [title, description, ogImage]);
+    setMeta("twitter:image", image);
+
+    // Canonical link
+    upsert(
+      'link[rel="canonical"]',
+      () => document.createElement("link"),
+      { rel: "canonical", href: canonicalUrl }
+    );
+  }, [title, description, ogImage, noindex]);
 }

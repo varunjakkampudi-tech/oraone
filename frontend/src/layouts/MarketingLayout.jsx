@@ -11,8 +11,15 @@ export default function MarketingLayout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
+      {/* Skip-to-content link for keyboard / screen-reader users */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-[#2563EB] focus:text-white focus:font-semibold focus:shadow-lg focus:outline-none focus:ring-4 focus:ring-[#2563EB]/30"
+      >
+        Skip to main content
+      </a>
       <Navbar />
-      <main className="flex-1 pt-16">
+      <main id="main-content" className="flex-1 pt-16" tabIndex="-1">
         <Outlet />
       </main>
       <Footer />
