@@ -5,7 +5,7 @@ import { Toaster } from "sonner";
 import { AuthProvider } from "@/lib/auth";
 import OraOneLoader from "@/components/ui/OraOneLoader";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import CookieConsent from "@/components/CookieConsent";
+import CookieConsent, { CookieSettingsTrigger } from "@/components/CookieConsent";
 import AnalyticsRouteTracker from "@/components/AnalyticsRouteTracker";
 
 // Layouts (kept eager — small and shared)
@@ -35,6 +35,7 @@ const NotFound = lazy(() => import("@/pages/NotFound"));
 const ServerError = lazy(() => import("@/pages/ServerError"));
 const NetworkError = lazy(() => import("@/pages/SystemPages").then((m) => ({ default: m.NetworkError })));
 const Maintenance = lazy(() => import("@/pages/SystemPages").then((m) => ({ default: m.Maintenance })));
+const LoaderShowcase = lazy(() => import("@/pages/LoaderShowcase"));
 
 // SEO landing pages
 const AIVoiceAgentPage         = lazy(() => import("@/pages/marketing/SeoPages").then((m) => ({ default: m.AIVoiceAgentPage })));
@@ -82,6 +83,7 @@ function App() {
           <Toaster position="top-right" richColors closeButton />
           <AnalyticsRouteTracker />
           <CookieConsent />
+          <CookieSettingsTrigger />
           <Suspense fallback={<RouteFallback />}>
             <Routes>
               {/* Marketing */}
@@ -111,6 +113,7 @@ function App() {
                 <Route path="/500" element={<ServerError />} />
                 <Route path="/network-error" element={<NetworkError />} />
                 <Route path="/maintenance" element={<Maintenance />} />
+                <Route path="/__loaders" element={<LoaderShowcase />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
 
