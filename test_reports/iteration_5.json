@@ -1,0 +1,54 @@
+{
+  "summary": "Phase A Launch Readiness — frontend-only regression. Verified 6 new SEO landings, GDPR cookie consent end-to-end, error pages (/network-error, /maintenance, /500, /404), analytics CustomEvent architecture, Signup AI Disclaimer + Accept Terms, sitemap & robots, and 25-route cross-page smoke. Result: 24/25 sub-checks PASS. One real bug found: CookieSettingsTrigger (floating cookie-settings-trigger button) is exported from CookieConsent.jsx but never imported/rendered in App.js, so it never appears after consent is saved.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "CookieConsent / App.js",
+        "issue": "Floating 'Cookie Settings' trigger button (data-testid='cookie-settings-trigger') is defined and exported as `CookieSettingsTrigger` in /app/frontend/src/components/CookieConsent.jsx (line 161) but is never imported or rendered anywhere. App.js only renders the default `<CookieConsent />`. After a user accepts/saves cookie choices, no floating settings trigger appears, so users cannot re-open the cookie preferences panel. Spec explicitly requires this trigger to be visible after a choice is saved.",
+        "selector": "[data-testid='cookie-settings-trigger']",
+        "priority": "HIGH"
+      }
+    ],
+    "integration_issues": [
+      {
+        "flow": "Analytics page_view (AnalyticsRouteTracker)",
+        "issue": "On every route change a 'page_view' CustomEvent fires TWICE for the same path (e.g., navigating to /ai-voice-agent emits two identical {name:'page_view', props:{path:'/ai-voice-agent'}} events). Spec only requires that it fires — functionality is intact — but the duplicate emission will double-count pageviews once GA4/Clarity/PostHog providers are wired. Likely cause: AnalyticsRouteTracker effect firing in both StrictMode dev double-invoke AND a separate mount listener, or the tracker is mounted twice. Worth investigating before going live.",
+        "affected_selectors": ["window CustomEvent 'oraone:analytics'"]
+      }
+    ],
+    "design_issues": [
+      {
+        "screen": "Contact / Book Demo form (/contact)",
+        "issues": ["Preferred Demo Time uses native browser datetime-local input (mm/dd/yyyy --:-- --) instead of a styled shadcn Calendar/DateTime component. Inconsistent with rest of design system."]
+      }
+    ]
+  },
+  "verifications": [
+    "SEO landings — all 6 routes (/ai-voice-agent, /ai-chat-agent, /ai-whatsapp-agent, /ai-lead-generation, /ai-appointment-booking, /ai-customer-support): exactly 1 <h1>; landing-{slug}-cta-primary, landing-{slug}-cta-secondary, landing-{slug}-cta-footer-primary, landing-{slug}-cta-footer-secondary all = 1; 5 FAQ accordion items each (data-testid='landing-{slug}-faq-{idx}' idx 0..4); metrics bar, FAQ section, testimonials all present; document.title page-specific; meta description present; <link rel=canonical> updates per page (https://oraone.ai/{slug}); #oraone-page-jsonld script present with 1800-1930 chars of JSON-LD. PASS",
+    "Cookie Consent — Banner [data-testid='cookie-consent'] appears ~600ms after first visit when localStorage empty. Buttons cookie-accept-all (1), cookie-reject-all (1), cookie-manage (1) all present. Clicking Manage opens panel with 4 cookie-cat-* checkboxes (necessary, analytics, marketing, preferences); cookie-cat-necessary is disabled (always-on). cookie-save-choices (1) and cookie-accept-all-manage (1) both close the dialog. After accept, localStorage keys 'oraone_cookie_choice_v1' AND 'oraone_analytics_consent' are written with full booleans. Refresh — banner does NOT reappear. PASS. FAIL: cookie-settings-trigger NOT rendered after consent — see ui_bugs.",
+    "Error pages — /network-error: heading present + data-testid='network-error-retry' (1). /maintenance: maintenance-status (1), maintenance-contact (1). /500: heading 'Server Error' + 500-retry (1) + 500-back-home (1). /random-404 (and /does-not-exist-xyz): heading 'Page Not Found' + 404-back-home (1). No ErrorBoundary fallback shown on any of these. PASS",
+    "Analytics CustomEvent architecture — window CustomEvent 'oraone:analytics' fires correctly: navigating to /ai-voice-agent emits {name:'page_view', props:{path:'/ai-voice-agent'}}; clicking landing-ai-voice-agent-cta-primary emits {name:'start_free', props:{source:'landing:ai-voice-agent', position:'hero'}}; clicking landing-ai-chat-agent-cta-secondary emits {name:'book_demo', props:{source:'landing:ai-chat-agent', position:'hero'}}. Fires only after analytics consent. PASS (minor: page_view duplicates, see integration_issues).",
+    "Signup AI Disclaimer — /signup renders [data-testid='signup-ai-disclaimer'] containing both 'AI Disclaimer' and 'AI models' phrases. Accept Terms checkbox present as [data-testid='signup-agree-terms']. PASS",
+    "Cross-page smoke — All 25 public routes (/, /products, /solutions, /integrations, /templates, /pricing, /documentation, /case-studies, /about, /contact, /login, /signup, /privacy, /terms, /cookie-policy, 6 SEO landings, /network-error, /maintenance, /500, /random-404) loaded with ZERO pageerror events and ZERO error-boundary-screen renders. Dashboard /app/* routes correctly redirect unauthenticated visitors to /login. PASS",
+    "Sitemap & robots — /sitemap.xml HTTP 200, lists all 6 SEO landings. /robots.txt HTTP 200, includes 'Disallow: /app/' and 'Disallow: /onboarding/'. PASS"
+  ],
+  "test_report_links": [],
+  "action_items": [
+    "WIRE the CookieSettingsTrigger component. Edit /app/frontend/src/App.js: import { CookieSettingsTrigger } from '@/components/CookieConsent' and render <CookieSettingsTrigger /> as a sibling of <CookieConsent /> (around line 84). OR change CookieConsent default export to render both. After fix, the floating cookie icon must appear at bottom-left once localStorage has 'oraone_cookie_choice_v1'.",
+    "Investigate duplicate page_view emission in AnalyticsRouteTracker so providers aren't double-billed once GA4/Clarity/PostHog are wired. Check if the tracker is mounted twice, or if a useEffect dependency causes a double-fire.",
+    "(Optional, design polish) Replace native datetime-local input on /contact 'Preferred Demo Time' with shadcn Calendar + time picker for visual consistency."
+  ],
+  "critical_code_review_comments": [
+    "CookieConsent.jsx exports CookieSettingsTrigger but the symbol has zero usages in the codebase (grep -rn confirms only the definition itself). This is dead code today — render it in App.js to fulfill the Phase A spec.",
+    "AnalyticsRouteTracker appears to dispatch page_view twice per navigation — verify single subscription path before enabling real providers."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "skipped", "frontend": "96% (24/25 sub-checks pass, 1 missing-wiring bug)"},
+  "test_credentials": "admin@oraone.ai / OraOne@2026 (not used — only auth-gated /app/* tests redirected as expected for an unauthenticated session, no further auth flow required by spec)",
+  "seed_data_creation": "None",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Phase A iteration 5. Only one real bug: CookieSettingsTrigger not rendered (App.js missing import + render). Everything else (6 SEO landings + their CTAs/FAQs/JSON-LD/canonical, cookie consent banner & manage panel & persistence, 4 error pages, analytics CustomEvents start_free/book_demo/page_view with correct source props, signup AI disclaimer + terms checkbox, sitemap + robots, 25-route cross-page smoke with 0 pageerrors / 0 ErrorBoundary fallbacks) passes. Minor: page_view event fires duplicate. Design nit: native datetime input on /contact. After main agent fixes the trigger wiring, only retest is to load any page, save cookie choice, and verify [data-testid='cookie-settings-trigger'] is visible.",
+  "rca of the issue": "RCA — cookie-settings-trigger never visible: /app/frontend/src/components/CookieConsent.jsx defines TWO exports: (a) `export default function CookieConsent()` for the banner+manage panel, (b) `export function CookieSettingsTrigger()` for the floating re-open button. The trigger checks readChoice() and only mounts after a saved choice. App.js (line 8) only imports the default and renders `<CookieConsent />` (line 84). It never imports or renders `CookieSettingsTrigger`, so the floating icon at bottom-left never appears. Repro: clear localStorage → reload → click cookie-accept-all → query [data-testid='cookie-settings-trigger'] → count=0. Mitigation: add `import CookieConsent, { CookieSettingsTrigger } from '@/components/CookieConsent';` and render `<CookieSettingsTrigger />` alongside `<CookieConsent />` in App.js."
+}

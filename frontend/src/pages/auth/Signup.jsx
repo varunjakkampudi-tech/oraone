@@ -178,6 +178,19 @@ export default function Signup() {
           <LockIllustration />
         </div>
 
+        {/* AI Disclaimer */}
+        <div
+          data-testid="signup-ai-disclaimer"
+          className="rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3 flex gap-2.5"
+        >
+          <ShieldCheck size={16} className="text-[#7C3AED] mt-0.5 flex-shrink-0" />
+          <p className="text-[11.5px] text-[#475569] leading-relaxed">
+            <span className="font-semibold text-[#0F172A]">AI Disclaimer:</span> OraOne uses AI models to
+            generate responses. Outputs may occasionally be inaccurate and should not be relied on for
+            critical decisions. You remain responsible for content you publish via AI agents.
+          </p>
+        </div>
+
         {/* Terms */}
         <label className="flex items-start gap-3 cursor-pointer select-none">
           <input

@@ -5,6 +5,8 @@ import { Toaster } from "sonner";
 import { AuthProvider } from "@/lib/auth";
 import OraOneLoader from "@/components/ui/OraOneLoader";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import CookieConsent from "@/components/CookieConsent";
+import AnalyticsRouteTracker from "@/components/AnalyticsRouteTracker";
 
 // Layouts (kept eager — small and shared)
 import MarketingLayout from "@/layouts/MarketingLayout";
@@ -31,6 +33,16 @@ const Cookie = lazy(() => import("@/pages/legal/Legal").then((m) => ({ default: 
 const DataDeletion = lazy(() => import("@/pages/legal/Legal").then((m) => ({ default: m.DataDeletion })));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const ServerError = lazy(() => import("@/pages/ServerError"));
+const NetworkError = lazy(() => import("@/pages/SystemPages").then((m) => ({ default: m.NetworkError })));
+const Maintenance = lazy(() => import("@/pages/SystemPages").then((m) => ({ default: m.Maintenance })));
+
+// SEO landing pages
+const AIVoiceAgentPage         = lazy(() => import("@/pages/marketing/SeoPages").then((m) => ({ default: m.AIVoiceAgentPage })));
+const AIChatAgentPage          = lazy(() => import("@/pages/marketing/SeoPages").then((m) => ({ default: m.AIChatAgentPage })));
+const AIWhatsAppAgentPage      = lazy(() => import("@/pages/marketing/SeoPages").then((m) => ({ default: m.AIWhatsAppAgentPage })));
+const AILeadGenerationPage     = lazy(() => import("@/pages/marketing/SeoPages").then((m) => ({ default: m.AILeadGenerationPage })));
+const AIAppointmentBookingPage = lazy(() => import("@/pages/marketing/SeoPages").then((m) => ({ default: m.AIAppointmentBookingPage })));
+const AICustomerSupportPage    = lazy(() => import("@/pages/marketing/SeoPages").then((m) => ({ default: m.AICustomerSupportPage })));
 
 // Auth — lazy
 const Login = lazy(() => import("@/pages/auth/Login"));
@@ -68,6 +80,8 @@ function App() {
         <ErrorBoundary>
         <AuthProvider>
           <Toaster position="top-right" richColors closeButton />
+          <AnalyticsRouteTracker />
+          <CookieConsent />
           <Suspense fallback={<RouteFallback />}>
             <Routes>
               {/* Marketing */}
@@ -86,7 +100,17 @@ function App() {
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/cookie-policy" element={<Cookie />} />
                 <Route path="/data-deletion" element={<DataDeletion />} />
+                {/* SEO landing pages */}
+                <Route path="/ai-voice-agent" element={<AIVoiceAgentPage />} />
+                <Route path="/ai-chat-agent" element={<AIChatAgentPage />} />
+                <Route path="/ai-whatsapp-agent" element={<AIWhatsAppAgentPage />} />
+                <Route path="/ai-lead-generation" element={<AILeadGenerationPage />} />
+                <Route path="/ai-appointment-booking" element={<AIAppointmentBookingPage />} />
+                <Route path="/ai-customer-support" element={<AICustomerSupportPage />} />
+                {/* System pages */}
                 <Route path="/500" element={<ServerError />} />
+                <Route path="/network-error" element={<NetworkError />} />
+                <Route path="/maintenance" element={<Maintenance />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
 
