@@ -97,3 +97,10 @@ See `/app/memory/test_credentials.md`
 
 ## Still Pending
 - Integrations page icons: previous agent's `cdn.simpleicons.org` slugs produced 404s for slack/webhooks/salesforce/microsoftoutlook/microsoftteams/pipedrive. User pivoted to auth pages; integration icons still need a fix (jsdelivr dashboard-icons CDN or inline SVGs).
+
+### 2026-02 — Book Demo page redesign
+- Rebuilt `/app/frontend/src/pages/marketing/Contact.jsx` (route `/contact`) to match the user-supplied reference.
+- Left column: `BOOK A DEMO` pill, large hero heading, description, 3 Email/Phone/Office info cards, lavender-blue "Why book a demo?" benefits card with 3 checkmarks.
+- Right column form: leading-icon Full Name + Email inputs, Phone Number with country code dropdown (10 countries, default 🇮🇳 +91), Company Size dropdown (6 size buckets), "How can we help you?" textarea, Preferred Demo Time `datetime-local` picker, Shield-icon security disclaimer, blue calendar-icon "Book a Demo" CTA, "Not sure yet? Learn more about OraOne" footer link.
+- Extra fields (phone, company size, demo time) are bundled into the existing `/api/contact` message payload so the backend `ContactIn` schema is untouched. Verified via curl — `200 OK` with returned id.
+- Data-testids: existing `contact-name`/`contact-email`/`contact-message`/`contact-submit` preserved; added `contact-phone`, `contact-country-code`, `contact-company-size`, `contact-demo-time`, `contact-learn-more`.
