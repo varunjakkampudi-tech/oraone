@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Stethoscope, Home, Car, ShieldCheck, Utensils, Users,
-  Phone, MessageSquare, MessageCircle, CheckCircle2, Rocket, ArrowRight,
+  Phone, MessageSquare, MessageCircle, Rocket, ArrowRight,
 } from "lucide-react";
 import { useSEO } from "@/lib/seo";
 
@@ -94,10 +94,7 @@ export default function TemplatesPage() {
                       <span className="text-xs font-semibold text-[#2563EB] whitespace-nowrap">{ch.label}</span>
                     </div>
                     <p className="mt-2 text-sm text-[#64748B] leading-relaxed flex-1">{t.desc}</p>
-                    <div className="mt-5 flex items-center justify-between gap-3">
-                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#16A34A]">
-                        <CheckCircle2 size={14} /> Available in V1
-                      </span>
+                    <div className="mt-5 flex items-center justify-end gap-3">
                       <Link
                         to="/signup"
                         data-testid={`template-${t.slug}-use`}
