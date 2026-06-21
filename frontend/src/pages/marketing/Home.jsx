@@ -118,39 +118,59 @@ export default function HomePage() {
       <section className="relative pt-8 pb-10 sm:pt-10 sm:pb-12 overflow-hidden bg-[#F8FAFC]">
         <div className="absolute inset-0 grid-bg opacity-60 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
             {/* LEFT — copy + agent cards + CTAs */}
-            <motion.div {...fadeUp} className="lg:col-span-5">
-              <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-[#E2E8F0] text-[11px] font-semibold tracking-[0.2em] text-[#2563EB] shadow-sm">
-                <span className="size-1.5 rounded-full bg-[#2563EB]" />
+            <motion.div {...fadeUp}>
+              <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#EFF6FF] text-[11px] font-semibold tracking-[0.2em] text-[#2563EB]">
+                <Sparkles size={11} className="text-[#2563EB]" />
                 AI AGENTS FOR MODERN BUSINESSES
               </span>
               <h1 className="mt-6 text-5xl sm:text-6xl lg:text-7xl font-black tracking-tighter leading-[1.02] text-[#0F172A]">
                 One AI.
                 <br />
-                <span className="gradient-text">Every Conversation.</span>
+                <span className="text-[#2563EB]">Every Conversation.</span>
               </h1>
               <p className="mt-5 text-base sm:text-lg text-[#64748B] leading-relaxed max-w-md">
-                AI Voice Agents, Chat Agents and WhatsApp Agents that answer calls, reply
-                instantly and convert more leads — 24/7.
+                AI Voice Agents, Chat Agents and WhatsApp Agents that answer, engage and convert — 24/7.
               </p>
 
               {/* Agent cards */}
               <div className="mt-7 grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {[
-                  { icon: Phone, label: "Voice Agent", sub: "Answer calls and book appointments" },
-                  { icon: MessageSquare, label: "Chat Agent", sub: "Engage website visitors in real-time" },
-                  { icon: MessageCircle, label: "WhatsApp Agent", sub: "Automate WhatsApp conversations" },
+                  {
+                    icon: Phone,
+                    label: "Voice Agent",
+                    sub: "AI calls, answers and talks like a human.",
+                    iconBg: "#EDE9FE",
+                    iconColor: "#7C3AED",
+                  },
+                  {
+                    icon: MessageSquare,
+                    label: "Chat Agent",
+                    sub: "AI chats on your website in real time.",
+                    iconBg: "#DBEAFE",
+                    iconColor: "#2563EB",
+                  },
+                  {
+                    icon: MessageCircle,
+                    label: "WhatsApp Agent",
+                    sub: "AI replies on WhatsApp and engages instantly.",
+                    iconBg: "#DCFCE7",
+                    iconColor: "#16A34A",
+                  },
                 ].map((p) => (
                   <div
                     key={p.label}
-                    className="p-3.5 rounded-2xl bg-white border border-[#E2E8F0] shadow-premium"
+                    className="p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-premium"
                   >
-                    <div className="size-9 rounded-lg bg-[#EFF6FF] grid place-items-center mb-2">
-                      <p.icon size={16} className="text-[#2563EB]" />
+                    <div
+                      className="size-10 rounded-xl grid place-items-center mb-3"
+                      style={{ background: p.iconBg }}
+                    >
+                      <p.icon size={18} style={{ color: p.iconColor }} />
                     </div>
                     <p className="text-[13px] font-semibold text-[#0F172A]">{p.label}</p>
-                    <p className="text-[11px] text-[#64748B] mt-0.5 leading-snug">{p.sub}</p>
+                    <p className="text-[11px] text-[#64748B] mt-1 leading-snug">{p.sub}</p>
                   </div>
                 ))}
               </div>
@@ -160,16 +180,16 @@ export default function HomePage() {
                 <button
                   data-testid={HOME.heroCtaPrimary}
                   onClick={() => nav("/contact")}
-                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] hover:shadow-[0_12px_32px_-6px_rgba(37,99,235,0.6)] hover:-translate-y-0.5 transition-all"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] hover:shadow-[0_12px_32px_-6px_rgba(37,99,235,0.6)] hover:-translate-y-0.5 transition-all"
                 >
-                  Book a Demo <ArrowRight size={16} />
+                  Book a Demo
                 </button>
                 <button
                   data-testid={HOME.heroCtaSecondary}
                   onClick={() => nav("/signup")}
-                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[#0F172A] text-sm font-semibold transition-colors"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white border-2 border-[#2563EB] text-[#2563EB] hover:bg-[#EFF6FF] text-sm font-semibold transition-colors"
                 >
-                  Start Free <ArrowRight size={16} />
+                  Start Free
                 </button>
                 <span className="text-xs text-[#64748B] inline-flex items-center gap-1">
                   <CheckCircle2 size={14} className="text-[#10B981]" /> No credit card required
@@ -177,24 +197,14 @@ export default function HomePage() {
               </div>
             </motion.div>
 
-            {/* CENTER — orbit illustration */}
+            {/* RIGHT — orbit illustration with brand mark */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.7, delay: 0.1 }}
-              className="lg:col-span-4 hidden lg:flex justify-center"
+              className="hidden lg:flex justify-center"
             >
               <HeroOrb />
-            </motion.div>
-
-            {/* RIGHT — Live Agent Activity card */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.55, delay: 0.2 }}
-              className="lg:col-span-3"
-            >
-              <LiveAgentActivity />
             </motion.div>
           </div>
         </div>
