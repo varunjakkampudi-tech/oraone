@@ -213,7 +213,7 @@ async def health():
 
 
 # ---------- Auth endpoints ----------
-@api.post("/auth/register", response_model=UserOut)
+@api.post("/auth/register")
 async def register(payload: RegisterIn, response: Response):
     email = payload.email.lower().strip()
     existing = await db.users.find_one({"email": email})
@@ -238,10 +238,12 @@ async def register(payload: RegisterIn, response: Response):
     set_auth_cookies(response, access, refresh)
     doc.pop("password_hash", None)
     doc.pop("_id", None)
-    return doc
+    # Include tokens in the body so clients that can't use cross-origin cookies
+    # (CDN/ingress strips credentialed CORS) can fall back to Bearer auth.
+    return {**doc, "access_token": access, "refresh_token": refresh}
 
 
-@api.post("/auth/login", response_model=UserOut)
+@api.post("/auth/login")
 async def login(payload: LoginIn, response: Response):
     email = payload.email.lower().strip()
     user = await db.users.find_one({"email": email})
@@ -252,7 +254,7 @@ async def login(payload: LoginIn, response: Response):
     set_auth_cookies(response, access, refresh)
     user.pop("password_hash", None)
     user.pop("_id", None)
-    return user
+    return {**user, "access_token": access, "refresh_token": refresh}
 
 
 @api.post("/auth/logout")
