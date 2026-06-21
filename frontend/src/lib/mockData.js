@@ -19,16 +19,17 @@ export const CONVERSATION_SUMMARY = [
 ];
 
 export const TOP_AGENTS = [
-  { name: "Voice Agent", conversations: 1246, success: 76, color: "#2563EB" },
-  { name: "Chat Agent", conversations: 2354, success: 64, color: "#10B981" },
-  { name: "WhatsApp Agent", conversations: 1890, success: 58, color: "#06B6D4" },
+  { name: "Voice Agent", conversations: 1246, success: 76, color: "#2563EB", icon: "Phone" },
+  { name: "Chat Agent", conversations: 2354, success: 64, color: "#7C3AED", icon: "MessageSquare" },
+  { name: "WhatsApp Agent", conversations: 1890, success: 58, color: "#22C55E", icon: "MessageCircle" },
 ];
 
 export const LEAD_SOURCES = [
-  { name: "Website", value: 45, color: "#7C3AED" },
-  { name: "WhatsApp", value: 30, color: "#10B981" },
-  { name: "Voice Call", value: 20, color: "#F59E0B" },
-  { name: "Others", value: 5, color: "#94A3B8" },
+  { name: "Website", value: 45, color: "#2563EB" },
+  { name: "WhatsApp", value: 30, color: "#22C55E" },
+  { name: "Google Ads", value: 15, color: "#7C3AED" },
+  { name: "Referral", value: 7, color: "#F59E0B" },
+  { name: "Others", value: 3, color: "#94A3B8" },
 ];
 
 export const RECENT_CONVERSATIONS = [
