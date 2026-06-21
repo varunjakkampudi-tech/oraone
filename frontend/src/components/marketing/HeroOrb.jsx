@@ -13,11 +13,11 @@ import { motion } from "framer-motion";
  *   • Calendar icon overlaps the bottom-right edge of the orb
  */
 export default function HeroOrb() {
-  const orb = { cx: "62%", cy: "60%", size: "44%" }; // bottom-right offset
+  const orb = { cx: "50%", cy: "50%", size: "44%" }; // centered
 
   return (
-    <div className="relative w-full aspect-square max-w-[620px] mx-auto select-none">
-      {/* ---------- Concentric rings (centered upper-left of canvas) ---------- */}
+    <div className="relative w-full aspect-square max-w-[560px] mx-auto select-none">
+      {/* ---------- Concentric rings (centered) ---------- */}
       <svg
         className="absolute inset-0"
         viewBox="0 0 400 400"
@@ -31,35 +31,35 @@ export default function HeroOrb() {
             <stop offset="100%" stopColor="#EFF6FF" stopOpacity="0" />
           </radialGradient>
         </defs>
-        {/* Outer light fill (asymmetric upper-left bias) */}
-        <circle cx="180" cy="170" r="155" fill="url(#ringFill)" />
+        {/* Outer light fill */}
+        <circle cx="200" cy="200" r="155" fill="url(#ringFill)" />
         {/* Outer dashed ring */}
-        <circle cx="180" cy="170" r="155" stroke="#CBD5E1" strokeWidth="1" strokeDasharray="3 5" opacity="0.55" />
+        <circle cx="200" cy="200" r="155" stroke="#CBD5E1" strokeWidth="1" strokeDasharray="3 5" opacity="0.55" />
         {/* Middle solid faint ring */}
-        <circle cx="180" cy="170" r="115" stroke="#CBD5E1" strokeWidth="1" opacity="0.45" />
+        <circle cx="200" cy="200" r="115" stroke="#CBD5E1" strokeWidth="1" opacity="0.45" />
         {/* Inner dashed ring */}
-        <circle cx="180" cy="170" r="78" stroke="#CBD5E1" strokeWidth="1" strokeDasharray="2 4" opacity="0.5" />
+        <circle cx="200" cy="200" r="78" stroke="#CBD5E1" strokeWidth="1" strokeDasharray="2 4" opacity="0.5" />
       </svg>
 
-      {/* ---------- Floating channel icons ---------- */}
-      {/* WhatsApp / chat (top center, above outer ring) */}
-      <FloatIcon top="5%" left="44%" color="#22C55E" delay={0}>
+      {/* ---------- Floating channel icons (evenly around the centered ring) ---------- */}
+      {/* WhatsApp / chat — top */}
+      <FloatIcon top="5%" left="50%" color="#22C55E" delay={0}>
         <MessageCircle size={20} />
       </FloatIcon>
-      {/* Phone (middle-left, on outer ring) */}
-      <FloatIcon top="28%" left="6%" color="#2563EB" delay={0.2}>
+      {/* Phone — left */}
+      <FloatIcon top="50%" left="5%" color="#2563EB" delay={0.2}>
         <Phone size={20} />
       </FloatIcon>
-      {/* Message (upper-right) */}
-      <FloatIcon top="28%" left="78%" color="#06B6D4" delay={0.4}>
+      {/* Message — right */}
+      <FloatIcon top="50%" left="95%" color="#06B6D4" delay={0.4}>
         <MessageSquare size={20} />
       </FloatIcon>
-      {/* Mail (lower-left) */}
-      <FloatIcon top="62%" left="10%" color="#F59E0B" delay={0.6}>
+      {/* Mail — bottom-left of ring */}
+      <FloatIcon top="82%" left="20%" color="#F59E0B" delay={0.6}>
         <Mail size={20} />
       </FloatIcon>
 
-      {/* ---------- Central orb (offset bottom-right) ---------- */}
+      {/* ---------- Central orb (centered) ---------- */}
       <motion.div
         className="absolute"
         style={{
@@ -108,8 +108,8 @@ export default function HeroOrb() {
         </div>
       </motion.div>
 
-      {/* ---------- Wave bars + AI listening pill (bottom-left of orb) ---------- */}
-      <div className="absolute" style={{ left: "32%", top: "82%", transform: "translate(-50%, -50%)" }}>
+      {/* ---------- Wave bars + AI listening pill (centered below orb) ---------- */}
+      <div className="absolute" style={{ left: "50%", top: "85%", transform: "translate(-50%, -50%)" }}>
         <div className="flex items-end gap-[3px] h-8" aria-hidden="true">
           {[0.4, 0.7, 1, 0.55, 0.9, 0.5, 0.85, 0.4, 0.7, 0.45, 0.9, 0.55].map((h, i) => (
             <motion.span
@@ -131,8 +131,8 @@ export default function HeroOrb() {
         </div>
       </div>
 
-      {/* AI Listening pill (just below wave bars, slightly right) */}
-      <div className="absolute" style={{ left: "38%", top: "92%", transform: "translate(-50%, -50%)" }}>
+      {/* AI Listening pill (centered, below the wave bars) */}
+      <div className="absolute" style={{ left: "50%", top: "95%", transform: "translate(-50%, -50%)" }}>
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#E2E8F0] shadow-premium text-xs font-medium text-[#2563EB] whitespace-nowrap">
           <span className="size-1.5 rounded-full bg-[#22C55E] animate-pulse" />
           AI Listening...

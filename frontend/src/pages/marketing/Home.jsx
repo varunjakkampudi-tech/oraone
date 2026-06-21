@@ -115,7 +115,7 @@ export default function HomePage() {
   return (
     <div className="bg-white">
       {/* ====================== HERO ====================== */}
-      <section className="relative pt-20 pb-12 sm:pt-24 sm:pb-16 overflow-hidden bg-[#F8FAFC]">
+      <section className="relative pt-8 pb-10 sm:pt-10 sm:pb-12 overflow-hidden bg-[#F8FAFC]">
         <div className="absolute inset-0 grid-bg opacity-60 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 items-center">
@@ -201,7 +201,7 @@ export default function HomePage() {
       </section>
 
       {/* ====================== BUILT FOR MODERN BUSINESSES ====================== */}
-      <section className="py-10 sm:py-12 bg-[#F8FAFC]">
+      <section className="py-8 sm:py-10 bg-[#F8FAFC]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-center text-[11px] uppercase tracking-[0.25em] text-[#64748B] font-semibold">
             Built for Modern Businesses
@@ -226,7 +226,7 @@ export default function HomePage() {
       </section>
 
       {/* ====================== STATS ====================== */}
-      <section className="py-12 sm:py-14 bg-[#F8FAFC]">
+      <section className="py-10 sm:py-12 bg-[#F8FAFC]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             {...fadeUp}
@@ -250,7 +250,7 @@ export default function HomePage() {
       </section>
 
       {/* ====================== WHY CHOOSE ====================== */}
-      <section className="py-20 sm:py-24 bg-white">
+      <section className="py-14 sm:py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto">
             <h2 className="text-4xl sm:text-5xl font-bold tracking-tighter text-[#0F172A]">
@@ -280,7 +280,7 @@ export default function HomePage() {
       </section>
 
       {/* ====================== LIVE CONVERSATIONS (DARK + side text) ====================== */}
-      <section className="py-16 sm:py-20 bg-[#F8FAFC]">
+      <section className="py-14 sm:py-16 bg-[#F8FAFC]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div {...fadeUp} className="grid lg:grid-cols-[1.4fr_1fr] gap-10 items-center">
             {/* Dark dashboard mockup */}
@@ -412,7 +412,7 @@ export default function HomePage() {
       </section>
 
       {/* ====================== INDUSTRY USE CASES + SUPPORTED INTEGRATIONS ====================== */}
-      <section className="py-20 sm:py-24 bg-white">
+      <section className="py-14 sm:py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 lg:gap-16">
           {/* Use cases */}
           <motion.div {...fadeUp}>
@@ -473,7 +473,7 @@ export default function HomePage() {
       </section>
 
       {/* ====================== HOW IT WORKS ====================== */}
-      <section className="py-20 sm:py-24 bg-[#F8FAFC]">
+      <section className="py-14 sm:py-16 bg-[#F8FAFC]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto mb-12">
             <h2 className="text-4xl sm:text-5xl font-bold tracking-tighter text-[#0F172A]">How OraOne Works</h2>
@@ -508,7 +508,7 @@ export default function HomePage() {
       </section>
 
       {/* ====================== ENTERPRISE-GRADE SECURITY ====================== */}
-      <section className="py-16 sm:py-20 bg-white">
+      <section className="py-12 sm:py-14 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div {...fadeUp} className="text-center mb-10">
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tighter text-[#0F172A]">
@@ -532,7 +532,7 @@ export default function HomePage() {
       </section>
 
       {/* ====================== TESTIMONIALS ====================== */}
-      <section className="py-20 sm:py-24 bg-[#F8FAFC]">
+      <section className="py-14 sm:py-16 bg-[#F8FAFC]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto mb-12">
             <h2 className="text-4xl sm:text-5xl font-bold tracking-tighter text-[#0F172A]">
@@ -574,7 +574,7 @@ export default function HomePage() {
       </section>
 
       {/* ====================== FAQ (2-COLUMN) ====================== */}
-      <section className="py-20 sm:py-24 bg-white">
+      <section className="py-14 sm:py-16 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div {...fadeUp} className="text-center mb-12">
             <h2 className="text-4xl sm:text-5xl font-bold tracking-tighter text-[#0F172A]">
@@ -599,7 +599,7 @@ export default function HomePage() {
       </section>
 
       {/* ====================== FINAL CTA ====================== */}
-      <section className="pb-20 sm:pb-24 bg-white">
+      <section className="pb-14 sm:pb-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             {...fadeUp}
