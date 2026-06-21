@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/lib/auth";
 import OraOneLoader from "@/components/ui/OraOneLoader";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Layouts (kept eager — small and shared)
 import MarketingLayout from "@/layouts/MarketingLayout";
@@ -29,6 +30,7 @@ const Terms = lazy(() => import("@/pages/legal/Legal").then((m) => ({ default: m
 const Cookie = lazy(() => import("@/pages/legal/Legal").then((m) => ({ default: m.Cookie })));
 const DataDeletion = lazy(() => import("@/pages/legal/Legal").then((m) => ({ default: m.DataDeletion })));
 const NotFound = lazy(() => import("@/pages/NotFound"));
+const ServerError = lazy(() => import("@/pages/ServerError"));
 
 // Auth — lazy
 const Login = lazy(() => import("@/pages/auth/Login"));
@@ -63,6 +65,7 @@ function App() {
   return (
     <div className="App">
       <BrowserRouter>
+        <ErrorBoundary>
         <AuthProvider>
           <Toaster position="top-right" richColors closeButton />
           <Suspense fallback={<RouteFallback />}>
@@ -83,6 +86,7 @@ function App() {
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/cookie-policy" element={<Cookie />} />
                 <Route path="/data-deletion" element={<DataDeletion />} />
+                <Route path="/500" element={<ServerError />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
 
@@ -121,6 +125,7 @@ function App() {
             </Routes>
           </Suspense>
         </AuthProvider>
+        </ErrorBoundary>
       </BrowserRouter>
     </div>
   );

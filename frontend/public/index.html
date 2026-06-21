@@ -66,6 +66,23 @@
     }
     </script>
 
+    <!-- JSON-LD: WebSite + SearchAction -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "OraOne",
+      "url": "https://oraone.ai",
+      "inLanguage": "en-US",
+      "publisher": { "@type": "Organization", "name": "OraOne" },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://oraone.ai/?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+
     <!-- JSON-LD: SoftwareApplication -->
     <script type="application/ld+json">
     {

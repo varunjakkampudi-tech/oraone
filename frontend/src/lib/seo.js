@@ -5,13 +5,23 @@ const SITE_BASE = "https://oraone.ai";
 const DEFAULT_OG_IMAGE =
   "https://customer-assets.emergentagent.com/job_ora-one-v1/artifacts/jozmlir6_ChatGPT%20Image%20Jun%2021%2C%202026%2C%2009_07_48%20PM.png";
 
+const LD_ID = "oraone-page-jsonld";
+
 /**
- * useSEO — keeps document title, meta description, canonical URL and OG/Twitter
- * tags in sync with the current route. Safe to call from any component.
+ * useSEO — keeps document title, meta description, canonical URL, OG/Twitter
+ * tags and (optionally) a per-page JSON-LD block in sync with the current route.
  *
- * @param {{title?: string, description?: string, ogImage?: string, noindex?: boolean}} opts
+ * @param {{
+ *   title?: string,
+ *   description?: string,
+ *   ogImage?: string,
+ *   noindex?: boolean,
+ *   breadcrumbs?: { name: string, url: string }[],
+ *   faq?: { question: string, answer: string }[],
+ *   jsonLd?: object | object[]
+ * }} opts
  */
-export function useSEO({ title, description, ogImage, noindex } = {}) {
+export function useSEO({ title, description, ogImage, noindex, breadcrumbs, faq, jsonLd } = {}) {
   useEffect(() => {
     if (title) document.title = `${title} | ${SITE_NAME}`;
 
@@ -27,20 +37,12 @@ export function useSEO({ title, description, ogImage, noindex } = {}) {
 
     const setMeta = (name, content) => {
       if (!content) return;
-      upsert(
-        `meta[name="${name}"]`,
-        () => document.createElement("meta"),
-        { name, content }
-      );
+      upsert(`meta[name="${name}"]`, () => document.createElement("meta"), { name, content });
     };
 
     const setOg = (property, content) => {
       if (!content) return;
-      upsert(
-        `meta[property="${property}"]`,
-        () => document.createElement("meta"),
-        { property, content }
-      );
+      upsert(`meta[property="${property}"]`, () => document.createElement("meta"), { property, content });
     };
 
     const image = ogImage || DEFAULT_OG_IMAGE;
@@ -60,11 +62,50 @@ export function useSEO({ title, description, ogImage, noindex } = {}) {
     setMeta("twitter:description", description);
     setMeta("twitter:image", image);
 
-    // Canonical link
-    upsert(
-      'link[rel="canonical"]',
-      () => document.createElement("link"),
-      { rel: "canonical", href: canonicalUrl }
-    );
-  }, [title, description, ogImage, noindex]);
+    upsert('link[rel="canonical"]', () => document.createElement("link"), {
+      rel: "canonical",
+      href: canonicalUrl,
+    });
+
+    // Build per-page JSON-LD payload
+    const blocks = [];
+    if (Array.isArray(breadcrumbs) && breadcrumbs.length) {
+      blocks.push({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: breadcrumbs.map((b, i) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          name: b.name,
+          item: b.url.startsWith("http") ? b.url : `${SITE_BASE}${b.url}`,
+        })),
+      });
+    }
+    if (Array.isArray(faq) && faq.length) {
+      blocks.push({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: faq.map((f) => ({
+          "@type": "Question",
+          name: f.question,
+          acceptedAnswer: { "@type": "Answer", text: f.answer },
+        })),
+      });
+    }
+    if (jsonLd) blocks.push(...(Array.isArray(jsonLd) ? jsonLd : [jsonLd]));
+
+    // Inject/replace single LD container
+    let ld = document.getElementById(LD_ID);
+    if (blocks.length) {
+      if (!ld) {
+        ld = document.createElement("script");
+        ld.type = "application/ld+json";
+        ld.id = LD_ID;
+        document.head.appendChild(ld);
+      }
+      ld.textContent = JSON.stringify(blocks.length === 1 ? blocks[0] : blocks);
+    } else if (ld) {
+      ld.remove();
+    }
+  }, [title, description, ogImage, noindex, breadcrumbs, faq, jsonLd]);
 }

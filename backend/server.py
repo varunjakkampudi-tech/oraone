@@ -478,6 +478,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+# ---------- Security headers ----------
+@app.middleware("http")
+async def security_headers_mw(request, call_next):
+    response = await call_next(request)
+    # Hardening — see https://owasp.org/www-project-secure-headers/
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault(
+        "Permissions-Policy",
+        "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+    )
+    response.headers.setdefault("X-XSS-Protection", "0")
+    response.headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
+    return response
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
