@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
   Phone,
@@ -39,6 +39,15 @@ import {
   Bot,
   Plug,
   Rocket,
+  Mic,
+  TrendingUp,
+  Filter,
+  Download,
+  Search,
+  MoreHorizontal,
+  Shield,
+  Crown,
+  Eye,
 } from "lucide-react";
 import HeroOrb from "@/components/marketing/HeroOrb";
 import { useSEO } from "@/lib/seo";
