@@ -133,6 +133,13 @@ See `/app/memory/test_credentials.md`
   - Verified Contact / Book Demo at 768×1024 (tablet) — single-column stack, top-right CTAs visible.
 - Verified SEO via `curl` — title, description, OG, Twitter, canonical, and both JSON-LD blocks all present on the home page response.
 
+### 2026-02 — Dashboard mobile/tablet responsive navigation
+- Refactored `/app/frontend/src/components/dashboard/Sidebar.jsx` into a desktop `<aside>` (`hidden lg:flex`) PLUS an off-canvas mobile drawer (`lg:hidden`, slides in from the left with backdrop, traps focus via `role="dialog"`).
+- Added a hamburger toggle [data-testid='dashboard-menu-btn'] to `TopBar.jsx` (visible only `<lg`). TopBar also collapses search to an icon-only button on `<md`, and the Create Agent button shows icon-only on `<sm`.
+- `DashboardLayout.jsx` lifts `mobileOpen` state, passes it to Sidebar and TopBar, and auto-closes the drawer on route changes. Main content padding reduced to `p-4 sm:p-6 lg:p-8` for better mobile density.
+- Testids: `dashboard-menu-btn`, `mobile-sidebar`, `sidebar-backdrop`, `sidebar-close-btn`.
+- Verified via testing agent: 9 dashboard pages × 3 breakpoints (390/768/1440) = 27 combinations, all pass with 0px horizontal overflow and zero JS errors.
+
 ### 2026-02 — Book Demo page redesign
 - Rebuilt `/app/frontend/src/pages/marketing/Contact.jsx` (route `/contact`) to match the user-supplied reference.
 - Left column: `BOOK A DEMO` pill, large hero heading, description, 3 Email/Phone/Office info cards, lavender-blue "Why book a demo?" benefits card with 3 checkmarks.
