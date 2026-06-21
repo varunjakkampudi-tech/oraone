@@ -98,6 +98,18 @@ See `/app/memory/test_credentials.md`
 ## Still Pending
 - Integrations page icons: previous agent's `cdn.simpleicons.org` slugs produced 404s for slack/webhooks/salesforce/microsoftoutlook/microsoftteams/pipedrive. User pivoted to auth pages; integration icons still need a fix (jsdelivr dashboard-icons CDN or inline SVGs).
 
+### 2026-02 — Home page redesign (full match to reference)
+- Rewrote `/app/frontend/src/pages/marketing/Home.jsx` end-to-end to match user-supplied mock.
+- **Hero**: 3-column grid — left copy / agent cards / CTAs, center HeroOrb with channel icons + "AI Listening...", **new `LiveAgentActivity` card** on the right showing the Incoming Call → AI Answered → Lead Qualified → Appointment Booked flow.
+- **New "Built for Modern Businesses" industries strip** (Healthcare, Real Estate, Education, Insurance, Finance, Retail) replacing the plain company-name list.
+- Stats updated to match reference (10,000+ Businesses, 50M+ Conversations, 24/7, 90%, 3X).
+- "Why Businesses Choose OraOne": centered card layout.
+- Live conversations section restructured into **side-by-side** (dark mockup left, "Live conversations. Real-time insights. Automated results." text + 4 bullets + Book a Demo on right).
+- "Industry Use Cases" + "Supported Integrations" two-column with branded glyphs (WhatsApp / Google / Gmail / CSV / REST API).
+- **How OraOne Works**: 5-step row with chevron-right connector arrows between cards.
+- **New "Enterprise-Grade Security" section** — 6 badges (AES-256, Secure Auth, GDPR, AWS Hosted, 99.9% Uptime, Audit Logs).
+- Testimonials and Final CTA preserved; FAQ moved to **2-column grid** layout.
+
 ### 2026-02 — Production quality pass (SEO / Perf / a11y / Responsive)
 - **SEO**
   - `public/index.html`: added preconnect to known CDNs, canonical link, full Open Graph (`og:url`, `og:site_name`, `og:image:alt`, `og:locale`), Twitter image tag, `robots` meta, replaced broken `/og-image.png` with the real brand asset, embedded **JSON-LD `Organization` + `SoftwareApplication`** structured data.
