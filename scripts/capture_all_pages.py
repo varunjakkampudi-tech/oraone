@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 from playwright.async_api import async_playwright
 
-BASE = "https://2de162f2-9f22-4dd1-bbf6-5bcfe31c5667.preview.emergentagent.com"
+BASE = "https://varunjakkampudi-dev.preview.emergentagent.com"
 EMAIL = "admin@oraone.ai"
 PASSWORD = "OraOne@2026"
 

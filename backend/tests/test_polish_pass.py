@@ -7,7 +7,7 @@ import os
 import pytest
 import requests
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://2de162f2-9f22-4dd1-bbf6-5bcfe31c5667.preview.emergentagent.com").rstrip("/")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://varunjakkampudi-dev.preview.emergentagent.com").rstrip("/")
 
 ADMIN_EMAIL = "admin@oraone.ai"
 ADMIN_PASSWORD = "OraOne@2026"
