@@ -31,6 +31,11 @@ import {
   Cloud,
   Activity,
   ClipboardList,
+  Layers,
+  BookOpen,
+  UserPlus,
+  BarChart3,
+  Users,
 } from "lucide-react";
 import HeroOrb from "@/components/marketing/HeroOrb";
 import { useSEO } from "@/lib/seo";
@@ -53,12 +58,48 @@ const STATS = [
 ];
 
 const BENEFITS = [
-  { icon: Clock, title: "24/7 Availability", desc: "Never miss a call or message again." },
-  { icon: Sparkles, title: "Human-like Conversations", desc: "Natural, intelligent and context aware." },
-  { icon: Globe2, title: "Multi-language", desc: "Support customers in 20+ languages." },
-  { icon: Puzzle, title: "Easy Integrations", desc: "Works with your favorite tools." },
-  { icon: Code2, title: "No Coding Required", desc: "Set up in minutes, not months." },
-  { icon: ShieldCheck, title: "Secure & Reliable", desc: "Enterprise-grade security and uptime." },
+  {
+    icon: Layers,
+    title: "One AI Across All Channels",
+    desc: "A single AI brain handles calls, chats and WhatsApp with consistent voice and context.",
+    tone: "#2563EB",
+    bg: "#EFF6FF",
+  },
+  {
+    icon: MessageSquare,
+    title: "Voice, Chat & WhatsApp in One Platform",
+    desc: "Deploy AI Voice, Website Chat and WhatsApp agents from one unified workspace.",
+    tone: "#7C3AED",
+    bg: "#F5F3FF",
+  },
+  {
+    icon: BookOpen,
+    title: "Centralized Knowledge Base",
+    desc: "Upload PDFs, FAQs and docs once — every agent answers from the same source of truth.",
+    tone: "#0EA5E9",
+    bg: "#ECFEFF",
+  },
+  {
+    icon: UserPlus,
+    title: "Automatic Lead Capture",
+    desc: "Qualified leads are auto-tagged, scored and pushed into your CRM in real time.",
+    tone: "#16A34A",
+    bg: "#ECFDF5",
+  },
+  {
+    icon: BarChart3,
+    title: "Analytics & Insights",
+    desc: "Live dashboards on conversations, conversions and channel ROI — no SQL needed.",
+    tone: "#F59E0B",
+    bg: "#FEF3C7",
+  },
+  {
+    icon: Users,
+    title: "Team Collaboration",
+    desc: "Owners, admins, managers and viewers — granular roles with audit logs built-in.",
+    tone: "#DB2777",
+    bg: "#FCE7F3",
+  },
 ];
 
 const INDUSTRIES = [
@@ -263,10 +304,13 @@ export default function HomePage() {
       <section className="py-14 sm:py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto">
-            <h2 className="text-4xl sm:text-5xl font-bold tracking-tighter text-[#0F172A]">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EFF6FF] text-[12px] font-semibold text-[#2563EB] tracking-wide uppercase">
+              <Sparkles size={13} /> Why OraOne
+            </span>
+            <h2 className="mt-4 text-4xl sm:text-5xl font-bold tracking-tighter text-[#0F172A]">
               Why Businesses Choose OraOne
             </h2>
-            <p className="mt-4 text-[#64748B]">Powerful AI agents. Simple to use. Built to deliver results.</p>
+            <p className="mt-4 text-[#64748B]">Everything you need to launch enterprise-grade AI agents — in one platform.</p>
           </motion.div>
           <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {BENEFITS.map((b, i) => (
@@ -274,15 +318,19 @@ export default function HomePage() {
                 key={b.title}
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                viewport={{ once: true, amount: 0.05 }}
                 transition={{ duration: 0.45, delay: i * 0.05 }}
-                className="p-6 rounded-2xl bg-white border border-[#E2E8F0] hover:border-[#2563EB]/30 hover:shadow-premium-lg transition-all duration-300 text-center"
+                className="group p-6 rounded-2xl bg-white border border-[#E2E8F0] hover:border-[#2563EB]/30 hover:shadow-premium-lg hover:-translate-y-0.5 transition-all duration-300"
+                data-testid={`why-card-${i}`}
               >
-                <div className="size-12 rounded-xl bg-[#EFF6FF] grid place-items-center mb-4 mx-auto">
-                  <b.icon size={22} className="text-[#2563EB]" />
+                <div
+                  className="size-12 rounded-xl grid place-items-center mb-4 transition-transform group-hover:scale-110"
+                  style={{ background: b.bg }}
+                >
+                  <b.icon size={22} style={{ color: b.tone }} />
                 </div>
                 <h3 className="text-base font-semibold text-[#0F172A]">{b.title}</h3>
-                <p className="mt-2 text-[13px] text-[#64748B]">{b.desc}</p>
+                <p className="mt-2 text-[13.5px] leading-relaxed text-[#64748B]">{b.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -323,7 +371,7 @@ export default function HomePage() {
                         key={i}
                         initial={{ opacity: 0, y: 8 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
+                        viewport={{ once: true, amount: 0.05 }}
                         transition={{ delay: i * 0.08 }}
                         className={`flex ${m.who === "customer" ? "justify-end" : "justify-start"}`}
                       >
@@ -495,7 +543,7 @@ export default function HomePage() {
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
+                  viewport={{ once: true, amount: 0.05 }}
                   transition={{ delay: i * 0.06 }}
                   className="text-center"
                 >
@@ -555,7 +603,7 @@ export default function HomePage() {
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                viewport={{ once: true, amount: 0.05 }}
                 transition={{ delay: i * 0.08 }}
                 className="p-6 rounded-2xl bg-white border border-[#E2E8F0] shadow-premium"
               >
