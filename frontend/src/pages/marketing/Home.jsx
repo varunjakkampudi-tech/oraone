@@ -405,13 +405,13 @@ export default function HomePage() {
                 <h2 className="text-4xl sm:text-5xl font-bold tracking-tighter leading-tight">Ready to Never Miss<br />Another Customer?</h2>
                 <p className="mt-4 text-white/85 max-w-md">Deploy your AI agents in days, not months.</p>
                 <ul className="mt-6 space-y-2">
-                  {["14-day free trial", "No credit card required", "Cancel anytime"].map((b) => (
+                  {["Free Beta Access", "No credit card required", "Cancel anytime"].map((b) => (
                     <li key={b} className="flex items-center gap-2 text-white/90 text-sm"><CheckCircle2 size={16} /> {b}</li>
                   ))}
                 </ul>
                 <div className="mt-8 flex flex-wrap gap-3">
                   <button onClick={() => nav("/contact")} className="px-5 py-3 rounded-xl bg-white text-[#2563EB] font-semibold text-sm hover:bg-white/90 transition-colors" data-testid="cta-book-demo">Book a Demo</button>
-                  <button onClick={() => nav("/signup")} className="px-5 py-3 rounded-xl border border-white/30 hover:bg-white/10 font-semibold text-sm transition-colors" data-testid="cta-start-free">Start Free Trial</button>
+                  <button onClick={() => nav("/signup")} className="px-5 py-3 rounded-xl border border-white/30 hover:bg-white/10 font-semibold text-sm transition-colors" data-testid="cta-start-free">Start Free</button>
                 </div>
               </div>
               <div className="hidden lg:flex justify-center">

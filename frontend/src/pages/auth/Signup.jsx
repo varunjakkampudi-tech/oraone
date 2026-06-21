@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { AUTH } from "@/constants/testIds";
 import { useSEO } from "@/lib/seo";
 import {
-  Gift,
   User,
   Mail,
   Lock,
@@ -17,7 +16,7 @@ import {
 } from "lucide-react";
 
 export default function Signup() {
-  useSEO({ title: "Sign up", description: "Create your OraOne account — 14-day free trial." });
+  useSEO({ title: "Sign up", description: "Create your OraOne account in minutes." });
   const { register } = useAuth();
   const nav = useNavigate();
 
@@ -59,17 +58,11 @@ export default function Signup() {
 
   return (
     <div data-testid="signup-form">
-      {/* 14-day free trial badge */}
-      <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#F3EBFF] text-[#7C3AED] text-xs font-semibold">
-        <Gift size={13} />
-        14-day free trial
-      </span>
-
-      <h1 className="mt-5 text-3xl sm:text-4xl font-bold tracking-tight text-[#0F172A]">
+      <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#0F172A]">
         Create your account
       </h1>
       <p className="mt-2 text-[15px] text-[#64748B]">
-        Start your 14-day free trial. No credit card required.
+        Get started in minutes. No credit card required.
       </p>
 
       {/* Social row */}
