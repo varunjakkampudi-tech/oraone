@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { CheckCircle2, ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { useSEO } from "@/lib/seo";
 
 const fadeUp = {
@@ -110,10 +110,6 @@ export default function IntegrationsPage() {
                   </span>
 
                   <p className="mt-3 text-sm text-[#64748B] leading-relaxed flex-1">{i.desc}</p>
-
-                  <div className="mt-5 pt-4 border-t border-[#F1F5F9] flex items-center gap-1.5 text-xs font-semibold text-[#16A34A]">
-                    <CheckCircle2 size={14} /> Available in V1
-                  </div>
                 </motion.div>
               );
             })}
