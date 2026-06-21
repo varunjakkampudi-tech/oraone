@@ -153,169 +153,53 @@ export default function IntegrationsPage() {
 }
 
 /* =========================================================================
-   Brand logo tiles — inline SVGs colored to feel like the real brand mark.
+   Brand logo tiles — use OFFICIAL pixel-perfect SVGs from Simple Icons CDN.
+   `cdn.simpleicons.org/<slug>` returns the real brand mark in the brand's
+   official color, so the icons match the actual products exactly.
    ========================================================================= */
+
+// Map our internal logo key -> Simple Icons slug (and optional config)
+const BRAND_ICONS = {
+  "google-calendar": { slug: "googlecalendar" },
+  gmail: { slug: "gmail" },
+  whatsapp: { slug: "whatsapp", tile: "#25D366", color: "ffffff" }, // white on green tile
+  slack: { slug: "slack" },
+  hubspot: { slug: "hubspot" },
+  zoho: { slug: "zoho", color: "2563EB" }, // tinted blue (matches "link" feel in mock)
+  webhook: { slug: "webhooks", color: "7C3AED" },
+  api: { slug: "openapiinitiative", color: "2563EB" },
+  salesforce: { slug: "salesforce" },
+  outlook: { slug: "microsoftoutlook" },
+  teams: { slug: "microsoftteams" },
+  pipedrive: { slug: "pipedrive" },
+};
+
 function BrandLogo({ name }) {
-  const w = 52;
-  switch (name) {
-    case "google-calendar":
-      return (
-        <svg width={w} height={w} viewBox="0 0 48 48">
-          {/* White body with rainbow Google border */}
-          <rect x="6" y="6" width="36" height="36" rx="5" fill="white" stroke="#E2E8F0" />
-          {/* Top stripe = blue */}
-          <rect x="6" y="6" width="36" height="5" rx="2.5" fill="#4285F4" />
-          {/* Right stripe = green */}
-          <rect x="37" y="6" width="5" height="36" rx="2.5" fill="#34A853" />
-          {/* Bottom stripe = yellow */}
-          <rect x="6" y="37" width="36" height="5" rx="2.5" fill="#FBBC04" />
-          {/* Left stripe = red */}
-          <rect x="6" y="6" width="5" height="36" rx="2.5" fill="#EA4335" />
-          {/* Center white area */}
-          <rect x="11" y="11" width="26" height="26" fill="white" />
-          {/* "31" in Google blue */}
-          <text x="24" y="31" textAnchor="middle" fontSize="14" fontWeight="700" fill="#4285F4" fontFamily="Inter, Roboto, sans-serif">31</text>
-        </svg>
-      );
-    case "gmail":
-      return (
-        <svg width={w} height={w} viewBox="0 0 48 48">
-          {/* Envelope outer */}
-          <rect x="5" y="12" width="38" height="26" rx="4" fill="#FFFFFF" stroke="#E5E7EB" />
-          {/* Left red side */}
-          <path d="M5 16 a4 4 0 0 1 4 -4 h2 v26 H9 a4 4 0 0 1 -4 -4 Z" fill="#EA4335" />
-          {/* Right red side */}
-          <path d="M43 16 a4 4 0 0 0 -4 -4 h-2 v26 h2 a4 4 0 0 0 4 -4 Z" fill="#EA4335" />
-          {/* Center M (red) */}
-          <path d="M11 38 V18 L24 27 L37 18 V38 H31 V26 L24 31 L17 26 V38 Z" fill="#EA4335" />
-        </svg>
-      );
-    case "whatsapp":
-      return (
-        <div className="size-12 rounded-2xl grid place-items-center" style={{ background: "#25D366" }}>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
-            <path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.2-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.1-.7-1.7-1-2.3-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.1.2 2.1 3.2 5 4.4.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3z" />
-            <path d="M12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.4 5L2 22l5.1-1.3c1.4.8 3.1 1.3 4.9 1.3 5.5 0 10-4.5 10-10S17.5 2 12 2zm0 18c-1.7 0-3.3-.5-4.7-1.3l-.3-.2-3.4.9.9-3.3-.2-.4c-.9-1.4-1.3-3-1.3-4.7 0-4.4 3.6-8 8-8s8 3.6 8 8-3.6 8-8 8z" />
-          </svg>
-        </div>
-      );
-    case "slack":
-      return (
-        <svg width={w} height={w} viewBox="0 0 48 48">
-          {/* Slack — 4-color hashtag arrangement */}
-          {/* Pink L (top-left) — vertical + top horizontal */}
-          <rect x="14" y="6" width="6" height="18" rx="3" fill="#E01E5A" />
-          <rect x="14" y="6" width="14" height="6" rx="3" fill="#E01E5A" />
-          {/* Cyan L (top-right) — horizontal + right vertical */}
-          <rect x="28" y="14" width="14" height="6" rx="3" fill="#36C5F0" />
-          <rect x="28" y="14" width="6" height="14" rx="3" fill="#36C5F0" />
-          {/* Green L (bottom-right) — vertical + bottom horizontal */}
-          <rect x="28" y="24" width="6" height="18" rx="3" fill="#2EB67D" />
-          <rect x="20" y="36" width="14" height="6" rx="3" fill="#2EB67D" />
-          {/* Yellow L (bottom-left) — horizontal + left vertical */}
-          <rect x="6" y="28" width="14" height="6" rx="3" fill="#ECB22E" />
-          <rect x="14" y="28" width="6" height="14" rx="3" fill="#ECB22E" />
-        </svg>
-      );
-    case "hubspot":
-      return (
-        <svg width={w} height={w} viewBox="0 0 48 48">
-          {/* Top-right circle outline */}
-          <circle cx="34" cy="20" r="9" fill="none" stroke="#FF7A59" strokeWidth="3" />
-          {/* Center dot inside circle */}
-          <circle cx="34" cy="20" r="2.5" fill="#FF7A59" />
-          {/* Diagonal connecting line */}
-          <line x1="14" y1="36" x2="28" y2="22" stroke="#FF7A59" strokeWidth="3" strokeLinecap="round" />
-          {/* Top stem */}
-          <line x1="34" y1="11" x2="34" y2="6" stroke="#FF7A59" strokeWidth="3" strokeLinecap="round" />
-          {/* Top filled circle */}
-          <circle cx="34" cy="6" r="2.8" fill="#FF7A59" />
-          {/* Bottom-left filled circle */}
-          <circle cx="12" cy="38" r="4" fill="#FF7A59" />
-        </svg>
-      );
-    case "zoho":
-      return (
-        <svg width={w} height={w} viewBox="0 0 48 48">
-          {/* Blue chain-link / connector */}
-          <g stroke="#2563EB" strokeWidth="3.4" fill="none" strokeLinecap="round" strokeLinejoin="round">
-            {/* Left link */}
-            <path d="M18 18 a8 8 0 1 0 0 12 h4" />
-            {/* Right link */}
-            <path d="M30 30 a8 8 0 1 0 0 -12 h-4" />
-            {/* Crossbar */}
-            <line x1="18" y1="24" x2="30" y2="24" />
-          </g>
-        </svg>
-      );
-    case "webhook":
-      return (
-        <svg width={w} height={w} viewBox="0 0 48 48">
-          {/* Three circles connected like webhook icon */}
-          <g stroke="#7C3AED" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="24" cy="14" r="5" />
-            <circle cx="14" cy="34" r="5" />
-            <circle cx="34" cy="34" r="5" />
-            {/* Connector legs */}
-            <path d="M22 18 L16 29" />
-            <path d="M26 18 L32 29" />
-            <path d="M19 34 H29" />
-          </g>
-          {/* Tiny center dot in each circle */}
-          <circle cx="24" cy="14" r="1.6" fill="#7C3AED" />
-          <circle cx="14" cy="34" r="1.6" fill="#7C3AED" />
-          <circle cx="34" cy="34" r="1.6" fill="#7C3AED" />
-        </svg>
-      );
-    case "api":
-      return (
-        <svg width={w} height={w} viewBox="0 0 48 48">
-          {/* Left chevron < */}
-          <path d="M18 14 L8 24 L18 34" stroke="#2563EB" strokeWidth="3.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-          {/* Right chevron > */}
-          <path d="M30 14 L40 24 L30 34" stroke="#2563EB" strokeWidth="3.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-          {/* Slash */}
-          <line x1="28" y1="12" x2="20" y2="36" stroke="#2563EB" strokeWidth="3.6" strokeLinecap="round" />
-        </svg>
-      );
-    case "salesforce":
-      return (
-        <svg width={w} height={w} viewBox="0 0 48 48">
-          <path
-            d="M14 22 Q14 16 20 16 Q22 12 27 13 Q32 11 35 16 Q42 16 41 23 Q43 27 38 30 Q37 35 30 35 Q26 38 21 34 Q14 36 13 30 Q9 28 14 22 Z"
-            fill="#00A1E0"
-          />
-        </svg>
-      );
-    case "outlook":
-      return (
-        <svg width={w} height={w} viewBox="0 0 48 48">
-          <rect x="6" y="12" width="22" height="24" rx="2" fill="#0078D4" />
-          <text x="17" y="30" textAnchor="middle" fontSize="14" fontWeight="700" fill="white" fontFamily="Inter, sans-serif">O</text>
-          <rect x="30" y="16" width="14" height="20" rx="1" fill="#106EBE" />
-          <rect x="32" y="18" width="10" height="4" fill="white" />
-          <rect x="32" y="24" width="10" height="2" fill="white" opacity="0.6" />
-          <rect x="32" y="28" width="6" height="2" fill="white" opacity="0.6" />
-        </svg>
-      );
-    case "teams":
-      return (
-        <svg width={w} height={w} viewBox="0 0 48 48">
-          <rect x="18" y="14" width="20" height="24" rx="2" fill="#5059C9" />
-          <text x="28" y="32" textAnchor="middle" fontSize="14" fontWeight="800" fill="white" fontFamily="Inter, sans-serif">T</text>
-          <circle cx="12" cy="20" r="6" fill="#7B83EB" />
-        </svg>
-      );
-    case "pipedrive":
-      return (
-        <svg width={w} height={w} viewBox="0 0 48 48">
-          <rect x="8" y="8" width="32" height="32" rx="6" fill="#1A1A1A" />
-          <text x="24" y="32" textAnchor="middle" fontSize="20" fontWeight="800" fill="#10B981" fontFamily="Inter, sans-serif">P</text>
-        </svg>
-      );
-    default:
-      return <div className="size-12 rounded-2xl bg-[#F1F5F9] border border-[#E2E8F0]" />;
+  const cfg = BRAND_ICONS[name];
+  if (!cfg) {
+    return <div className="size-12 rounded-2xl bg-[#F1F5F9] border border-[#E2E8F0]" />;
   }
+  const src = cfg.color
+    ? `https://cdn.simpleicons.org/${cfg.slug}/${cfg.color}`
+    : `https://cdn.simpleicons.org/${cfg.slug}`;
+
+  // Special-case branded coloured tile (e.g. WhatsApp)
+  if (cfg.tile) {
+    return (
+      <div
+        className="size-12 rounded-2xl grid place-items-center shrink-0"
+        style={{ background: cfg.tile }}
+      >
+        <img src={src} alt={`${name} logo`} className="size-7" loading="lazy" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="size-12 rounded-2xl bg-white grid place-items-center shrink-0">
+      <img src={src} alt={`${name} logo`} className="size-10" loading="lazy" />
+    </div>
+  );
 }
 
 /* =========================================================================
