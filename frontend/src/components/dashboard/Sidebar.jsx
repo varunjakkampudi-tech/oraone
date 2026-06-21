@@ -11,6 +11,7 @@ import {
   Settings,
   UserCog,
   LogOut,
+  X,
 } from "lucide-react";
 import { Logo } from "@/components/marketing/Logo";
 import { useAuth } from "@/lib/auth";
@@ -28,19 +29,21 @@ const items = [
   { to: "/app/settings", icon: Settings, label: "Settings", id: DASH.sidebarSettings },
 ];
 
-export default function Sidebar() {
-  const { user, logout } = useAuth();
-  const nav = useNavigate();
-
-  const onLogout = async () => {
-    await logout();
-    nav("/login");
-  };
-
+function SidebarContent({ user, onLogout, onItemClick, showClose, onClose }) {
   return (
-    <aside className="hidden lg:flex w-64 bg-white border-r border-[#E2E8F0] flex-shrink-0 flex-col">
-      <div className="h-16 px-5 flex items-center border-b border-[#E2E8F0]">
+    <>
+      <div className="h-16 px-5 flex items-center justify-between border-b border-[#E2E8F0]">
         <Logo />
+        {showClose && (
+          <button
+            onClick={onClose}
+            className="lg:hidden p-2 rounded-lg text-[#64748B] hover:bg-[#F1F5F9]"
+            aria-label="Close menu"
+            data-testid="sidebar-close-btn"
+          >
+            <X size={18} />
+          </button>
+        )}
       </div>
       <nav className="flex-1 overflow-y-auto p-3 space-y-1 scrollbar-thin">
         {items.map((it) => (
@@ -48,6 +51,7 @@ export default function Sidebar() {
             key={it.to}
             to={it.to}
             data-testid={it.id}
+            onClick={onItemClick}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                 isActive
@@ -80,6 +84,58 @@ export default function Sidebar() {
           </button>
         </div>
       </div>
-    </aside>
+    </>
+  );
+}
+
+export default function Sidebar({ mobileOpen = false, onClose = () => {} }) {
+  const { user, logout } = useAuth();
+  const nav = useNavigate();
+
+  const onLogout = async () => {
+    await logout();
+    nav("/login");
+  };
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:flex w-64 bg-white border-r border-[#E2E8F0] flex-shrink-0 flex-col">
+        <SidebarContent user={user} onLogout={onLogout} />
+      </aside>
+
+      {/* Mobile drawer */}
+      <div
+        className={`lg:hidden fixed inset-0 z-50 ${mobileOpen ? "" : "pointer-events-none"}`}
+        aria-hidden={!mobileOpen}
+      >
+        {/* Backdrop */}
+        <div
+          onClick={onClose}
+          className={`absolute inset-0 bg-[#0F172A]/50 backdrop-blur-sm transition-opacity duration-300 ${
+            mobileOpen ? "opacity-100" : "opacity-0"
+          }`}
+          data-testid="sidebar-backdrop"
+        />
+        {/* Drawer */}
+        <aside
+          className={`absolute left-0 top-0 h-full w-72 max-w-[85%] bg-white border-r border-[#E2E8F0] flex flex-col shadow-2xl transition-transform duration-300 ${
+            mobileOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Navigation menu"
+          data-testid="mobile-sidebar"
+        >
+          <SidebarContent
+            user={user}
+            onLogout={onLogout}
+            onItemClick={onClose}
+            showClose
+            onClose={onClose}
+          />
+        </aside>
+      </div>
+    </>
   );
 }

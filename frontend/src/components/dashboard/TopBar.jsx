@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Bell, Search, Plus } from "lucide-react";
+import { Bell, Search, Plus, Menu } from "lucide-react";
 import { DASH } from "@/constants/testIds";
 
 const TITLES = {
@@ -16,26 +16,41 @@ const TITLES = {
   "/app/settings": "Settings",
 };
 
-export default function TopBar() {
+export default function TopBar({ onMenuClick = () => {} }) {
   const { pathname } = useLocation();
   const nav = useNavigate();
   const matchKey = Object.keys(TITLES).find((k) => pathname === k || pathname.startsWith(k + "/"));
   const title = TITLES[matchKey] || "Dashboard";
 
   return (
-    <header className="h-16 bg-white border-b border-[#E2E8F0] flex items-center justify-between px-6">
-      <div>
-        <h1 className="text-lg font-semibold text-[#0F172A] tracking-tight">{title}</h1>
+    <header className="h-16 bg-white border-b border-[#E2E8F0] flex items-center justify-between px-4 sm:px-6 gap-2">
+      <div className="flex items-center gap-2 min-w-0">
+        <button
+          onClick={onMenuClick}
+          className="lg:hidden p-2 -ml-1 rounded-xl text-[#475569] hover:bg-[#F1F5F9]"
+          aria-label="Open navigation menu"
+          data-testid="dashboard-menu-btn"
+        >
+          <Menu size={20} />
+        </button>
+        <h1 className="text-base sm:text-lg font-semibold text-[#0F172A] tracking-tight truncate">{title}</h1>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 sm:gap-2">
         <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] w-72">
           <Search size={16} className="text-[#64748B]" />
           <input
             placeholder="Search anything..."
-            className="bg-transparent text-sm flex-1 outline-none placeholder:text-[#94A3B8]"
+            className="bg-transparent text-sm flex-1 outline-none placeholder:text-[#94A3B8] min-w-0"
             data-testid="dashboard-search-input"
           />
         </div>
+        <button
+          className="md:hidden p-2.5 rounded-xl text-[#64748B] hover:bg-[#F1F5F9]"
+          aria-label="Search"
+          data-testid="dashboard-search-btn"
+        >
+          <Search size={18} />
+        </button>
         <button
           className="p-2.5 rounded-xl text-[#64748B] hover:bg-[#F1F5F9] relative"
           aria-label="Notifications"
@@ -46,10 +61,10 @@ export default function TopBar() {
         </button>
         <button
           onClick={() => nav("/app/agents/new")}
-          className="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-medium transition-colors"
+          className="inline-flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-medium transition-colors shrink-0"
           data-testid={DASH.createAgentBtn}
         >
-          <Plus size={16} /> Create Agent
+          <Plus size={16} /> <span className="hidden sm:inline">Create Agent</span>
         </button>
       </div>
     </header>
