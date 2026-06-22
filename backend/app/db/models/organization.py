@@ -1,4 +1,4 @@
-"""Organization — the multi-tenant boundary."""
+"""Organization — the multi-tenant boundary (Apollo Clinic, Jockey, REMAX, …)."""
 from __future__ import annotations
 
 import enum
@@ -9,7 +9,7 @@ from sqlalchemy import Enum, ForeignKey, Index, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB, UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
+from app.db.base import Base, SoftDeleteMixin, TimestampMixin, UUIDPrimaryKeyMixin
 
 if TYPE_CHECKING:
     from app.db.models.user import User
@@ -25,11 +25,11 @@ class OrgPlan(str, enum.Enum):
     enterprise = "enterprise"
 
 
-class Organization(UUIDPrimaryKeyMixin, TimestampMixin, Base):
+class Organization(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
     __tablename__ = "organizations"
     __table_args__ = (
         UniqueConstraint("slug", name="uq_organizations_slug"),
-        Index("ix_organizations_owner_id", "owner_id"),
+        Index("ix_organizations_owner_user_id", "owner_user_id"),
     )
 
     name: Mapped[str] = mapped_column(String(160), nullable=False)
@@ -40,7 +40,7 @@ class Organization(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         default=OrgPlan.free,
     )
 
-    owner_id: Mapped[uuid.UUID] = mapped_column(
+    owner_user_id: Mapped[uuid.UUID] = mapped_column(
         PG_UUID(as_uuid=True),
         ForeignKey("users.id", ondelete="RESTRICT"),
         nullable=False,
@@ -52,11 +52,10 @@ class Organization(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
     # Relationships
     owner: Mapped["User"] = relationship(
-        back_populates="owned_orgs", foreign_keys=[owner_id]
+        back_populates="owned_orgs", foreign_keys=[owner_user_id]
     )
     members: Mapped[list["OrganizationMember"]] = relationship(
-        back_populates="organization",
-        cascade="all, delete-orphan",
+        back_populates="organization", cascade="all, delete-orphan"
     )
     agents: Mapped[list["Agent"]] = relationship(
         back_populates="organization", cascade="all, delete-orphan"

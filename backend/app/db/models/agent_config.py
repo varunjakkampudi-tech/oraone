@@ -1,4 +1,8 @@
-"""AgentConfig — 1:1 typed configuration + JSONB extras for an Agent."""
+"""AgentConfig — 1:1 sidecar holding deeper/optional config + JSONB extras.
+
+The hot-path fields (`model`, `system_prompt`) live on `agents` itself.
+This table is for voice settings, language, tool/webhook config, etc.
+"""
 from __future__ import annotations
 
 import uuid
@@ -26,21 +30,17 @@ class AgentConfig(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         nullable=False,
     )
 
-    # Core typed config
-    model: Mapped[str] = mapped_column(String(80), nullable=False, default="gpt-4o-mini")
     voice: Mapped[Optional[str]] = mapped_column(String(80))
     language: Mapped[str] = mapped_column(String(16), nullable=False, default="en-US")
-    system_prompt: Mapped[Optional[str]] = mapped_column(Text)
     greeting: Mapped[Optional[str]] = mapped_column(Text)
     temperature: Mapped[float] = mapped_column(
         Numeric(3, 2), nullable=False, default=0.70
     )
     max_tokens: Mapped[int] = mapped_column(nullable=False, default=1024)
 
-    # Channel-specific or extra config (e.g. Twilio number, webhook URLs, tools)
+    # Channel-specific / tool config (e.g. Twilio number, webhook URLs, tool list)
     extra: Mapped[dict[str, Any]] = mapped_column(
         JSONB, nullable=False, default=dict, server_default="{}"
     )
 
-    # Relationship
     agent: Mapped["Agent"] = relationship(back_populates="config")

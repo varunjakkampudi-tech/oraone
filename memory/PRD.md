@@ -60,16 +60,20 @@ Pull the public repo https://github.com/varunjakkampudi-tech/oraone.git (AWS Cog
 - Testing subagent (iteration_2): 11/11 acceptance criteria pass.
 
 ### Session 5 — Remove Hosted UI buttons + Postgres foundation (2026-06-22)
-- Removed `Continue with Cognito Hosted UI` button from `/login` and `Sign up with Cognito Hosted UI` from `/signup` (per user request); pruned unused `loginWithHostedUI` imports.
+- Removed `Continue with Cognito Hosted UI` button from `/login` and `/signup`; pruned unused `loginWithHostedUI` imports.
 - **Postgres data layer** scaffolded against AWS RDS `oraone-postgres.c38080q04ynb.ap-south-2.rds.amazonaws.com:5432/oraone`:
   - Added `asyncpg`, `psycopg2-binary`, `SQLAlchemy 2.x`, `alembic` to `requirements.txt`.
-  - `backend/app/db/` package: async engine + sessionmaker (`session.py`), declarative `Base` + `UUIDPrimaryKeyMixin` + `TimestampMixin` (`base.py`), and 8 ORM models under `app/db/models/`:
-    - `users` (1:1 with Cognito via `cognito_sub`), `organizations`, `organization_members`, `agents`, `agent_configs`, `conversations`, `messages`, `integrations`.
-  - 11 Postgres ENUMs centralised in the initial migration `alembic/versions/20260622_0001_initial_initial.py`.
-  - Alembic configured (`alembic.ini`, `alembic/env.py`, `script.py.mako`); initial migration runs cleanly in `--sql` mode (verified: 11 CREATE TYPE + 9 CREATE TABLE statements, no duplicates).
-  - `GET /api/db/health` endpoint added — returns `{ok, version, tables[]}` or a `503 db_unreachable: ...` with the underlying error.
-  - Backend boots even when RDS unreachable (engine is initialised lazily; private VPC pod can't reach `10.0.130.156`).
-- `LOCAL_SETUP.md` referenced; new `DATABASE_SETUP.md` written with full migration + troubleshooting guide.
+  - `backend/app/db/` package: async engine + sessionmaker, declarative `Base` + `UUIDPrimaryKeyMixin` + `TimestampMixin` + `SoftDeleteMixin`.
+  - 8 ORM models with the agreed column names: `users (full_name)`, `organizations (owner_user_id)`, `organization_members (organization_id)`, `agents (organization_id, type ∈ {voice,chat,whatsapp,sales,support}, model, system_prompt)`, `agent_configs`, `conversations (organization_id, channel)`, `messages (sender, message, metadata)`, `integrations (organization_id)`.
+  - **12 Postgres ENUMs** centralised in `alembic/versions/20260622_0001_initial_initial.py`.
+  - Soft-delete (`deleted_at` nullable) on 6 tables — `users`, `organizations`, `organization_members`, `agents`, `conversations`, `integrations` (skipped on `messages` + `agent_configs`).
+  - All tenant-scoped tables have an `organization_id` index. JSONB used for `users.X`, `organizations.settings`, `agent_configs.extra`, `conversations.extra`, `messages.metadata`, `integrations.credentials`/`settings`.
+  - Repository layer (`app/repositories/`): `BaseRepository` + per-aggregate repos (User, Organization, OrgMember, Agent, Conversation, Message, Integration). Soft-delete-aware `delete()` + `hard_delete()`. Domain-specific helpers like `UserRepository.upsert_from_cognito`, `OrganizationRepository.list_for_user` / `ensure_unique_slug`, `AgentRepository.list_active_for_org`, etc.
+  - Service layer (`app/services/`): `IdentityService.upsert_from_cognito` find-or-creates the User and auto-creates a personal Organization + Owner membership on first login (Phase-2-ready).
+  - Alembic configured + verified via `alembic upgrade head --sql` (12 CREATE TYPE + 9 CREATE TABLE + all indexes, no duplicates).
+  - `GET /api/db/health` endpoint added. Returns `{ok, version, tables[]}` on success, `503 db_unreachable: <error>` on failure. Backend boots lazily so it stays healthy even when DB is unreachable.
+  - Cognito login still works end-to-end (no regression).
+- `DATABASE_SETUP.md` written with full migration + troubleshooting guide.
 
 ## Prioritized Backlog
 - **P0**: Run `alembic upgrade head` against RDS from a machine with VPC access (laptop on VPN, EC2 in same VPC, or temporarily flip RDS to publicly accessible + whitelist IP). After that, `/api/db/health` will return `200 ok` with all 8 tables listed.

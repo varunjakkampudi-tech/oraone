@@ -7,10 +7,14 @@ from app.db.models.organization_member import (
     MemberRole,
     MemberStatus,
 )
-from app.db.models.agent import Agent, AgentChannel, AgentStatus
+from app.db.models.agent import Agent, AgentType, AgentStatus
 from app.db.models.agent_config import AgentConfig
-from app.db.models.conversation import Conversation, ConversationStatus
-from app.db.models.message import Message, MessageRole
+from app.db.models.conversation import (
+    Conversation,
+    ConversationChannel,
+    ConversationStatus,
+)
+from app.db.models.message import Message, MessageSender
 from app.db.models.integration import (
     Integration,
     IntegrationStatus,
@@ -21,9 +25,9 @@ __all__ = [
     "User", "UserRole", "UserStatus",
     "Organization", "OrgPlan",
     "OrganizationMember", "MemberRole", "MemberStatus",
-    "Agent", "AgentChannel", "AgentStatus",
+    "Agent", "AgentType", "AgentStatus",
     "AgentConfig",
-    "Conversation", "ConversationStatus",
-    "Message", "MessageRole",
+    "Conversation", "ConversationChannel", "ConversationStatus",
+    "Message", "MessageSender",
     "Integration", "IntegrationStatus", "IntegrationType",
 ]

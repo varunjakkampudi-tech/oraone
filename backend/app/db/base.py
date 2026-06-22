@@ -43,3 +43,12 @@ class TimestampMixin:
         onupdate=func.now(),
         default=utcnow,
     )
+
+
+class SoftDeleteMixin:
+    """`deleted_at` nullable — set to mark a row as soft-deleted."""
+
+    deleted_at: Mapped["datetime | None"] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )

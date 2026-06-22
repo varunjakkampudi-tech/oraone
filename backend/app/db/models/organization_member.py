@@ -1,4 +1,4 @@
-"""OrganizationMember — many-to-many between Users and Organizations with a role."""
+"""OrganizationMember — N:M between Users and Organizations with a role."""
 from __future__ import annotations
 
 import enum
@@ -10,7 +10,7 @@ from sqlalchemy import DateTime, Enum, ForeignKey, Index, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
+from app.db.base import Base, SoftDeleteMixin, TimestampMixin, UUIDPrimaryKeyMixin
 
 if TYPE_CHECKING:
     from app.db.models.user import User
@@ -30,15 +30,17 @@ class MemberStatus(str, enum.Enum):
     removed = "removed"
 
 
-class OrganizationMember(UUIDPrimaryKeyMixin, TimestampMixin, Base):
+class OrganizationMember(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
     __tablename__ = "organization_members"
     __table_args__ = (
-        UniqueConstraint("org_id", "user_id", name="uq_org_members_org_user"),
+        UniqueConstraint(
+            "organization_id", "user_id", name="uq_org_members_org_user"
+        ),
         Index("ix_org_members_user_id", "user_id"),
-        Index("ix_org_members_org_id", "org_id"),
+        Index("ix_org_members_organization_id", "organization_id"),
     )
 
-    org_id: Mapped[uuid.UUID] = mapped_column(
+    organization_id: Mapped[uuid.UUID] = mapped_column(
         PG_UUID(as_uuid=True),
         ForeignKey("organizations.id", ondelete="CASCADE"),
         nullable=False,
@@ -60,7 +62,7 @@ class OrganizationMember(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         default=MemberStatus.active,
     )
 
-    invited_by_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+    invited_by_user_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         PG_UUID(as_uuid=True),
         ForeignKey("users.id", ondelete="SET NULL"),
     )
@@ -71,7 +73,9 @@ class OrganizationMember(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     user: Mapped["User"] = relationship(
         back_populates="memberships", foreign_keys=[user_id]
     )
-    invited_by: Mapped[Optional["User"]] = relationship(foreign_keys=[invited_by_id])
+    invited_by: Mapped[Optional["User"]] = relationship(
+        foreign_keys=[invited_by_user_id]
+    )
 
     def __repr__(self) -> str:  # pragma: no cover
-        return f"<OrgMember org={self.org_id} user={self.user_id} role={self.role}>"
+        return f"<OrgMember org={self.organization_id} user={self.user_id} role={self.role}>"

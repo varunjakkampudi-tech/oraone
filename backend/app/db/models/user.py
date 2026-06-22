@@ -1,7 +1,6 @@
-"""User — the system-of-record for an authenticated identity.
+"""User — system-of-record identity, 1:1 with a Cognito user via `cognito_sub`.
 
-Linked 1:1 to a Cognito user via `cognito_sub`. Created lazily on first
-successful login (auth_service will upsert by cognito_sub).
+Cognito remains the auth source; this row is upserted on first successful login.
 """
 from __future__ import annotations
 
@@ -12,7 +11,7 @@ from typing import Optional, TYPE_CHECKING
 from sqlalchemy import DateTime, Enum, Index, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
+from app.db.base import Base, SoftDeleteMixin, TimestampMixin, UUIDPrimaryKeyMixin
 
 if TYPE_CHECKING:
     from app.db.models.organization import Organization
@@ -31,7 +30,7 @@ class UserStatus(str, enum.Enum):
     deleted = "deleted"
 
 
-class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
+class User(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
     __tablename__ = "users"
     __table_args__ = (
         UniqueConstraint("cognito_sub", name="uq_users_cognito_sub"),
@@ -41,7 +40,7 @@ class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
     cognito_sub: Mapped[str] = mapped_column(String(64), nullable=False)
     email: Mapped[str] = mapped_column(String(255), nullable=False)
-    name: Mapped[Optional[str]] = mapped_column(String(160))
+    full_name: Mapped[Optional[str]] = mapped_column(String(160))
     avatar_url: Mapped[Optional[str]] = mapped_column(String(500))
 
     role: Mapped[UserRole] = mapped_column(
@@ -58,7 +57,7 @@ class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
     # Relationships
     owned_orgs: Mapped[list["Organization"]] = relationship(
-        back_populates="owner", foreign_keys="Organization.owner_id"
+        back_populates="owner", foreign_keys="Organization.owner_user_id"
     )
     memberships: Mapped[list["OrganizationMember"]] = relationship(
         back_populates="user", foreign_keys="OrganizationMember.user_id"

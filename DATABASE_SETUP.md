@@ -75,19 +75,29 @@ curl https://<your-host>/api/db/health
 
 ## 3) Schema (Phase 1)
 
-| Table                  | Purpose                                                                |
-|------------------------|------------------------------------------------------------------------|
-| `users`                | System-of-record identity. 1:1 with Cognito (`cognito_sub` unique).    |
-| `organizations`        | Multi-tenant boundary. Every domain row is scoped by `org_id`.         |
-| `organization_members` | Many-to-many user↔org with role (`owner`/`admin`/`member`/`viewer`).   |
-| `agents`               | AI workers (voice / chat / whatsapp) owned by an organization.         |
-| `agent_configs`        | 1:1 typed config (model, voice, system prompt) + JSONB `extra` blob.   |
-| `conversations`        | One customer↔agent thread; status enum + recording/transcript URLs.    |
-| `messages`             | Single utterance inside a conversation (`agent`/`customer`/…).         |
-| `integrations`         | 3rd-party connections per org (Twilio, SendGrid, Meta WA, CRM, …).     |
+All tables get UUID primary keys + `created_at` / `updated_at`. Where soft-delete makes sense (everything except `agent_configs` and `messages`) we also add a nullable `deleted_at`. All tenant-scoped tables have an `organization_id` index. Flexible/extensible fields use Postgres `JSONB`.
 
-11 enum types are created up-front; see `alembic/versions/*_0001_initial.py`
-for the source of truth.
+| Table                  | Purpose                                                                | Soft-delete |
+|------------------------|------------------------------------------------------------------------|:-----------:|
+| `users`                | System-of-record identity. 1:1 with Cognito (`cognito_sub` unique). Columns: `id, cognito_sub, email, full_name, avatar_url, role, status, last_login_at, …`. | ✅ |
+| `organizations`        | Multi-tenant boundary. Columns: `id, name, slug (unique), plan, owner_user_id, settings (JSONB), logo_url, …`. | ✅ |
+| `organization_members` | N:M user↔org with role (`owner`/`admin`/`member`/`viewer`). Unique on `(organization_id, user_id)`. | ✅ |
+| `agents`               | AI workers. Columns: `id, organization_id, name, description, type, status, model, system_prompt, avatar_url, created_by_user_id, …`. `type` ∈ `{voice, chat, whatsapp, sales, support}`. | ✅ |
+| `agent_configs`        | 1:1 sidecar with voice/language/greeting/temperature/max_tokens + JSONB `extra`. | — |
+| `conversations`        | Customer↔agent thread. Columns: `id, organization_id, agent_id, channel, status, customer_*, started_at, ended_at, summary, recording_url, transcript_url, extra (JSONB), …`. | ✅ |
+| `messages`             | One utterance. Columns: `id, conversation_id, sender, message, audio_url, metadata (JSONB), …`. | — |
+| `integrations`         | 3rd-party connections per org. Unique on `(organization_id, provider)`. Sensitive blob in `credentials (JSONB)`. | ✅ |
+
+12 enum types are created up-front (`user_role`, `user_status`, `org_plan`, `member_role`, `member_status`, `agent_type`, `agent_status`, `conversation_channel`, `conversation_status`, `message_sender`, `integration_type`, `integration_status`). See `alembic/versions/*_0001_initial.py` for the source of truth.
+
+### Layered access
+
+```
+routes  →  services  →  repositories  →  ORM models / database
+```
+
+- **`app/repositories/`** — one repo per aggregate (`UserRepository`, `OrganizationRepository`, `AgentRepository`, …). Thin, typed CRUD + targeted queries; soft-delete-aware via the `BaseRepository`.
+- **`app/services/`** — orchestrate repos + business policy. Example: `IdentityService.upsert_from_cognito()` find-or-creates the user AND auto-creates a personal organization with the user as `owner` member on first login.
 
 ---
 

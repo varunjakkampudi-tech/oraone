@@ -11,7 +11,7 @@ from sqlalchemy import DateTime, Enum, ForeignKey, Index, String, UniqueConstrai
 from sqlalchemy.dialects.postgresql import JSONB, UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
+from app.db.base import Base, SoftDeleteMixin, TimestampMixin, UUIDPrimaryKeyMixin
 
 if TYPE_CHECKING:
     from app.db.models.organization import Organization
@@ -35,17 +35,17 @@ class IntegrationStatus(str, enum.Enum):
     error = "error"
 
 
-class Integration(UUIDPrimaryKeyMixin, TimestampMixin, Base):
+class Integration(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
     __tablename__ = "integrations"
     __table_args__ = (
-        # one provider connection per org (e.g. one Twilio per org). Add more
-        # nuance later if needed via a `name` qualifier.
-        UniqueConstraint("org_id", "provider", name="uq_integrations_org_provider"),
-        Index("ix_integrations_org_id", "org_id"),
+        UniqueConstraint(
+            "organization_id", "provider", name="uq_integrations_org_provider"
+        ),
+        Index("ix_integrations_organization_id", "organization_id"),
         Index("ix_integrations_status", "status"),
     )
 
-    org_id: Mapped[uuid.UUID] = mapped_column(
+    organization_id: Mapped[uuid.UUID] = mapped_column(
         PG_UUID(as_uuid=True),
         ForeignKey("organizations.id", ondelete="CASCADE"),
         nullable=False,
@@ -61,7 +61,7 @@ class Integration(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         default=IntegrationStatus.disconnected,
     )
 
-    # Sensitive credentials (TODO: at-rest encryption layer before storing real keys)
+    # Sensitive credentials (TODO: at-rest encryption before storing real keys)
     credentials: Mapped[dict[str, Any]] = mapped_column(
         JSONB, nullable=False, default=dict, server_default="{}"
     )
@@ -73,7 +73,6 @@ class Integration(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     last_synced_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     last_error: Mapped[Optional[str]] = mapped_column(String(1000))
 
-    # Relationship
     organization: Mapped["Organization"] = relationship(back_populates="integrations")
 
     def __repr__(self) -> str:  # pragma: no cover

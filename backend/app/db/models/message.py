@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from app.db.models.conversation import Conversation
 
 
-class MessageRole(str, enum.Enum):
+class MessageSender(str, enum.Enum):
     agent = "agent"
     customer = "customer"
     system = "system"
@@ -35,19 +35,21 @@ class Message(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         nullable=False,
     )
 
-    role: Mapped[MessageRole] = mapped_column(
-        Enum(MessageRole, name="message_role"), nullable=False
+    sender: Mapped[MessageSender] = mapped_column(
+        Enum(MessageSender, name="message_sender"), nullable=False
     )
-    content: Mapped[str] = mapped_column(Text, nullable=False)
+    message: Mapped[str] = mapped_column(Text, nullable=False)
     audio_url: Mapped[Optional[str]] = mapped_column(String(500))
 
-    # Token / cost / tool-call info, latency, etc.
-    extra: Mapped[dict[str, Any]] = mapped_column(
-        JSONB, nullable=False, default=dict, server_default="{}"
+    metadata_: Mapped[dict[str, Any]] = mapped_column(
+        "metadata",  # column name in DB
+        JSONB,
+        nullable=False,
+        default=dict,
+        server_default="{}",
     )
 
-    # Relationship
     conversation: Mapped["Conversation"] = relationship(back_populates="messages")
 
     def __repr__(self) -> str:  # pragma: no cover
-        return f"<Message {self.role}: {self.content[:30]!r}>"
+        return f"<Message {self.sender}: {self.message[:30]!r}>"

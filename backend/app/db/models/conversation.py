@@ -1,4 +1,4 @@
-"""Conversation — one customer-agent thread across any channel."""
+"""Conversation — one customer↔agent thread across any channel."""
 from __future__ import annotations
 
 import enum
@@ -10,12 +10,17 @@ from sqlalchemy import DateTime, Enum, ForeignKey, Index, String
 from sqlalchemy.dialects.postgresql import JSONB, UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
-from app.db.models.agent import AgentChannel
+from app.db.base import Base, SoftDeleteMixin, TimestampMixin, UUIDPrimaryKeyMixin
 
 if TYPE_CHECKING:
     from app.db.models.agent import Agent
     from app.db.models.message import Message
+
+
+class ConversationChannel(str, enum.Enum):
+    voice = "voice"
+    chat = "chat"
+    whatsapp = "whatsapp"
 
 
 class ConversationStatus(str, enum.Enum):
@@ -26,16 +31,16 @@ class ConversationStatus(str, enum.Enum):
     lost = "lost"
 
 
-class Conversation(UUIDPrimaryKeyMixin, TimestampMixin, Base):
+class Conversation(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
     __tablename__ = "conversations"
     __table_args__ = (
-        Index("ix_conversations_org_id", "org_id"),
+        Index("ix_conversations_organization_id", "organization_id"),
         Index("ix_conversations_agent_id", "agent_id"),
         Index("ix_conversations_status", "status"),
         Index("ix_conversations_started_at", "started_at"),
     )
 
-    org_id: Mapped[uuid.UUID] = mapped_column(
+    organization_id: Mapped[uuid.UUID] = mapped_column(
         PG_UUID(as_uuid=True),
         ForeignKey("organizations.id", ondelete="CASCADE"),
         nullable=False,
@@ -46,8 +51,8 @@ class Conversation(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         nullable=False,
     )
 
-    channel: Mapped[AgentChannel] = mapped_column(
-        Enum(AgentChannel, name="agent_channel"), nullable=False
+    channel: Mapped[ConversationChannel] = mapped_column(
+        Enum(ConversationChannel, name="conversation_channel"), nullable=False
     )
     status: Mapped[ConversationStatus] = mapped_column(
         Enum(ConversationStatus, name="conversation_status"),
@@ -55,7 +60,7 @@ class Conversation(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         default=ConversationStatus.active,
     )
 
-    # Customer identity (denormalised — we may add a `contacts` table later)
+    # Customer identity (denormalised — a `contacts` table can come later)
     customer_name: Mapped[Optional[str]] = mapped_column(String(160))
     customer_email: Mapped[Optional[str]] = mapped_column(String(255))
     customer_phone: Mapped[Optional[str]] = mapped_column(String(40))

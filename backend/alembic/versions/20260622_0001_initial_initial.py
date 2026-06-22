@@ -19,62 +19,22 @@ down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
-
-# Enum types (created once, reused across tables that need them).
-# `create_type=False` prevents SQLAlchemy from re-creating the enum during CREATE TABLE.
-user_role_enum = postgresql.ENUM(
-    "owner", "admin", "member", name="user_role", create_type=False
-)
-user_status_enum = postgresql.ENUM(
-    "active", "suspended", "deleted", name="user_status", create_type=False
-)
-org_plan_enum = postgresql.ENUM(
-    "free", "starter", "growth", "enterprise", name="org_plan", create_type=False
-)
-member_role_enum = postgresql.ENUM(
-    "owner", "admin", "member", "viewer", name="member_role", create_type=False
-)
-member_status_enum = postgresql.ENUM(
-    "active", "invited", "removed", name="member_status", create_type=False
-)
-agent_channel_enum = postgresql.ENUM(
-    "voice", "chat", "whatsapp", name="agent_channel", create_type=False
-)
-agent_status_enum = postgresql.ENUM(
-    "draft", "active", "paused", "archived", name="agent_status", create_type=False
-)
-conversation_status_enum = postgresql.ENUM(
-    "active", "completed", "qualified", "failed", "lost",
-    name="conversation_status", create_type=False
-)
-message_role_enum = postgresql.ENUM(
-    "agent", "customer", "system", "tool",
-    name="message_role", create_type=False
-)
-integration_type_enum = postgresql.ENUM(
-    "voice", "sms", "email", "whatsapp", "crm", "calendar",
-    "storage", "analytics", "other",
-    name="integration_type", create_type=False
-)
-integration_status_enum = postgresql.ENUM(
-    "disconnected", "connected", "error",
-    name="integration_status", create_type=False
-)
-
-
-# Authoritative list of all enum (name, values) pairs so we can CREATE/DROP
-# them exactly once in upgrade() / downgrade().
+# All ENUMs we create in this migration. `create_type=False` on the type
+# objects below stops SQLAlchemy from re-emitting CREATE TYPE during the
+# CREATE TABLE statements that reference them; we issue the CREATE TYPE
+# explicitly via op.execute() so it works in both online and --sql modes.
 _ALL_ENUMS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("user_role", ("owner", "admin", "member")),
     ("user_status", ("active", "suspended", "deleted")),
     ("org_plan", ("free", "starter", "growth", "enterprise")),
     ("member_role", ("owner", "admin", "member", "viewer")),
     ("member_status", ("active", "invited", "removed")),
-    ("agent_channel", ("voice", "chat", "whatsapp")),
+    ("agent_type", ("voice", "chat", "whatsapp", "sales", "support")),
     ("agent_status", ("draft", "active", "paused", "archived")),
+    ("conversation_channel", ("voice", "chat", "whatsapp")),
     ("conversation_status",
      ("active", "completed", "qualified", "failed", "lost")),
-    ("message_role", ("agent", "customer", "system", "tool")),
+    ("message_sender", ("agent", "customer", "system", "tool")),
     ("integration_type",
      ("voice", "sms", "email", "whatsapp", "crm", "calendar",
       "storage", "analytics", "other")),
@@ -82,9 +42,14 @@ _ALL_ENUMS: tuple[tuple[str, tuple[str, ...]], ...] = (
 )
 
 
+def _enum(name: str) -> postgresql.ENUM:
+    """Return a (no-create) ENUM type reference for use in column definitions."""
+    values = dict(_ALL_ENUMS)[name]
+    return postgresql.ENUM(*values, name=name, create_type=False)
+
+
 def upgrade() -> None:
-    # Create all enums up front using raw SQL so it works in both online and
-    # `--sql` (offline) modes. Each ENUM is created exactly once.
+    # 1) Create all enums up front (works in --sql mode too).
     for name, values in _ALL_ENUMS:
         vals = ", ".join(f"'{v}'" for v in values)
         op.execute(f"CREATE TYPE {name} AS ENUM ({vals})")
@@ -95,19 +60,14 @@ def upgrade() -> None:
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column("cognito_sub", sa.String(64), nullable=False),
         sa.Column("email", sa.String(255), nullable=False),
-        sa.Column("name", sa.String(160)),
+        sa.Column("full_name", sa.String(160)),
         sa.Column("avatar_url", sa.String(500)),
-        sa.Column(
-            "role", user_role_enum,
-            nullable=False, server_default="owner",
-        ),
-        sa.Column(
-            "status", user_status_enum,
-            nullable=False, server_default="active",
-        ),
+        sa.Column("role", _enum("user_role"), nullable=False, server_default="owner"),
+        sa.Column("status", _enum("user_status"), nullable=False, server_default="active"),
         sa.Column("last_login_at", sa.DateTime(timezone=True)),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
+        sa.Column("deleted_at", sa.DateTime(timezone=True)),
         sa.UniqueConstraint("cognito_sub", name="uq_users_cognito_sub"),
         sa.UniqueConstraint("email", name="uq_users_email"),
     )
@@ -119,9 +79,9 @@ def upgrade() -> None:
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column("name", sa.String(160), nullable=False),
         sa.Column("slug", sa.String(80), nullable=False),
-        sa.Column("plan", org_plan_enum, nullable=False, server_default="free"),
+        sa.Column("plan", _enum("org_plan"), nullable=False, server_default="free"),
         sa.Column(
-            "owner_id", postgresql.UUID(as_uuid=True),
+            "owner_user_id", postgresql.UUID(as_uuid=True),
             sa.ForeignKey("users.id", ondelete="RESTRICT"),
             nullable=False,
         ),
@@ -129,16 +89,17 @@ def upgrade() -> None:
         sa.Column("logo_url", sa.String(500)),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
+        sa.Column("deleted_at", sa.DateTime(timezone=True)),
         sa.UniqueConstraint("slug", name="uq_organizations_slug"),
     )
-    op.create_index("ix_organizations_owner_id", "organizations", ["owner_id"])
+    op.create_index("ix_organizations_owner_user_id", "organizations", ["owner_user_id"])
 
     # -------- organization_members --------
     op.create_table(
         "organization_members",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column(
-            "org_id", postgresql.UUID(as_uuid=True),
+            "organization_id", postgresql.UUID(as_uuid=True),
             sa.ForeignKey("organizations.id", ondelete="CASCADE"),
             nullable=False,
         ),
@@ -147,42 +108,46 @@ def upgrade() -> None:
             sa.ForeignKey("users.id", ondelete="CASCADE"),
             nullable=False,
         ),
-        sa.Column("role", member_role_enum, nullable=False, server_default="member"),
-        sa.Column("status", member_status_enum, nullable=False, server_default="active"),
+        sa.Column("role", _enum("member_role"), nullable=False, server_default="member"),
+        sa.Column("status", _enum("member_status"), nullable=False, server_default="active"),
         sa.Column(
-            "invited_by_id", postgresql.UUID(as_uuid=True),
+            "invited_by_user_id", postgresql.UUID(as_uuid=True),
             sa.ForeignKey("users.id", ondelete="SET NULL"),
         ),
         sa.Column("joined_at", sa.DateTime(timezone=True)),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
-        sa.UniqueConstraint("org_id", "user_id", name="uq_org_members_org_user"),
+        sa.Column("deleted_at", sa.DateTime(timezone=True)),
+        sa.UniqueConstraint("organization_id", "user_id", name="uq_org_members_org_user"),
     )
     op.create_index("ix_org_members_user_id", "organization_members", ["user_id"])
-    op.create_index("ix_org_members_org_id", "organization_members", ["org_id"])
+    op.create_index("ix_org_members_organization_id", "organization_members", ["organization_id"])
 
     # -------- agents --------
     op.create_table(
         "agents",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column(
-            "org_id", postgresql.UUID(as_uuid=True),
+            "organization_id", postgresql.UUID(as_uuid=True),
             sa.ForeignKey("organizations.id", ondelete="CASCADE"),
             nullable=False,
         ),
         sa.Column("name", sa.String(160), nullable=False),
         sa.Column("description", sa.Text),
-        sa.Column("channel", agent_channel_enum, nullable=False),
-        sa.Column("status", agent_status_enum, nullable=False, server_default="draft"),
+        sa.Column("type", _enum("agent_type"), nullable=False),
+        sa.Column("status", _enum("agent_status"), nullable=False, server_default="draft"),
+        sa.Column("model", sa.String(80), nullable=False, server_default="gpt-4o-mini"),
+        sa.Column("system_prompt", sa.Text),
         sa.Column("avatar_url", sa.String(500)),
         sa.Column(
-            "created_by_id", postgresql.UUID(as_uuid=True),
+            "created_by_user_id", postgresql.UUID(as_uuid=True),
             sa.ForeignKey("users.id", ondelete="SET NULL"),
         ),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
+        sa.Column("deleted_at", sa.DateTime(timezone=True)),
     )
-    op.create_index("ix_agents_org_id", "agents", ["org_id"])
+    op.create_index("ix_agents_organization_id", "agents", ["organization_id"])
     op.create_index("ix_agents_status", "agents", ["status"])
 
     # -------- agent_configs --------
@@ -194,10 +159,8 @@ def upgrade() -> None:
             sa.ForeignKey("agents.id", ondelete="CASCADE"),
             nullable=False,
         ),
-        sa.Column("model", sa.String(80), nullable=False, server_default="gpt-4o-mini"),
         sa.Column("voice", sa.String(80)),
         sa.Column("language", sa.String(16), nullable=False, server_default="en-US"),
-        sa.Column("system_prompt", sa.Text),
         sa.Column("greeting", sa.Text),
         sa.Column("temperature", sa.Numeric(3, 2), nullable=False, server_default=sa.text("0.70")),
         sa.Column("max_tokens", sa.Integer, nullable=False, server_default=sa.text("1024")),
@@ -212,7 +175,7 @@ def upgrade() -> None:
         "conversations",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column(
-            "org_id", postgresql.UUID(as_uuid=True),
+            "organization_id", postgresql.UUID(as_uuid=True),
             sa.ForeignKey("organizations.id", ondelete="CASCADE"),
             nullable=False,
         ),
@@ -221,8 +184,8 @@ def upgrade() -> None:
             sa.ForeignKey("agents.id", ondelete="CASCADE"),
             nullable=False,
         ),
-        sa.Column("channel", agent_channel_enum, nullable=False),
-        sa.Column("status", conversation_status_enum, nullable=False, server_default="active"),
+        sa.Column("channel", _enum("conversation_channel"), nullable=False),
+        sa.Column("status", _enum("conversation_status"), nullable=False, server_default="active"),
         sa.Column("customer_name", sa.String(160)),
         sa.Column("customer_email", sa.String(255)),
         sa.Column("customer_phone", sa.String(40)),
@@ -235,8 +198,9 @@ def upgrade() -> None:
         sa.Column("extra", postgresql.JSONB, nullable=False, server_default=sa.text("'{}'::jsonb")),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
+        sa.Column("deleted_at", sa.DateTime(timezone=True)),
     )
-    op.create_index("ix_conversations_org_id", "conversations", ["org_id"])
+    op.create_index("ix_conversations_organization_id", "conversations", ["organization_id"])
     op.create_index("ix_conversations_agent_id", "conversations", ["agent_id"])
     op.create_index("ix_conversations_status", "conversations", ["status"])
     op.create_index("ix_conversations_started_at", "conversations", ["started_at"])
@@ -250,10 +214,10 @@ def upgrade() -> None:
             sa.ForeignKey("conversations.id", ondelete="CASCADE"),
             nullable=False,
         ),
-        sa.Column("role", message_role_enum, nullable=False),
-        sa.Column("content", sa.Text, nullable=False),
+        sa.Column("sender", _enum("message_sender"), nullable=False),
+        sa.Column("message", sa.Text, nullable=False),
         sa.Column("audio_url", sa.String(500)),
-        sa.Column("extra", postgresql.JSONB, nullable=False, server_default=sa.text("'{}'::jsonb")),
+        sa.Column("metadata", postgresql.JSONB, nullable=False, server_default=sa.text("'{}'::jsonb")),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
     )
@@ -268,25 +232,23 @@ def upgrade() -> None:
         "integrations",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column(
-            "org_id", postgresql.UUID(as_uuid=True),
+            "organization_id", postgresql.UUID(as_uuid=True),
             sa.ForeignKey("organizations.id", ondelete="CASCADE"),
             nullable=False,
         ),
         sa.Column("provider", sa.String(60), nullable=False),
-        sa.Column("type", integration_type_enum, nullable=False),
-        sa.Column(
-            "status", integration_status_enum,
-            nullable=False, server_default="disconnected",
-        ),
+        sa.Column("type", _enum("integration_type"), nullable=False),
+        sa.Column("status", _enum("integration_status"), nullable=False, server_default="disconnected"),
         sa.Column("credentials", postgresql.JSONB, nullable=False, server_default=sa.text("'{}'::jsonb")),
         sa.Column("settings", postgresql.JSONB, nullable=False, server_default=sa.text("'{}'::jsonb")),
         sa.Column("last_synced_at", sa.DateTime(timezone=True)),
         sa.Column("last_error", sa.String(1000)),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
-        sa.UniqueConstraint("org_id", "provider", name="uq_integrations_org_provider"),
+        sa.Column("deleted_at", sa.DateTime(timezone=True)),
+        sa.UniqueConstraint("organization_id", "provider", name="uq_integrations_org_provider"),
     )
-    op.create_index("ix_integrations_org_id", "integrations", ["org_id"])
+    op.create_index("ix_integrations_organization_id", "integrations", ["organization_id"])
     op.create_index("ix_integrations_status", "integrations", ["status"])
 
 
