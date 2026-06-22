@@ -12,6 +12,7 @@ import {
   Link2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 const SAMPLE_DOCS = [
   { id: "d1", title: "Product Catalog 2024.pdf",  type: "PDF",  size: "2.4 MB", date: "May 26, 2024", status: "Indexed" },
@@ -202,7 +203,22 @@ export default function KnowledgeBase() {
             );
           })}
           {!slice.length && (
-            <li className="py-10 text-center text-sm text-[#64748B]">No documents found.</li>
+            <li className="py-4">
+              <EmptyState
+                testId="kb-empty-state"
+                dashed={false}
+                className="border-0 shadow-none"
+                size="sm"
+                title={q ? "No documents match" : "Your knowledge base is empty"}
+                description={
+                  q
+                    ? `Nothing found for "${q}". Try a different keyword or clear the search.`
+                    : "Upload PDFs, DOCX, FAQs or a URL — your AI agents will index them and answer customers using this content."
+                }
+                actionLabel={q ? "Clear search" : "Upload Documents"}
+                onAction={q ? () => setQ("") : () => fileInput.current?.click()}
+              />
+            </li>
           )}
         </ul>
 

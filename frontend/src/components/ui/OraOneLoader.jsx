@@ -25,7 +25,7 @@ const C = {
    AuraOrb — the signature visual: a breathing gradient orb with
    3 expanding ripple rings + a thin orbiting arc.
    ────────────────────────────────────────────────────────────────── */
-function AuraOrb({ size = 120, dark = false }) {
+export function AuraOrb({ size = 120, dark = false }) {
   const id = React.useId();
   const ripples = [0, 0.6, 1.2]; // stagger seconds
   return (

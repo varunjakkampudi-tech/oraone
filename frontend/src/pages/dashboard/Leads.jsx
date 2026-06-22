@@ -17,6 +17,7 @@ import {
 import { LEADS } from "@/lib/mockData";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 /* ---------- constants ---------- */
 
@@ -164,7 +165,17 @@ export default function Leads() {
         ))}
       </div>
 
-      {/* Table */}
+      {/* Table (or empty state if no leads) */}
+      {leads.length === 0 ? (
+        <EmptyState
+          testId="leads-empty-state"
+          size="lg"
+          title="No leads yet"
+          description="Once your AI agents start capturing conversations, qualified leads will appear here automatically."
+          actionLabel="Import Leads"
+          onAction={handleImport}
+        />
+      ) : (
       <div className="rounded-2xl bg-white border border-[#E2E8F0] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-[13px]">
@@ -262,6 +273,7 @@ export default function Leads() {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

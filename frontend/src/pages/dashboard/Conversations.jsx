@@ -16,6 +16,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { LIVE_TRANSCRIPT } from "@/lib/mockData";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 /* ---------- Data ---------- */
 
@@ -128,6 +129,30 @@ export default function Conversations() {
 
           {/* List */}
           <ul className="flex-1 overflow-y-auto max-h-[640px] scrollbar-thin">
+            {filtered.length === 0 && (
+              <li className="p-5">
+                <EmptyState
+                  testId="conv-list-empty"
+                  size="sm"
+                  dashed={false}
+                  title="No conversations match"
+                  description={
+                    q
+                      ? `We couldn't find anything for "${q}". Try a different name, phone or channel.`
+                      : "No conversations in this channel yet. Once your AI agents talk to leads, they'll show up here."
+                  }
+                  actionLabel={q || filter !== "all" ? "Clear filters" : undefined}
+                  onAction={
+                    q || filter !== "all"
+                      ? () => {
+                          setQ("");
+                          setFilter("all");
+                        }
+                      : undefined
+                  }
+                />
+              </li>
+            )}
             {filtered.map((c) => {
               const meta = CHANNEL[c.channel];
               const Icon = meta.icon;
@@ -242,7 +267,19 @@ function Pager({ page, total, onChange }) {
 
 function ConversationPanel({ conv }) {
   const [note, setNote] = useState("");
-  if (!conv) return null;
+  if (!conv) {
+    return (
+      <div className="rounded-2xl bg-white border border-[#E2E8F0] grid place-items-center min-h-[520px] p-6">
+        <EmptyState
+          testId="conv-panel-empty"
+          dashed={false}
+          className="border-0 bg-transparent shadow-none"
+          title="Pick a conversation"
+          description="Select any conversation on the left to view its live transcript, AI notes and recording."
+        />
+      </div>
+    );
+  }
   const meta = CHANNEL[conv.channel];
   const Icon = meta.icon;
 
