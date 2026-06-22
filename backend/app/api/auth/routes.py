@@ -9,9 +9,15 @@ POST /api/auth/reset-password
 POST /api/auth/logout
 GET  /api/auth/me
 """
+import logging
+import re
+
+from botocore.exceptions import BotoCoreError, ClientError
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.cognito import cognito_client
+from app.database.dynamodb import users_table
 from app.database.session import get_db
 from app.middleware.jwt_auth import get_current_access_token, get_current_user_claims
 from app.schemas.auth import (
@@ -35,6 +41,72 @@ from app.services import IdentityService, auth_service, user_service
 
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
+
+log = logging.getLogger("app.auth.identity")
+
+_EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+def _looks_like_email(value: str | None) -> bool:
+    return bool(value and _EMAIL_RE.match(value.strip()))
+
+
+def _resolve_email_and_name(
+    claims: dict, access_token: str
+) -> tuple[str | None, str | None, str]:
+    """Resolve a real email + display name for the caller.
+
+    Returns ``(email, full_name, source)``. Tries, in order:
+      1. ``claims['email']`` (only id tokens carry it; access tokens don't)
+      2. AWS Cognito ``GetUser`` API with the raw access token
+      3. The existing DynamoDB user profile (keyed by sub == userId)
+
+    Never falls back to ``sub`` / ``username`` (both are the Cognito UUID).
+    """
+    sub = claims.get("sub")
+
+    # 1) Claims
+    claim_email = (claims.get("email") or "").strip()
+    if _looks_like_email(claim_email):
+        full_name = claims.get("name") or claims.get("given_name") or None
+        return claim_email, full_name, "claims"
+
+    # 2) Cognito GetUser
+    try:
+        resp = cognito_client.get_user(AccessToken=access_token)
+        attrs = {a["Name"]: a["Value"] for a in resp.get("UserAttributes", [])}
+        cognito_email = (attrs.get("email") or "").strip()
+        if _looks_like_email(cognito_email):
+            name = (
+                attrs.get("name")
+                or " ".join(p for p in [attrs.get("given_name"), attrs.get("family_name")] if p).strip()
+                or None
+            )
+            return cognito_email, name, "cognito_get_user"
+        log.warning(
+            "identity_email_lookup sub=%s cognito_get_user returned no email (attrs=%s)",
+            sub, list(attrs.keys()),
+        )
+    except (ClientError, BotoCoreError) as e:
+        log.warning(
+            "identity_email_lookup sub=%s cognito_get_user_failed: %s: %s",
+            sub, type(e).__name__, e,
+        )
+
+    # 3) DynamoDB profile
+    if sub:
+        try:
+            item = users_table.get_item(Key={"userId": sub}).get("Item") or {}
+            ddb_email = (item.get("email") or "").strip()
+            if _looks_like_email(ddb_email):
+                return ddb_email, item.get("name") or None, "dynamodb"
+        except (ClientError, BotoCoreError) as e:
+            log.warning(
+                "identity_email_lookup sub=%s dynamodb_failed: %s: %s",
+                sub, type(e).__name__, e,
+            )
+
+    return None, None, "unresolved"
 
 
 @router.post("/signup", response_model=MessageResponse)
@@ -117,6 +189,7 @@ def me(claims: dict = Depends(get_current_user_claims)):
 @router.get("/identity", response_model=IdentityResponse)
 async def identity(
     claims: dict = Depends(get_current_user_claims),
+    access_token: str = Depends(get_current_access_token),
     session: AsyncSession = Depends(get_db),
 ) -> IdentityResponse:
     """Hydrate the caller's Postgres identity from their Cognito access token.
@@ -132,20 +205,20 @@ async def identity(
             detail="Invalid token claims.",
         )
 
-    email = (claims.get("email") or "").strip()
-    if not email:
-        # The access token doesn't carry email; fall back to the username claim.
-        email = claims.get("username") or claims.get("cognito:username") or ""
-    full_name = (
-        claims.get("name")
-        or claims.get("given_name")
-        or None
+    email, full_name, source = _resolve_email_and_name(claims, access_token)
+    log.info(
+        "identity_resolve sub=%s email=%s source=%s",
+        cognito_sub, email, source,
     )
 
     if not email:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Access token does not contain enough profile data to provision an identity.",
+            detail=(
+                "Could not resolve a valid email for this account from the Cognito "
+                "access token, Cognito GetUser, or the user profile store. "
+                "Verify the user has an 'email' attribute set in Cognito."
+            ),
         )
 
     svc = IdentityService(session)
