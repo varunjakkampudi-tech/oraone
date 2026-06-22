@@ -14,7 +14,7 @@ function buildAuthorizeUrl(mode = "login") {
     response_type: "code",
     client_id: CLIENT_ID,
     redirect_uri: REDIRECT_URI,
-    scope: "openid email phone",
+    scope: "openid email profile",
   });
 
   if (mode === "signup") {

@@ -5,7 +5,6 @@ import { Logo } from "./Logo";
 import { NAV } from "@/constants/testIds";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/lib/auth";
-import { loginWithHostedUI } from "@/lib/cognito";
 
 const links = [
   { to: "/products", label: "Products", id: NAV.productsMenu },
@@ -135,7 +134,7 @@ export default function Navbar() {
             <div className="flex items-center gap-2">
               <button
                 data-testid={NAV.loginBtn}
-                onClick={() => loginWithHostedUI("login")}
+                onClick={() => nav("/login")}
                 className="hidden sm:inline-flex items-center text-sm font-medium text-[#475569] hover:text-[#0F172A] px-3 py-2"
               >
                 Login
@@ -149,7 +148,7 @@ export default function Navbar() {
               </button>
               <button
                 data-testid={NAV.startFreeBtn}
-                onClick={() => loginWithHostedUI("signup")}
+                onClick={() => nav("/signup")}
                 className="inline-flex items-center text-sm font-medium text-white bg-[#2563EB] hover:bg-[#1D4ED8] px-4 py-2 rounded-xl transition-all shadow-[0_4px_14px_-2px_rgba(37,99,235,0.45)] hover:shadow-[0_6px_20px_-2px_rgba(37,99,235,0.55)] hover:-translate-y-0.5"
               >
                 Start Free
@@ -193,7 +192,7 @@ export default function Navbar() {
                 type="button"
                 onClick={() => {
                   setOpen(false);
-                  loginWithHostedUI("login");
+                  nav("/login");
                 }}
                 className="py-3 text-left text-[#0F172A] text-base font-medium"
               >
@@ -210,7 +209,7 @@ export default function Navbar() {
                 type="button"
                 onClick={() => {
                   setOpen(false);
-                  loginWithHostedUI("signup");
+                  nav("/signup");
                 }}
                 className="mt-2 inline-flex items-center justify-center px-4 py-3 rounded-xl text-sm font-semibold text-white bg-[#2563EB] shadow-[0_4px_14px_-2px_rgba(37,99,235,0.45)]"
               >
