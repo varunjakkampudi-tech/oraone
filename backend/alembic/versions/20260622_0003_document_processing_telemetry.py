@@ -16,7 +16,7 @@ import sqlalchemy as sa
 from alembic import op
 
 
-revision: str = "0003_document_processing_telemetry"
+revision: str = "0003_doc_processing_telemetry"
 down_revision: Union[str, None] = "0002_knowledge_base"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
