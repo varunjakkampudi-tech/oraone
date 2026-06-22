@@ -45,8 +45,7 @@ Pull the public repo https://github.com/varunjakkampudi-tech/oraone.git (AWS Cog
 - Routed all 4 callsites to in-app `/login` and `/signup` instead.
 - Fixed Hosted UI scope in `cognito.js`: `openid email phone` → `openid email profile` (matches app client `AllowedOAuthScopes`).
 
-### Session 4 — Loader redesign + EmptyState wiring (2026-06-22)
-- Full rewrite of `/app/frontend/src/components/ui/OraOneLoader.jsx`:
+### Session 4 — Loader redesign + EmptyState wiring (2026-06-22) of `/app/frontend/src/components/ui/OraOneLoader.jsx`:
   - New **AuraOrb** signature visual: breathing gradient sphere + orbiting arc + 3 expanding ripple rings.
   - New **ConversationBars**: EQ-style waveform bars dancing on each side.
   - New **wordmark sweep** + tri-color progress bar.
@@ -60,20 +59,37 @@ Pull the public repo https://github.com/varunjakkampudi-tech/oraone.git (AWS Cog
 - Fixed `LoaderShowcase.jsx` page-transition tile (was rendering a black square due to missing logo asset) → now uses `AuraOrb`.
 - Testing subagent (iteration_2): 11/11 acceptance criteria pass.
 
+### Session 5 — Remove Hosted UI buttons + Postgres foundation (2026-06-22)
+- Removed `Continue with Cognito Hosted UI` button from `/login` and `Sign up with Cognito Hosted UI` from `/signup` (per user request); pruned unused `loginWithHostedUI` imports.
+- **Postgres data layer** scaffolded against AWS RDS `oraone-postgres.c38080q04ynb.ap-south-2.rds.amazonaws.com:5432/oraone`:
+  - Added `asyncpg`, `psycopg2-binary`, `SQLAlchemy 2.x`, `alembic` to `requirements.txt`.
+  - `backend/app/db/` package: async engine + sessionmaker (`session.py`), declarative `Base` + `UUIDPrimaryKeyMixin` + `TimestampMixin` (`base.py`), and 8 ORM models under `app/db/models/`:
+    - `users` (1:1 with Cognito via `cognito_sub`), `organizations`, `organization_members`, `agents`, `agent_configs`, `conversations`, `messages`, `integrations`.
+  - 11 Postgres ENUMs centralised in the initial migration `alembic/versions/20260622_0001_initial_initial.py`.
+  - Alembic configured (`alembic.ini`, `alembic/env.py`, `script.py.mako`); initial migration runs cleanly in `--sql` mode (verified: 11 CREATE TYPE + 9 CREATE TABLE statements, no duplicates).
+  - `GET /api/db/health` endpoint added — returns `{ok, version, tables[]}` or a `503 db_unreachable: ...` with the underlying error.
+  - Backend boots even when RDS unreachable (engine is initialised lazily; private VPC pod can't reach `10.0.130.156`).
+- `LOCAL_SETUP.md` referenced; new `DATABASE_SETUP.md` written with full migration + troubleshooting guide.
+
 ## Prioritized Backlog
+- **P0**: Run `alembic upgrade head` against RDS from a machine with VPC access (laptop on VPN, EC2 in same VPC, or temporarily flip RDS to publicly accessible + whitelist IP). After that, `/api/db/health` will return `200 ok` with all 8 tables listed.
+- **P1**: Switch the Cognito post-login user-upsert from DynamoDB → Postgres `users`. Auto-create a personal `organization` + `organization_members` row on first login.
+- **P1**: Migrate `MongoDB.agents` and `MongoDB.leads` into Postgres `agents` + `conversations` and retire the Motor client.
 - **P1**: Wire dashboard widgets to live data (currently use mockData for sparkles/leaderboard).
 - **P1**: Complete onboarding step pages → `/api/onboarding/complete` round-trip.
 - **P2**: Pin `CORS_ORIGINS` to allowed hosts (not `*`); re-enable credentials.
-- **P2**: Fix Recharts `width(-1) height(-1)` warnings on `/app/overview` (ResponsiveContainer parents need explicit dimensions).
-- **P2**: Split `Conversations.jsx` (now ~450 lines) — extract `ConversationPanel` into its own file.
-- **P3**: Document EmptyState testId convention `${testId}-action` / `${testId}-secondary` in `constants/testIds.js`.
-- **P3**: Refactor `server.py` (290+ lines) into `app/api/*` modules.
-- **P3**: Update stale test assertion `test_cognito_auth.py::TestResend::test_resend_nonexistent_email_returns_404` (current anti-enumeration 200 response is correct).
+- **P2**: Add at-rest encryption layer for `integrations.credentials` JSONB.
+- **P2**: Fix Recharts `width(-1) height(-1)` warnings on `/app/overview`.
+- **P2**: Split `Conversations.jsx` (~450 lines).
+- **P3**: Document EmptyState testId convention in `constants/testIds.js`.
+- **P3**: Refactor `server.py` into `app/api/*` modules.
+- **P3**: Add Row-Level Security policies enforcing `org_id = current_setting('app.org_id')`.
 
 ## Next Tasks
-- Confirm with user whether to continue with dashboard data wiring, onboarding flow, Recharts warnings cleanup, or another area.
+- Apply the initial migration to RDS from a VPC-capable host.
+- Confirm with user whether to proceed with Phase 2 (Cognito → Postgres user upsert + Mongo → Postgres data migration) or dashboard/onboarding wiring next.
 
 ## Notes
 - AWS keys live ONLY in `/app/backend/.env` (never committed).
-- Cognito Hosted UI works for `localhost:3000` and the current preview URL; if the preview URL changes, re-run the boto3 update to add the new callback / logout URLs.
-- `/__loaders` is an internal developer QA route showcasing every loader variant — not linked from public nav.
+- Cognito Hosted UI works for `localhost:3000` and the current preview URL.
+- `/__loaders` is an internal developer QA route — not linked from public nav.
