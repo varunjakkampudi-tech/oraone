@@ -40,3 +40,4 @@ python-jose[cryptography]>=3.3,<4.0
 
 # ---- Dev / test (safe to leave installed in prod, very small footprint) ----
 pytest>=7.4,<9.0
+pytest-asyncio>=0.23,<2.0

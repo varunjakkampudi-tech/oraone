@@ -244,6 +244,9 @@ from app.api.health import router as health_router  # noqa: E402
 app.include_router(health_router)
 # AWS Cognito + DynamoDB authentication
 app.include_router(cognito_auth_router)
+# Phase 5 — tenant-scoped business API (Postgres-backed)
+from app.api.v2 import router as v2_router  # noqa: E402
+app.include_router(v2_router)
 
 cors_origins_env = os.environ.get('CORS_ORIGINS', '*')
 allow_origins = ["*"] if cors_origins_env.strip() == "*" else [o.strip() for o in cors_origins_env.split(",") if o.strip()]

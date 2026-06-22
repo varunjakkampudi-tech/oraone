@@ -8,6 +8,7 @@ from sqlalchemy import select
 
 from app.database.models.integration import Integration
 from app.database.repositories.base import BaseRepository
+from app.database.repositories.org_scoped import OrgScopedRepository
 
 
 class IntegrationRepository(BaseRepository[Integration]):
@@ -29,4 +30,18 @@ class IntegrationRepository(BaseRepository[Integration]):
                 Integration.organization_id == organization_id,
                 Integration.provider == provider,
             )
+        )
+
+
+class OrgScopedIntegrationRepository(OrgScopedRepository[Integration]):
+    """Tenant-aware Integration repo."""
+
+    model = Integration
+
+    async def get_by_provider(self, provider: str) -> Optional[Integration]:
+        return await self.session.scalar(
+            select(Integration)
+            .where(Integration.organization_id == self.organization_id)
+            .where(Integration.provider == provider)
+            .where(Integration.deleted_at.is_(None))
         )
