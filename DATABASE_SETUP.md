@@ -50,6 +50,10 @@ cd backend
 source .venv/bin/activate
 pip install -r requirements.txt
 
+# One-time: create the `oraone` database inside the RDS instance.
+# (RDS gives you a server, not a pre-named DB. Safe to re-run; idempotent.)
+python scripts/bootstrap_db.py
+
 # Sanity check — generates SQL without connecting:
 alembic upgrade head --sql > /tmp/oraone_initial.sql
 less /tmp/oraone_initial.sql
@@ -146,6 +150,7 @@ alembic current
 | Symptom | Fix |
 |---|---|
 | `connection timed out` to RDS | You're not on the VPC. See §1 reachability options. |
+| `FATAL: database "oraone" does not exist` | The RDS server is reachable but the named database hasn't been created. Run `python scripts/bootstrap_db.py` once, then `alembic upgrade head`. |
 | `relation "users" already exists` on first migration | RDS already had a hand-rolled schema. Either drop the conflicting tables or stamp the current state with `alembic stamp 0001_initial` first. |
 | `psycopg2.OperationalError: SSL connection has been closed` | Add `?sslmode=require` to `ALEMBIC_DATABASE_URL`. |
 | Backend boots but `/api/db/health` is 503 | Expected if RDS unreachable — services that don't need the DB still work. Whitelist the egress IP or move into the VPC. |
