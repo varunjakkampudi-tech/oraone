@@ -55,6 +55,8 @@ def init_engine(echo: bool = False) -> AsyncEngine:
         pool_size=5,
         max_overflow=10,
         pool_recycle=1800,
+        # Fail fast (5 s) instead of waiting on a private-VPC IP for 60+ s.
+        connect_args={"timeout": 5},
     )
     AsyncSessionLocal = async_sessionmaker(
         engine,

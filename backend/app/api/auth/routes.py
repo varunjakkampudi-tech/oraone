@@ -10,13 +10,19 @@ POST /api/auth/logout
 GET  /api/auth/me
 """
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.database.session import get_db
 from app.middleware.jwt_auth import get_current_access_token, get_current_user_claims
 from app.schemas.auth import (
     CodeExchangeRequest,
     ConfirmForgotPasswordRequest,
     ConfirmSignUpRequest,
     ForgotPasswordRequest,
+    IdentityMembership,
+    IdentityOrganization,
+    IdentityResponse,
+    IdentityUser,
     LoginRequest,
     MessageResponse,
     RefreshTokenRequest,
@@ -25,7 +31,7 @@ from app.schemas.auth import (
     TokensResponse,
     UserProfile,
 )
-from app.services import auth_service, user_service
+from app.services import IdentityService, auth_service, user_service
 
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -102,3 +108,89 @@ def me(claims: dict = Depends(get_current_user_claims)):
             detail="User profile not found. Try logging in again.",
         )
     return profile
+
+
+# ──────────────────────────────────────────────────────────────────
+# Phase 3 — Postgres identity (find-or-create user + personal org)
+# ──────────────────────────────────────────────────────────────────
+
+@router.get("/identity", response_model=IdentityResponse)
+async def identity(
+    claims: dict = Depends(get_current_user_claims),
+    session: AsyncSession = Depends(get_db),
+) -> IdentityResponse:
+    """Hydrate the caller's Postgres identity from their Cognito access token.
+
+    First call for a user creates `users` + a personal `organizations` row +
+    an Owner `organization_members` row, all in one transaction. Subsequent
+    calls reuse those records (idempotent).
+    """
+    cognito_sub = claims.get("sub")
+    if not cognito_sub:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token claims.",
+        )
+
+    email = (claims.get("email") or "").strip()
+    if not email:
+        # The access token doesn't carry email; fall back to the username claim.
+        email = claims.get("username") or claims.get("cognito:username") or ""
+    full_name = (
+        claims.get("name")
+        or claims.get("given_name")
+        or None
+    )
+
+    if not email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Access token does not contain enough profile data to provision an identity.",
+        )
+
+    svc = IdentityService(session)
+    try:
+        result = await svc.upsert_from_cognito(
+            cognito_sub=cognito_sub,
+            email=email,
+            full_name=full_name,
+        )
+        await session.commit()
+    except Exception as exc:  # surface DB unreachable / migration-not-applied clearly
+        await session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"identity_unavailable: {type(exc).__name__}: {exc}",
+        )
+
+    user, org, member = result.user, result.organization, result.membership
+    return IdentityResponse(
+        user=IdentityUser(
+            id=str(user.id),
+            cognito_sub=user.cognito_sub,
+            email=user.email,
+            full_name=user.full_name,
+            avatar_url=user.avatar_url,
+            role=user.role.value,
+            status=user.status.value,
+            created_at=user.created_at,
+            last_login_at=user.last_login_at,
+        ),
+        organization=IdentityOrganization(
+            id=str(org.id),
+            name=org.name,
+            slug=org.slug,
+            plan=org.plan.value,
+            owner_user_id=str(org.owner_user_id),
+            created_at=org.created_at,
+        ),
+        membership=IdentityMembership(
+            id=str(member.id),
+            organization_id=str(member.organization_id),
+            user_id=str(member.user_id),
+            role=member.role.value,
+            status=member.status.value,
+            joined_at=member.joined_at,
+        ),
+        is_new_user=result.is_new_user,
+    )

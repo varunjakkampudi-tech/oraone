@@ -65,3 +65,46 @@ class UserProfile(BaseModel):
 
 class MessageResponse(BaseModel):
     message: str
+
+
+# ──────────────────────────────────────────────────────────────────
+# Phase 3 — Postgres identity payload (user + org + membership)
+# ──────────────────────────────────────────────────────────────────
+
+class IdentityUser(BaseModel):
+    id: str
+    cognito_sub: str
+    email: EmailStr
+    full_name: Optional[str] = None
+    avatar_url: Optional[str] = None
+    role: str
+    status: str
+    created_at: datetime
+    last_login_at: Optional[datetime] = None
+
+
+class IdentityOrganization(BaseModel):
+    id: str
+    name: str
+    slug: str
+    plan: str
+    owner_user_id: str
+    created_at: datetime
+
+
+class IdentityMembership(BaseModel):
+    id: str
+    organization_id: str
+    user_id: str
+    role: str
+    status: str
+    joined_at: Optional[datetime] = None
+
+
+class IdentityResponse(BaseModel):
+    """Returned by GET /api/auth/identity — created on first call, reused after."""
+
+    user: IdentityUser
+    organization: IdentityOrganization
+    membership: IdentityMembership
+    is_new_user: bool

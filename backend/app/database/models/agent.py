@@ -66,7 +66,6 @@ class Agent(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
     model: Mapped[str] = mapped_column(
         String(80), nullable=False, default="gpt-4o-mini"
     )
-    system_prompt: Mapped[Optional[str]] = mapped_column(Text)
 
     avatar_url: Mapped[Optional[str]] = mapped_column(String(500))
 

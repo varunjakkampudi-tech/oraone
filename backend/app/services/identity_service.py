@@ -7,18 +7,30 @@ a personal organisation with the user as owner.
 """
 from __future__ import annotations
 
-from typing import Optional
+from typing import NamedTuple, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.models.organization import Organization, OrgPlan
-from app.database.models.organization_member import MemberRole
+from app.database.models.organization_member import (
+    MemberRole,
+    OrganizationMember,
+)
 from app.database.models.user import User
 from app.database.repositories.organization_member_repository import (
     OrganizationMemberRepository,
 )
-from app.database.repositories.organization_repository import OrganizationRepository
+from app.database.repositories.organization_repository import (
+    OrganizationRepository,
+)
 from app.database.repositories.user_repository import UserRepository
+
+
+class IdentityResult(NamedTuple):
+    user: User
+    organization: Organization
+    membership: OrganizationMember
+    is_new_user: bool
 
 
 class IdentityService:
@@ -35,11 +47,17 @@ class IdentityService:
         email: str,
         full_name: Optional[str] = None,
         avatar_url: Optional[str] = None,
-    ) -> tuple[User, Organization]:
-        """Idempotent: returns (user, default_org). Creates both on first login.
+    ) -> IdentityResult:
+        """Idempotent identity hydration on Cognito login.
 
-        The caller is responsible for committing the surrounding transaction.
+        First call: creates the User + a personal Organization + an Owner
+        OrganizationMember row.
+        Subsequent calls: returns the existing triple, refreshing
+        `last_login_at` and any newly-supplied profile fields.
         """
+        existing = await self.users.get_by_cognito_sub(cognito_sub)
+        is_new_user = existing is None
+
         user = await self.users.upsert_from_cognito(
             cognito_sub=cognito_sub,
             email=email,
@@ -47,27 +65,30 @@ class IdentityService:
             avatar_url=avatar_url,
         )
 
-        # Find the first org the user owns; if none, create a personal one.
         orgs = await self.orgs.list_for_user(user.id)
         if orgs:
-            default_org = orgs[0]
+            organization = orgs[0]
         else:
-            base_slug = (
-                (full_name or email.split("@")[0]) + "-personal"
-            )
-            slug = await self.orgs.ensure_unique_slug(base_slug)
-            default_org = Organization(
-                name=full_name or email.split("@")[0] or "My Workspace",
+            display = (full_name or email.split("@")[0]).strip()
+            slug = await self.orgs.ensure_unique_slug(f"{display}-workspace")
+            organization = Organization(
+                name=f"{display} Workspace",
                 slug=slug,
                 plan=OrgPlan.free,
                 owner_user_id=user.id,
             )
-            self.session.add(default_org)
+            self.session.add(organization)
             await self.session.flush()
-            await self.members.ensure_membership(
-                organization_id=default_org.id,
-                user_id=user.id,
-                role=MemberRole.owner,
-            )
 
-        return user, default_org
+        membership = await self.members.ensure_membership(
+            organization_id=organization.id,
+            user_id=user.id,
+            role=MemberRole.owner if organization.owner_user_id == user.id else MemberRole.member,
+        )
+
+        return IdentityResult(
+            user=user,
+            organization=organization,
+            membership=membership,
+            is_new_user=is_new_user,
+        )

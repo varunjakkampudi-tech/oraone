@@ -61,12 +61,9 @@ class Integration(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
         default=IntegrationStatus.disconnected,
     )
 
-    # Sensitive credentials (TODO: at-rest encryption before storing real keys)
-    credentials: Mapped[dict[str, Any]] = mapped_column(
-        JSONB, nullable=False, default=dict, server_default="{}"
-    )
-    # Non-sensitive integration-specific config (webhook URLs, phone numbers, etc.)
-    settings: Mapped[dict[str, Any]] = mapped_column(
+    # Single JSONB blob for everything (credentials AND non-sensitive settings).
+    # TODO: add at-rest encryption layer before storing real keys.
+    config: Mapped[dict[str, Any]] = mapped_column(
         JSONB, nullable=False, default=dict, server_default="{}"
     )
 
