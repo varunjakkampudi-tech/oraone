@@ -150,15 +150,20 @@ def test_swagger_describes_filters_and_pagination():
 
 @pytest_asyncio.fixture
 async def db_session() -> AsyncIterator:
-    from app.database.session import AsyncSessionLocal, init_engine
+    """Engine-per-test so asyncpg's loop-bound pool doesn't leak across tests."""
+    from app.database import session as db_session_module
+    from app.database.session import dispose_engine, init_engine
 
-    if AsyncSessionLocal is None:
-        init_engine()
-    from app.database.session import AsyncSessionLocal as Maker  # re-import after init
+    await dispose_engine()
+    init_engine()
+    Maker = db_session_module.AsyncSessionLocal
+    assert Maker is not None
 
-    async with Maker() as s:  # type: ignore[misc]
+    async with Maker() as s:
         yield s
         await s.rollback()
+
+    await dispose_engine()
 
 
 async def _seed_org(session, *, email: str, slug_hint: str):
@@ -212,9 +217,11 @@ async def test_crud_full_lifecycle(db_session):
 
     app.dependency_overrides[get_current_organization] = _override
     try:
-        with TestClient(app) as client:
+        from httpx import ASGITransport, AsyncClient
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
             # CREATE
-            r = client.post(
+            r = await client.post(
                 "/api/agents",
                 json={
                     "name": "Sales bot",
@@ -237,11 +244,11 @@ async def test_crud_full_lifecycle(db_session):
             assert created["voice"] == "Aria"
 
             # READ ONE
-            r = client.get(f"/api/agents/{agent_id}")
+            r = await client.get(f"/api/agents/{agent_id}")
             assert r.status_code == 200 and r.json()["id"] == agent_id
 
             # UPDATE (partial)
-            r = client.put(
+            r = await client.put(
                 f"/api/agents/{agent_id}",
                 json={"status": "paused", "temperature": 0.9},
             )
@@ -251,23 +258,23 @@ async def test_crud_full_lifecycle(db_session):
             assert r.json()["name"] == "Sales bot"  # unchanged
 
             # LIST + filter + search
-            r = client.get("/api/agents", params={"status": "paused"})
+            r = await client.get("/api/agents", params={"status": "paused"})
             assert r.status_code == 200
             assert any(a["id"] == agent_id for a in r.json()["items"])
 
-            r = client.get("/api/agents", params={"q": "sales"})
+            r = await client.get("/api/agents", params={"q": "sales"})
             assert r.status_code == 200 and r.json()["total"] >= 1
 
-            r = client.get("/api/agents", params={"type": "chat"})
+            r = await client.get("/api/agents", params={"type": "chat"})
             assert all(a["id"] != agent_id for a in r.json()["items"])
 
             # DELETE
-            r = client.delete(f"/api/agents/{agent_id}")
+            r = await client.delete(f"/api/agents/{agent_id}")
             assert r.status_code == 204
             # Soft-deleted → 404 on subsequent reads
-            r = client.get(f"/api/agents/{agent_id}")
+            r = await client.get(f"/api/agents/{agent_id}")
             assert r.status_code == 404
-            r = client.get("/api/agents")
+            r = await client.get("/api/agents")
             assert all(a["id"] != agent_id for a in r.json()["items"])
     finally:
         app.dependency_overrides.pop(get_current_organization, None)
@@ -287,19 +294,21 @@ async def test_pagination_and_sort(db_session):
 
     app.dependency_overrides[get_current_organization] = _override
     try:
-        with TestClient(app) as client:
+        from httpx import ASGITransport, AsyncClient
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
             for i in range(5):
-                r = client.post("/api/agents", json={"name": f"A{i}", "type": "chat"})
+                r = await client.post("/api/agents", json={"name": f"A{i}", "type": "chat"})
                 assert r.status_code == 201
 
-            r = client.get("/api/agents", params={"limit": 2, "offset": 0, "sort": "name"})
+            r = await client.get("/api/agents", params={"limit": 2, "offset": 0, "sort": "name"})
             assert r.status_code == 200
             page1 = r.json()
             assert len(page1["items"]) == 2
             assert page1["total"] >= 5
             assert page1["limit"] == 2 and page1["offset"] == 0
 
-            r = client.get("/api/agents", params={"limit": 2, "offset": 2, "sort": "name"})
+            r = await client.get("/api/agents", params={"limit": 2, "offset": 2, "sort": "name"})
             page2 = r.json()
             page1_ids = {a["id"] for a in page1["items"]}
             page2_ids = {a["id"] for a in page2["items"]}

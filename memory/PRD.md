@@ -35,6 +35,20 @@ the app runs anywhere without breaking after `git pull && run`.
 - GET /api/health → 200, GET /api/health/db → 200 against local PG
 - `tests/audit_phase2_postgres.py` (run with `OVERRIDE_DATABASE_URL=...`)
 
+### Phase 6 (Agents System) — 24/24 PASS — 2026-06-22
+- **Live audit** (`tests/audit_phase6_agents.py`) — 16/16:
+  - All 11 `agents` cols + 8 `agent_configs` cols present
+  - Full CRUD via HTTP (POST 201 / GET 200 / PUT 200 / DELETE 204)
+  - Search (`q`), filter (`type`/`status`/`model`), pagination
+    (`limit`/`offset`), sort (`±created_at|updated_at|name`)
+  - Validation: temperature 0-2 + max_tokens 1-32000 + enum types → 422
+  - Authorization: viewer role gets 403 on DELETE
+  - Soft delete: subsequent GET → 404, list excludes row
+  - Audit JSON for create/update/delete/read with `ts/action/resource/
+    organization_id/user_id/before/after/meta`
+  - Verified audit lines actually land in `/var/log/supervisor/backend.*.log`
+- **Unit/integration tests** (`tests/test_phase6_agents_crud.py`) — 8/8
+
 ### Phase 5 (Multi-Tenant Foundation) — 12/12 PASS — 2026-06-22
 Suite split into two layers, both green:
 
@@ -112,6 +126,10 @@ Verified via real Playwright browser flow against preview pod with PG backend:
    around the `db_session` fixture. **Important — this test was silently
    failing CI**, meaning tenant-isolation regressions could have slipped
    through unnoticed.
+8. **Same flake in `test_phase6_agents_crud.py`** (`test_crud_full_lifecycle`,
+   `test_pagination_and_sort`) → applied the same `AsyncClient` +
+   engine-per-test fixture fix. Phase 6 unit/integration suite went from
+   6/8 → 8/8.
 
 ### Env files (six total)
 - `backend/.env` ............... live values (current preview)
