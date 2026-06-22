@@ -256,23 +256,23 @@ async def test_org_isolation_http_layer(db_session):
     try:
         with TestClient(app) as client:
             # Bob (Org B) tries to read Alice's agent → 404
-            r = client.get(f"/api/v2/agents/{alices_agent.id}")
+            r = client.get(f"/api/agents/{alices_agent.id}")
             assert r.status_code == 404, r.text
 
             # And to delete it → 404 (must not leak via 403/200)
-            r = client.delete(f"/api/v2/agents/{alices_agent.id}")
+            r = client.delete(f"/api/agents/{alices_agent.id}")
             assert r.status_code == 404, r.text
 
             # His own list never contains Alice's agent
-            r = client.get("/api/v2/agents")
+            r = client.get("/api/agents")
             assert r.status_code == 200
-            assert all(a["id"] != str(alices_agent.id) for a in r.json())
+            assert all(a["id"] != str(alices_agent.id) for a in r.json()["items"])
 
             # Flip to Alice — she sees her agent
             current_ctx["v"] = OrgContext(
                 user_id=user_a.id, cognito_sub="a", organization_id=org_a.id, membership_role="owner",
             )
-            r = client.get(f"/api/v2/agents/{alices_agent.id}")
+            r = client.get(f"/api/agents/{alices_agent.id}")
             assert r.status_code == 200, r.text
             assert r.json()["id"] == str(alices_agent.id)
     finally:

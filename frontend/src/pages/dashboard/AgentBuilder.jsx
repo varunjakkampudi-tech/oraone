@@ -39,8 +39,18 @@ export default function AgentBuilder() {
   const save = async () => {
     setBusy(true);
     try {
-      const { data } = await api.put(`/agents/${id}`, agent);
-      setAgent(data);
+      // Phase 6: PUT accepts a partial update. Only send fields the
+      // backend schema knows about — anything else (UI-only legacy
+      // fields) is dropped on the client.
+      const ALLOWED = [
+        "name", "description", "type", "status", "model", "avatar_url",
+        "system_prompt", "temperature", "voice", "language", "greeting", "max_tokens",
+      ];
+      const payload = Object.fromEntries(
+        ALLOWED.filter((k) => agent[k] !== undefined && agent[k] !== null).map((k) => [k, agent[k]])
+      );
+      const { data } = await api.put(`/agents/${id}`, payload);
+      setAgent({ ...agent, ...data });
       toast.success("Saved!");
     } catch (err) {
       toast.error(formatApiError(err.response?.data?.detail));

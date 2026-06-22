@@ -156,54 +156,10 @@ async def complete_onboarding(payload: BusinessProfileIn, user: dict = Depends(g
 
 
 # ---------- Agents ----------
-@api.get("/agents", response_model=List[Agent])
-async def list_agents(user: dict = Depends(get_current_user)):
-    docs = await db.agents.find({"user_id": user["id"]}, {"_id": 0}).to_list(500)
-    return docs
-
-
-@api.post("/agents", response_model=Agent)
-async def create_agent(payload: AgentCreateIn, user: dict = Depends(get_current_user)):
-    agent_id = str(uuid.uuid4())
-    now = datetime.now(timezone.utc).isoformat()
-    doc = {
-        "id": agent_id,
-        "user_id": user["id"],
-        "status": "active",
-        "conversations": 0,
-        "success_rate": 0,
-        "created_at": now,
-        **payload.model_dump(),
-    }
-    await db.agents.insert_one(doc)
-    doc.pop("_id", None)
-    return doc
-
-
-@api.get("/agents/{agent_id}", response_model=Agent)
-async def get_agent(agent_id: str, user: dict = Depends(get_current_user)):
-    doc = await db.agents.find_one({"id": agent_id, "user_id": user["id"]}, {"_id": 0})
-    if not doc:
-        raise HTTPException(status_code=404, detail="Agent not found")
-    return doc
-
-
-@api.put("/agents/{agent_id}", response_model=Agent)
-async def update_agent(agent_id: str, payload: AgentUpdateIn, user: dict = Depends(get_current_user)):
-    update = {k: v for k, v in payload.model_dump().items() if v is not None}
-    result = await db.agents.update_one({"id": agent_id, "user_id": user["id"]}, {"$set": update})
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Agent not found")
-    doc = await db.agents.find_one({"id": agent_id}, {"_id": 0})
-    return doc
-
-
-@api.delete("/agents/{agent_id}")
-async def delete_agent(agent_id: str, user: dict = Depends(get_current_user)):
-    result = await db.agents.delete_one({"id": agent_id, "user_id": user["id"]})
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Agent not found")
-    return {"message": "Deleted"}
+# Agent CRUD has moved to /app/backend/app/api/agents/routes.py (Phase 6).
+# The new routes are Postgres-backed, org-scoped (Phase 5), soft-deletable,
+# paginated, searchable, filterable, and audit-logged. The router is mounted
+# below alongside the other v2 surfaces.
 
 
 # ---------- Leads ----------
@@ -247,6 +203,9 @@ app.include_router(cognito_auth_router)
 # Phase 5 — tenant-scoped business API (Postgres-backed)
 from app.api.v2 import router as v2_router  # noqa: E402
 app.include_router(v2_router)
+# Phase 6 — full Agent CRUD (Postgres-backed)
+from app.api.agents import router as agents_router  # noqa: E402
+app.include_router(agents_router)
 
 cors_origins_env = os.environ.get('CORS_ORIGINS', '*')
 allow_origins = ["*"] if cors_origins_env.strip() == "*" else [o.strip() for o in cors_origins_env.split(",") if o.strip()]

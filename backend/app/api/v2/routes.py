@@ -16,7 +16,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database.models.agent import Agent, AgentStatus, AgentType
+from app.database.models.agent import Agent  # noqa: F401 — used by OrgScopedAgentRepository in conversation create-path
 from app.database.models.conversation import (
     Conversation,
     ConversationChannel,
@@ -43,8 +43,6 @@ from app.middleware.org_context import (
     require_role,
 )
 from app.schemas.v2 import (
-    AgentIn,
-    AgentOut,
     ConversationIn,
     ConversationOut,
     IntegrationIn,
@@ -69,74 +67,7 @@ async def whoami(ctx: OrgContext = Depends(get_current_organization)) -> dict:
 
 
 # ─────────────────────────── Agents ───────────────────────────
-
-@router.get("/agents", response_model=list[AgentOut])
-async def list_agents(
-    ctx: OrgContext = Depends(get_current_organization),
-    session: AsyncSession = Depends(get_db),
-) -> list[Agent]:
-    repo = OrgScopedAgentRepository(session, ctx)
-    return list(await repo.list_in_org())
-
-
-@router.post("/agents", response_model=AgentOut, status_code=status.HTTP_201_CREATED)
-async def create_agent(
-    payload: AgentIn,
-    ctx: OrgContext = Depends(get_current_organization),
-    session: AsyncSession = Depends(get_db),
-) -> Agent:
-    try:
-        agent_type = AgentType(payload.type)
-        agent_status = AgentStatus(payload.status)
-    except ValueError as e:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, str(e)) from e
-
-    agent = Agent(
-        name=payload.name,
-        type=agent_type,
-        status=agent_status,
-        description=payload.description,
-        model=payload.model,
-        avatar_url=payload.avatar_url,
-        created_by_user_id=ctx.user_id,
-    )
-    repo = OrgScopedAgentRepository(session, ctx)
-    await repo.add_for_org(agent)
-    await session.commit()
-    await session.refresh(agent)
-    return agent
-
-
-@router.get("/agents/{agent_id}", response_model=AgentOut)
-async def get_agent(
-    agent_id: uuid.UUID,
-    ctx: OrgContext = Depends(get_current_organization),
-    session: AsyncSession = Depends(get_db),
-) -> Agent:
-    repo = OrgScopedAgentRepository(session, ctx)
-    agent = await repo.get_in_org(agent_id)
-    if agent is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Agent not found.")
-    return agent
-
-
-@router.delete(
-    "/agents/{agent_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    response_class=Response,
-    dependencies=[Depends(require_role("owner", "admin"))],
-)
-async def delete_agent(
-    agent_id: uuid.UUID,
-    ctx: OrgContext = Depends(get_current_organization),
-    session: AsyncSession = Depends(get_db),
-) -> Response:
-    repo = OrgScopedAgentRepository(session, ctx)
-    ok = await repo.soft_delete_in_org(agent_id)
-    if not ok:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Agent not found.")
-    await session.commit()
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+# Agent CRUD lives at /api/agents (Phase 6) — see app.api.agents.routes.
 
 
 # ───────────────────── Conversations ─────────────────────

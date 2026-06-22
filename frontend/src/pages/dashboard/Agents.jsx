@@ -37,7 +37,8 @@ export default function Agents() {
     setLoading(true);
     try {
       const { data } = await api.get("/agents");
-      setAgents(data);
+      // Phase 6: list endpoint returns { items, total, limit, offset }
+      setAgents(Array.isArray(data) ? data : data?.items || []);
     } catch {
       setAgents([]);
     } finally {
@@ -52,7 +53,8 @@ export default function Agents() {
   const toggleStatus = async (a) => {
     const newStatus = a.status === "active" ? "paused" : "active";
     try {
-      await api.put(`/agents/${a.id}`, { ...a, status: newStatus });
+      // Phase 6: partial-update PUT — only send the changed field
+      await api.put(`/agents/${a.id}`, { status: newStatus });
       load();
       toast.success(`Agent ${newStatus}`);
     } catch (err) {
