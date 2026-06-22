@@ -35,6 +35,25 @@ the app runs anywhere without breaking after `git pull && run`.
 - GET /api/health → 200, GET /api/health/db → 200 against local PG
 - `tests/audit_phase2_postgres.py` (run with `OVERRIDE_DATABASE_URL=...`)
 
+### Phase 4 (Frontend Identity Integration) — 14/14 PASS — 2026-06-22
+Verified via real Playwright browser flow against preview pod with PG backend:
+- **AuthProvider state**: `identity`, `organization`, `membership`, `organizationId`,
+  `organizationName`, `membershipRole` all exposed from `useAuth()`.
+- **LocalStorage**: `oraone_identity` key persisted on login; payload contains
+  `user/organization/membership`; auto-restored on hard refresh (stays on
+  /app/overview, doesn't bounce to /login).
+- **Login flow**: blocks redirect on `fetchIdentity()` so dashboard only mounts
+  once identity is ready (Phase 4 requirement #6).
+- **Protected route**: three states render correctly — auth loading
+  (`protected-route-auth-loading`), workspace loading
+  (`protected-route-identity-loading`), workspace error
+  (`protected-route-identity-error` with `Retry` button).
+- **TopBar**: shows workspace name (e.g. "Bob Workspace") + membership role
+  badge ("OWNER") next to the page title; both have `data-testid` attrs
+  (`topbar-workspace-name`, `topbar-workspace-role`).
+- Forced /api/auth/identity 500 → app shows the clean retry UI instead of
+  silently sitting on a broken dashboard.
+
 ### Phase 3 (Identity Layer) — 8/8 PASS — 2026-06-22
 - All required columns present:
   - `users`: id, cognito_sub, email, full_name, avatar_url, role, status, created_at, last_login_at
