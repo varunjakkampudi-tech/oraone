@@ -12,10 +12,10 @@ from sqlalchemy import ForeignKey, Numeric, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB, UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
+from app.database.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
 
 if TYPE_CHECKING:
-    from app.db.models.agent import Agent
+    from app.database.models.agent import Agent
 
 
 class AgentConfig(UUIDPrimaryKeyMixin, TimestampMixin, Base):

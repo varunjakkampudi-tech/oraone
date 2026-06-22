@@ -6,8 +6,8 @@ from typing import Optional
 
 from sqlalchemy import select
 
-from app.db.models.integration import Integration
-from app.repositories.base import BaseRepository
+from app.database.models.integration import Integration
+from app.database.repositories.base import BaseRepository
 
 
 class IntegrationRepository(BaseRepository[Integration]):

@@ -240,8 +240,8 @@ register_dashboard_routes(api, db, get_current_user)
 # ---------- Mount + middleware ----------
 app.include_router(api)
 # Postgres health probe (separate router, no auth)
-from app.api.db_health import router as db_health_router  # noqa: E402
-app.include_router(db_health_router)
+from app.api.health import router as health_router  # noqa: E402
+app.include_router(health_router)
 # AWS Cognito + DynamoDB authentication
 app.include_router(cognito_auth_router)
 
@@ -287,7 +287,7 @@ async def startup():
     # the DB is unreachable (e.g. private VPC). Routes that need it will
     # fail individually with a clear error.
     try:
-        from app.db.session import init_engine
+        from app.database.session import init_engine
         init_engine()
         logger.info("Postgres engine initialised.")
     except Exception as e:
@@ -299,7 +299,7 @@ async def startup():
 async def shutdown():
     client.close()
     try:
-        from app.db.session import dispose_engine
+        from app.database.session import dispose_engine
         await dispose_engine()
     except Exception:
         pass

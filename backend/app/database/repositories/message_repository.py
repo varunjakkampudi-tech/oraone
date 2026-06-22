@@ -5,8 +5,8 @@ import uuid
 
 from sqlalchemy import select
 
-from app.db.models.message import Message
-from app.repositories.base import BaseRepository
+from app.database.models.message import Message
+from app.database.repositories.base import BaseRepository
 
 
 class MessageRepository(BaseRepository[Message]):

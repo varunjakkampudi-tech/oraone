@@ -9,13 +9,13 @@ from sqlalchemy import Enum, ForeignKey, Index, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB, UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.base import Base, SoftDeleteMixin, TimestampMixin, UUIDPrimaryKeyMixin
+from app.database.base import Base, SoftDeleteMixin, TimestampMixin, UUIDPrimaryKeyMixin
 
 if TYPE_CHECKING:
-    from app.db.models.user import User
-    from app.db.models.organization_member import OrganizationMember
-    from app.db.models.agent import Agent
-    from app.db.models.integration import Integration
+    from app.database.models.user import User
+    from app.database.models.organization_member import OrganizationMember
+    from app.database.models.agent import Agent
+    from app.database.models.integration import Integration
 
 
 class OrgPlan(str, enum.Enum):

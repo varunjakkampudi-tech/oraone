@@ -11,11 +11,11 @@ from typing import Optional, TYPE_CHECKING
 from sqlalchemy import DateTime, Enum, Index, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.base import Base, SoftDeleteMixin, TimestampMixin, UUIDPrimaryKeyMixin
+from app.database.base import Base, SoftDeleteMixin, TimestampMixin, UUIDPrimaryKeyMixin
 
 if TYPE_CHECKING:
-    from app.db.models.organization import Organization
-    from app.db.models.organization_member import OrganizationMember
+    from app.database.models.organization import Organization
+    from app.database.models.organization_member import OrganizationMember
 
 
 class UserRole(str, enum.Enum):

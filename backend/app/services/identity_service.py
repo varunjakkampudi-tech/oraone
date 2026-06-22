@@ -11,14 +11,14 @@ from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models.organization import Organization, OrgPlan
-from app.db.models.organization_member import MemberRole
-from app.db.models.user import User
-from app.repositories.organization_member_repository import (
+from app.database.models.organization import Organization, OrgPlan
+from app.database.models.organization_member import MemberRole
+from app.database.models.user import User
+from app.database.repositories.organization_member_repository import (
     OrganizationMemberRepository,
 )
-from app.repositories.organization_repository import OrganizationRepository
-from app.repositories.user_repository import UserRepository
+from app.database.repositories.organization_repository import OrganizationRepository
+from app.database.repositories.user_repository import UserRepository
 
 
 class IdentityService:

@@ -5,8 +5,8 @@ import uuid
 
 from sqlalchemy import select
 
-from app.db.models.agent import Agent, AgentStatus
-from app.repositories.base import BaseRepository
+from app.database.models.agent import Agent, AgentStatus
+from app.database.repositories.base import BaseRepository
 
 
 class AgentRepository(BaseRepository[Agent]):

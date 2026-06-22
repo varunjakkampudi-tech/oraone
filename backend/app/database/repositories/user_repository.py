@@ -6,8 +6,8 @@ from typing import Optional
 
 from sqlalchemy import select
 
-from app.db.models.user import User
-from app.repositories.base import BaseRepository
+from app.database.models.user import User
+from app.database.repositories.base import BaseRepository
 
 
 class UserRepository(BaseRepository[User]):

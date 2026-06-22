@@ -22,8 +22,8 @@ try:
 except Exception:
     pass
 
-from app.db.base import Base  # noqa: E402
-from app.db import models  # noqa: F401,E402  -- register all tables on Base.metadata
+from app.database.base import Base  # noqa: E402
+from app.database import models  # noqa: F401,E402  -- register all tables on Base.metadata
 
 config = context.config
 

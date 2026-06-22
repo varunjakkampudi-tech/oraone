@@ -10,11 +10,11 @@ from sqlalchemy import DateTime, Enum, ForeignKey, Index, String
 from sqlalchemy.dialects.postgresql import JSONB, UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.base import Base, SoftDeleteMixin, TimestampMixin, UUIDPrimaryKeyMixin
+from app.database.base import Base, SoftDeleteMixin, TimestampMixin, UUIDPrimaryKeyMixin
 
 if TYPE_CHECKING:
-    from app.db.models.agent import Agent
-    from app.db.models.message import Message
+    from app.database.models.agent import Agent
+    from app.database.models.message import Message
 
 
 class ConversationChannel(str, enum.Enum):

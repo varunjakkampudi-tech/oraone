@@ -14,13 +14,13 @@ from sqlalchemy import Enum, ForeignKey, Index, String, Text
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.base import Base, SoftDeleteMixin, TimestampMixin, UUIDPrimaryKeyMixin
+from app.database.base import Base, SoftDeleteMixin, TimestampMixin, UUIDPrimaryKeyMixin
 
 if TYPE_CHECKING:
-    from app.db.models.organization import Organization
-    from app.db.models.user import User
-    from app.db.models.agent_config import AgentConfig
-    from app.db.models.conversation import Conversation
+    from app.database.models.organization import Organization
+    from app.database.models.user import User
+    from app.database.models.agent_config import AgentConfig
+    from app.database.models.conversation import Conversation
 
 
 class AgentType(str, enum.Enum):

@@ -1,21 +1,21 @@
 """SQLAlchemy ORM models. Import this package to register tables with Base."""
 
-from app.db.models.user import User, UserRole, UserStatus
-from app.db.models.organization import Organization, OrgPlan
-from app.db.models.organization_member import (
+from app.database.models.user import User, UserRole, UserStatus
+from app.database.models.organization import Organization, OrgPlan
+from app.database.models.organization_member import (
     OrganizationMember,
     MemberRole,
     MemberStatus,
 )
-from app.db.models.agent import Agent, AgentType, AgentStatus
-from app.db.models.agent_config import AgentConfig
-from app.db.models.conversation import (
+from app.database.models.agent import Agent, AgentType, AgentStatus
+from app.database.models.agent_config import AgentConfig
+from app.database.models.conversation import (
     Conversation,
     ConversationChannel,
     ConversationStatus,
 )
-from app.db.models.message import Message, MessageSender
-from app.db.models.integration import (
+from app.database.models.message import Message, MessageSender
+from app.database.models.integration import (
     Integration,
     IntegrationStatus,
     IntegrationType,

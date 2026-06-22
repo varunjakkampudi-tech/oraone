@@ -6,8 +6,8 @@ from typing import Optional
 
 from sqlalchemy import select
 
-from app.db.models.conversation import Conversation, ConversationStatus
-from app.repositories.base import BaseRepository
+from app.database.models.conversation import Conversation, ConversationStatus
+from app.database.repositories.base import BaseRepository
 
 
 class ConversationRepository(BaseRepository[Conversation]):

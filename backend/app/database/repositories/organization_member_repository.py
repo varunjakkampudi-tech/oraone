@@ -7,12 +7,12 @@ from typing import Optional
 
 from sqlalchemy import select
 
-from app.db.models.organization_member import (
+from app.database.models.organization_member import (
     MemberRole,
     MemberStatus,
     OrganizationMember,
 )
-from app.repositories.base import BaseRepository
+from app.database.repositories.base import BaseRepository
 
 
 class OrganizationMemberRepository(BaseRepository[OrganizationMember]):

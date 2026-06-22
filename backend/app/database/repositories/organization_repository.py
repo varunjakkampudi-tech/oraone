@@ -7,8 +7,8 @@ from typing import Optional
 
 from sqlalchemy import select
 
-from app.db.models.organization import Organization
-from app.repositories.base import BaseRepository
+from app.database.models.organization import Organization
+from app.database.repositories.base import BaseRepository
 
 
 def slugify(value: str) -> str:
@@ -27,7 +27,7 @@ class OrganizationRepository(BaseRepository[Organization]):
 
     async def list_for_user(self, user_id: uuid.UUID) -> list[Organization]:
         """All orgs the user is a member of."""
-        from app.db.models.organization_member import OrganizationMember  # local
+        from app.database.models.organization_member import OrganizationMember  # local
 
         q = (
             select(Organization)
