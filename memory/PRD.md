@@ -1,45 +1,44 @@
-# OraOne — PRD (Snapshot)
+# OraOne — Setup Run
 
-## Original Problem Statement
-Pull the public repo https://github.com/varunjakkampudi-tech/oraone.git, understand it, install dependencies, configure env (AWS Cognito, RDS Postgres, DynamoDB, local Mongo for legacy collections), and run it in the Emergent preview pod.
+## Original problem statement
+Pull the public repo https://github.com/varunjakkampudi-tech/oraone.git and wire the
+app to AWS (Cognito + DynamoDB + RDS Postgres) using the provided env values. Provide
+env files for both production and local (localhost) development.
 
-## What it is
-OraOne — "One AI. Every Conversation." SaaS landing + dashboard for AI Voice / Chat / WhatsApp agents that capture leads 24/7. Tagline: "Never Miss A Lead. Never Miss A Sale."
+## What was done (2026-06-22)
+- Verified `/app` is already a checkout of `varunjakkampudi-tech/oraone` and ran
+  `git pull origin main` (already up to date).
+- Created `/app/backend/.env` and `/app/frontend/.env` using the supplied AWS
+  Cognito / DynamoDB / RDS / IAM values.
+- Frontend URL & Cognito redirect updated to this pod's actual preview URL
+  (`https://9ac7729c-...preview.emergentagent.com`). The originally supplied URL
+  (`3e6d33e3-...`) belongs to a different, sleeping Emergent pod.
+- Installed missing `greenlet` (required by SQLAlchemy async + asyncpg).
+- Created production + local templates:
+  - `/app/backend/.env.production.example`, `/app/backend/.env.local.example`
+  - `/app/frontend/.env.production.example`, `/app/frontend/.env.local.example`
 
-## Architecture
-- **Frontend**: React 19 (CRA + craco), TailwindCSS, Radix UI, react-router 7, react-oidc-context, recharts, framer-motion. Served via `yarn start` on port 3000.
-- **Backend**: FastAPI (`server.py` is the full app; `main.py` is a lighter auth-only variant). Mounted under `/api`. Runs via uvicorn on port 8001 (supervisor-managed).
-- **Auth**: AWS Cognito User Pool (`ap-south-2_hbzHCGsK9`) — email/password via `POST /api/auth/login`, signup with email verification, hosted UI OAuth optional. JWT validation via JWKS in `app/middleware/jwt_auth.py`.
-- **Datastores**:
-  - **PostgreSQL (AWS RDS)** — system-of-record (users, orgs, agents, conversations, messages, integrations). Schema via Alembic. Note: RDS is in a private VPC → unreachable from this pod; engine boots lazily, `/api/db/health` returns 503 `db_unreachable` (expected, documented in DATABASE_SETUP.md).
-  - **DynamoDB** (`oraone-users`) — legacy Cognito user mirror.
-  - **MongoDB** (local in-pod) — legacy `agents` / `leads` demo collections.
+## Service status
+- Backend (FastAPI) — RUNNING on :8001
+- Frontend (CRA dev) — RUNNING on :3000
+- MongoDB (local) — RUNNING
+- AWS Cognito JWT middleware — initialised
+- AWS RDS Postgres — TIMEOUT (security group does not allow this pod's IP
+  `104.198.214.223`). All non-Postgres routes work.
 
-## Key Backend Routes
-- `GET /api/health` — liveness
-- `GET /api/db/health` — Postgres probe (503 in this pod, by design)
-- `POST /api/auth/signup`, `/api/auth/verify`, `/api/auth/resend`, `/api/auth/login`, `/api/auth/forgot-password`, `/api/auth/reset-password`, `/api/auth/logout`, `/api/auth/me`
-- `GET/POST/PUT/DELETE /api/agents` (Mongo-backed)
-- `GET/POST/DELETE /api/leads` (Mongo-backed)
-- `POST /api/onboarding/complete`
-- Contact + dashboard overview routes mounted from `app/api/`
+## Action items for user
+1. **AWS RDS**: Add inbound rule for TCP/5432 from `104.198.214.223/32` (or
+   `0.0.0.0/0` for quick testing) in the `oraone-postgres` security group, OR
+   make the RDS publicly accessible. Without this, `/api/health/db`, `/api/v2/*`,
+   `/api/agents`, `/api/knowledge` will fail.
+2. **AWS Cognito App Client**: Add the new redirect URL
+   `https://9ac7729c-...preview.emergentagent.com/auth/callback` to the
+   Allowed callback URLs list. Also add `http://localhost:3000/auth/callback`
+   for local dev.
+3. **Security**: The provided AWS access keys and DB password are in plain
+   text in chat — recommend rotating once setup is verified.
 
-## Implementation Status (2026-06-22)
-- ✅ Repo cloned into `/app` (preserving `.git` / `.emergent` / `memory` / `test_reports`)
-- ✅ `backend/.env` + `frontend/.env` populated with provided AWS/Cognito/RDS credentials + this pod's preview URL
-- ✅ Python deps installed (`pip install -r requirements.txt`)
-- ✅ Node deps installed (`yarn install`)
-- ✅ Supervisor running backend (8001) + frontend (3000) + local mongod
-- ✅ `GET /api/health` → 200 OK
-- ✅ `POST /api/auth/login` with `test@gmail.com` / `OraOne@2026` → returns Cognito access_token
-- ✅ Landing page renders at preview URL
-- ⚠️ `GET /api/db/health` → 503 (RDS in private VPC, expected per DATABASE_SETUP.md)
-
-## URLs
-- Preview: https://3e6d33e3-d507-434a-af3b-05308771435d.preview.emergentagent.com
-- API base: same URL + `/api`
-
-## Backlog / Next Action Items
-- Phase 2 (per repo TODO): switch Cognito post-login user-upsert from DynamoDB → Postgres `users`; auto-create personal org + membership; migrate Mongo agents/leads → Postgres.
-- Rotate the AWS keys & RDS password that were posted in chat — they're now public.
-- If Postgres access is needed from this pod, either flip RDS to publicly accessible + whitelist egress IP, or stand up an SSH tunnel via a bastion.
+## Backlog / next iterations
+- P1 — Verify auth signup → email verify → login flow against Cognito.
+- P1 — Once RDS is reachable, run `alembic upgrade head` for schema bootstrap.
+- P2 — Add boto3 `Mako` to requirements (alembic dep warning during pip install).
