@@ -20,6 +20,9 @@ from app.database.models.integration import (
     IntegrationStatus,
     IntegrationType,
 )
+from app.database.models.knowledge_base import KnowledgeBase, KnowledgeBaseStatus
+from app.database.models.document import Document, DocumentStatus
+from app.database.models.document_chunk import DocumentChunk
 
 __all__ = [
     "User", "UserRole", "UserStatus",
@@ -30,4 +33,7 @@ __all__ = [
     "Conversation", "ConversationChannel", "ConversationStatus",
     "Message", "MessageSender",
     "Integration", "IntegrationStatus", "IntegrationType",
+    "KnowledgeBase", "KnowledgeBaseStatus",
+    "Document", "DocumentStatus",
+    "DocumentChunk",
 ]

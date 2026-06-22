@@ -206,6 +206,9 @@ app.include_router(v2_router)
 # Phase 6 — full Agent CRUD (Postgres-backed)
 from app.api.agents import router as agents_router  # noqa: E402
 app.include_router(agents_router)
+# Phase 6 — Knowledge Base foundation (Postgres + S3-ready storage)
+from app.api.knowledge import router as knowledge_router  # noqa: E402
+app.include_router(knowledge_router)
 
 cors_origins_env = os.environ.get('CORS_ORIGINS', '*')
 allow_origins = ["*"] if cors_origins_env.strip() == "*" else [o.strip() for o in cors_origins_env.split(",") if o.strip()]

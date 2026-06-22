@@ -68,6 +68,7 @@ const Conversations = lazy(() => import("@/pages/dashboard/Conversations"));
 const Leads = lazy(() => import("@/pages/dashboard/Leads"));
 const Analytics = lazy(() => import("@/pages/dashboard/Analytics"));
 const KnowledgeBase = lazy(() => import("@/pages/dashboard/KnowledgeBase"));
+const KnowledgeBaseDetails = lazy(() => import("@/pages/dashboard/KnowledgeBaseDetails"));
 const IntegrationsDash = lazy(() => import("@/pages/dashboard/Integrations"));
 const Team = lazy(() => import("@/pages/dashboard/Team"));
 const Settings = lazy(() => import("@/pages/dashboard/Settings"));
@@ -151,6 +152,7 @@ function App() {
                 <Route path="/app/leads" element={<Leads />} />
                 <Route path="/app/analytics" element={<Analytics />} />
                 <Route path="/app/knowledge-base" element={<KnowledgeBase />} />
+                <Route path="/app/knowledge-base/:id" element={<KnowledgeBaseDetails />} />
                 <Route path="/app/integrations" element={<IntegrationsDash />} />
                 <Route path="/app/team" element={<Team />} />
                 <Route path="/app/settings" element={<Settings />} />

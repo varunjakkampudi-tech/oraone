@@ -1,308 +1,365 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
-  Upload,
+  BookOpen,
   FileText,
-  Globe,
-  MessageSquare,
-  Trash2,
+  Layers,
+  Plus,
   Search,
-  ChevronLeft,
-  ChevronRight,
-  ChevronDown,
-  Link2,
+  Trash2,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
-import { EmptyState } from "@/components/ui/EmptyState";
+import { api, formatApiError } from "@/lib/api";
 
-const SAMPLE_DOCS = [
-  { id: "d1", title: "Product Catalog 2024.pdf",  type: "PDF",  size: "2.4 MB", date: "May 26, 2024", status: "Indexed" },
-  { id: "d2", title: "Service Policies.docx",     type: "DOCX", size: "1.8 MB", date: "May 25, 2024", status: "Indexed" },
-  { id: "d3", title: "FAQs - Customer Support",   type: "MD",   size: "45 KB",  date: "May 24, 2024", status: "Processing" },
-  { id: "d4", title: "https://oraone.in/docs",    type: "URL",  size: "Indexed",date: "May 23, 2024", status: "Indexed" },
-];
-
-const TYPE_META = {
-  PDF:  { Icon: FileText,      color: "#EF4444", bg: "#FEF2F2" },
-  DOCX: { Icon: FileTextDocx,  color: "#2563EB", bg: "#EFF6FF" },
-  MD:   { Icon: MessageSquare, color: "#7C3AED", bg: "#F3E8FF" },
-  URL:  { Icon: Link2,         color: "#16A34A", bg: "#DCFCE7" },
-  TXT:  { Icon: FileText,      color: "#0EA5E9", bg: "#E0F2FE" },
-};
-
-const STATUS_CLS = {
-  Indexed:    "bg-green-50 text-green-700 border-green-200",
-  Processing: "bg-amber-50 text-amber-700 border-amber-200",
-  Failed:     "bg-red-50 text-red-700 border-red-200",
+const STATUS_BADGE = {
+  draft: "bg-[#F1F5F9] text-[#64748B]",
+  active: "bg-green-50 text-green-700",
+  archived: "bg-amber-50 text-amber-700",
 };
 
 export default function KnowledgeBase() {
-  const [docs, setDocs] = useState(SAMPLE_DOCS);
-  const [q, setQ] = useState("");
-  const [perPage, setPerPage] = useState(10);
-  const [page, setPage] = useState(1);
-  const fileInput = useRef(null);
-  const [dragOver, setDragOver] = useState(false);
+  const [items, setItems] = useState([]);
+  const [stats, setStats] = useState({
+    total_knowledge_bases: 0,
+    total_documents: 0,
+    total_chunks: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [creating, setCreating] = useState(false);
 
-  const filtered = useMemo(
-    () => docs.filter((d) => !q || d.title.toLowerCase().includes(q.toLowerCase())),
-    [docs, q]
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = search ? { q: search } : undefined;
+      const [{ data: list }, { data: s }] = await Promise.all([
+        api.get("/knowledge-bases", { params }),
+        api.get("/knowledge/stats"),
+      ]);
+      setItems(list.items || []);
+      setStats(s);
+    } catch (err) {
+      toast.error(formatApiError(err.response?.data?.detail));
+    } finally {
+      setLoading(false);
+    }
+  }, [search]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const remove = async (kb) => {
+    if (!window.confirm(`Delete "${kb.name}"?`)) return;
+    try {
+      await api.delete(`/knowledge-bases/${kb.id}`);
+      toast.success("Knowledge base deleted");
+      load();
+    } catch (err) {
+      toast.error(formatApiError(err.response?.data?.detail));
+    }
+  };
+
+  const kpis = useMemo(
+    () => [
+      {
+        key: "kbs",
+        icon: BookOpen,
+        color: "#2563EB",
+        label: "Knowledge Bases",
+        value: stats.total_knowledge_bases,
+      },
+      {
+        key: "docs",
+        icon: FileText,
+        color: "#7C3AED",
+        label: "Documents",
+        value: stats.total_documents,
+      },
+      {
+        key: "chunks",
+        icon: Layers,
+        color: "#0EA5E9",
+        label: "Total Chunks",
+        value: stats.total_chunks,
+      },
+    ],
+    [stats]
   );
-  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
-  const slice = filtered.slice((page - 1) * perPage, page * perPage);
-
-  const handleFiles = (files) => {
-    if (!files?.length) return;
-    const added = Array.from(files).map((f, i) => {
-      const ext = (f.name.split(".").pop() || "").toUpperCase();
-      return {
-        id: `up-${Date.now()}-${i}`,
-        title: f.name,
-        type: TYPE_META[ext] ? ext : "TXT",
-        size: `${(f.size / 1024 / 1024).toFixed(1)} MB`,
-        date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-        status: "Processing",
-      };
-    });
-    setDocs((d) => [...added, ...d]);
-    toast.success(`${added.length} document(s) uploading…`);
-    // Simulate indexing for the demo.
-    setTimeout(() => {
-      setDocs((d) =>
-        d.map((doc) => (added.find((a) => a.id === doc.id) ? { ...doc, status: "Indexed" } : doc))
-      );
-    }, 2200);
-  };
-
-  const handleDelete = (id) => {
-    setDocs((d) => d.filter((x) => x.id !== id));
-    toast.success("Document removed");
-  };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="kb-page">
       {/* Header */}
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A]">Knowledge Base</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A]">
+            Knowledge Base
+          </h2>
           <p className="text-sm text-[#64748B] mt-1">
-            Train your AI agents with your documents, FAQs and website content.
+            Train your agents with documents, manuals, and policies.
           </p>
         </div>
         <button
-          onClick={() => fileInput.current?.click()}
-          data-testid="kb-upload-document"
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[13px] font-semibold shadow-[0_8px_24px_-8px_rgba(37,99,235,0.5)]"
+          onClick={() => setCreating(true)}
+          data-testid="kb-create-btn"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold shadow-[0_8px_24px_-8px_rgba(37,99,235,0.5)]"
         >
-          <Upload size={14} /> Upload Document
+          <Plus size={16} /> New Knowledge Base
         </button>
+      </div>
+
+      {/* KPI cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {kpis.map((k, i) => (
+          <motion.div
+            key={k.key}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.04 }}
+            className="p-5 rounded-2xl bg-white border border-[#E2E8F0]"
+            data-testid={`kb-kpi-${k.key}`}
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className="size-11 rounded-2xl grid place-items-center shrink-0"
+                style={{ background: `${k.color}1A` }}
+              >
+                <k.icon size={18} style={{ color: k.color }} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[12px] text-[#64748B]">{k.label}</p>
+                <p className="text-[26px] font-bold tracking-tight text-[#0F172A] leading-none mt-1">
+                  {k.value.toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Search */}
+      <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-[#E2E8F0] max-w-md">
+        <Search size={16} className="text-[#94A3B8]" />
         <input
-          ref={fileInput}
-          type="file"
-          multiple
-          className="hidden"
-          onChange={(e) => handleFiles(e.target.files)}
-          data-testid="kb-file-input"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search knowledge bases…"
+          className="flex-1 bg-transparent text-sm outline-none placeholder:text-[#94A3B8]"
+          data-testid="kb-search-input"
         />
       </div>
 
-      {/* Dropzone */}
-      <div
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragOver(true);
-        }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setDragOver(false);
-          handleFiles(e.dataTransfer.files);
-        }}
-        className={`relative p-10 sm:p-14 rounded-2xl bg-white border-2 border-dashed transition-all text-center ${
-          dragOver ? "border-[#2563EB] bg-[#F0F7FF]" : "border-[#BFDBFE]"
-        }`}
-        data-testid="kb-dropzone"
-      >
-        <button
-          type="button"
-          onClick={() => fileInput.current?.click()}
-          aria-label="Upload files"
-          className="mx-auto size-14 rounded-2xl bg-[#EFF6FF] grid place-items-center mb-4 hover:bg-[#DBEAFE] transition-colors"
+      {/* List */}
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-32 rounded-2xl skeleton" />
+          ))}
+        </div>
+      ) : items.length === 0 ? (
+        <div
+          className="p-10 rounded-3xl border-2 border-dashed border-[#CBD5E1] text-center bg-white"
+          data-testid="kb-empty-state"
         >
-          <Upload size={22} className="text-[#2563EB]" />
-        </button>
-        <p className="text-[15px] font-semibold text-[#0F172A]">
-          Drop files here or{" "}
-          <button
-            type="button"
-            onClick={() => fileInput.current?.click()}
-            className="text-[#2563EB] hover:underline"
-          >
-            upload
-          </button>
-        </p>
-        <p className="mt-1 text-[12px] text-[#64748B]">
-          Supported formats: PDF, DOCX, TXT, MD, Website URLs and more
-        </p>
-
-        {/* Source-type pills */}
-        <div className="mt-6 flex items-center justify-center gap-3 flex-wrap">
-          <SourcePill icon={FileText}      color="#EF4444" bg="#FEF2F2" label="PDF / DOCX"  testId="kb-source-pdf" />
-          <SourcePill icon={Globe}         color="#2563EB" bg="#EFF6FF" label="Website URL" testId="kb-source-url" />
-          <SourcePill icon={MessageSquare} color="#7C3AED" bg="#F3E8FF" label="FAQ / Q&A"   testId="kb-source-faq" />
+          <BookOpen size={32} className="mx-auto text-[#94A3B8]" />
+          <p className="mt-3 text-base font-semibold text-[#0F172A]">
+            No knowledge bases yet
+          </p>
+          <p className="text-sm text-[#64748B] mt-1">
+            Create one to start uploading documents your agents can reference.
+          </p>
         </div>
-      </div>
-
-      {/* Documents list */}
-      <div className="rounded-2xl bg-white border border-[#E2E8F0] p-5">
-        <div className="relative max-w-sm">
-          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search documents..."
-            data-testid="kb-search"
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#E2E8F0] bg-white text-[13px] placeholder-[#94A3B8] focus:border-[#2563EB] focus:outline-none focus:ring-4 focus:ring-[#2563EB]/10 transition-all"
-          />
-        </div>
-
-        <ul className="mt-5 divide-y divide-[#F1F5F9]">
-          {slice.map((d) => {
-            const meta = TYPE_META[d.type] || TYPE_META.TXT;
-            const Icon = meta.Icon;
-            return (
-              <li key={d.id} className="flex items-center gap-4 py-4" data-testid={`kb-doc-${d.id}`}>
-                <div
-                  className="size-11 rounded-xl grid place-items-center shrink-0"
-                  style={{ background: meta.bg }}
-                >
-                  <Icon size={18} style={{ color: meta.color }} />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {items.map((kb) => (
+            <motion.div
+              key={kb.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-5 rounded-2xl bg-white border border-[#E2E8F0] hover:shadow-premium transition-all flex flex-col"
+              data-testid={`kb-card-${kb.id}`}
+            >
+              <div className="flex items-start gap-3">
+                <div className="size-11 rounded-xl grid place-items-center bg-[#EFF6FF]">
+                  <BookOpen size={18} className="text-[#2563EB]" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13.5px] font-semibold text-[#0F172A] truncate">{d.title}</p>
-                  <p className="text-[11.5px] text-[#94A3B8] mt-0.5">
-                    {d.type} <span className="text-[#CBD5E1] mx-1">•</span> {d.size}{" "}
-                    <span className="text-[#CBD5E1] mx-1">•</span> {d.date}
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-semibold text-[#0F172A] truncate">
+                      {kb.name}
+                    </h3>
+                    <span
+                      className={`text-[10px] px-2 py-0.5 rounded-full font-semibold capitalize ${
+                        STATUS_BADGE[kb.status] || STATUS_BADGE.draft
+                      }`}
+                    >
+                      {kb.status}
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#64748B] mt-0.5 line-clamp-2 min-h-[2rem]">
+                    {kb.description || "—"}
                   </p>
                 </div>
-                <span
-                  className={`inline-block text-[11px] px-2.5 py-1 rounded-full border font-medium ${
-                    STATUS_CLS[d.status] || "bg-[#F1F5F9] text-[#475569] border-[#E2E8F0]"
-                  }`}
-                >
-                  {d.status}
-                </span>
-                <button
-                  onClick={() => handleDelete(d.id)}
-                  className="size-9 rounded-lg grid place-items-center text-[#EF4444] hover:bg-red-50 transition-colors"
-                  aria-label={`Delete ${d.title}`}
-                  data-testid={`kb-delete-${d.id}`}
-                >
-                  <Trash2 size={15} />
-                </button>
-              </li>
-            );
-          })}
-          {!slice.length && (
-            <li className="py-4">
-              <EmptyState
-                testId="kb-empty-state"
-                dashed={false}
-                className="border-0 shadow-none"
-                size="sm"
-                title={q ? "No documents match" : "Your knowledge base is empty"}
-                description={
-                  q
-                    ? `Nothing found for "${q}". Try a different keyword or clear the search.`
-                    : "Upload PDFs, DOCX, FAQs or a URL — your AI agents will index them and answer customers using this content."
-                }
-                actionLabel={q ? "Clear search" : "Upload Documents"}
-                onAction={q ? () => setQ("") : () => fileInput.current?.click()}
-              />
-            </li>
-          )}
-        </ul>
+              </div>
 
-        {/* Footer */}
-        <div className="mt-3 pt-4 border-t border-[#F1F5F9] flex items-center justify-between flex-wrap gap-3">
-          <p className="text-[12px] text-[#64748B]">
-            Showing <span className="font-semibold text-[#0F172A]">{Math.min(filtered.length, (page - 1) * perPage + 1)}</span> to{" "}
-            <span className="font-semibold text-[#0F172A]">{Math.min(page * perPage, filtered.length)}</span> of{" "}
-            <span className="font-semibold text-[#0F172A]">{filtered.length}</span> documents
-          </p>
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <select
-                value={perPage}
-                onChange={(e) => {
-                  setPerPage(Number(e.target.value));
-                  setPage(1);
-                }}
-                className="appearance-none pl-3 pr-8 py-2 rounded-xl border border-[#E2E8F0] bg-white text-[12px] font-medium text-[#475569] hover:bg-[#F8FAFC] cursor-pointer focus:outline-none focus:ring-4 focus:ring-[#2563EB]/10"
-                data-testid="kb-per-page"
-              >
-                {[10, 25, 50].map((n) => (
-                  <option key={n} value={n}>
-                    {n} per page
-                  </option>
-                ))}
-              </select>
-              <ChevronDown size={13} className="absolute right-2 top-1/2 -translate-y-1/2 text-[#94A3B8] pointer-events-none" />
-            </div>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => page > 1 && setPage(page - 1)}
-                disabled={page === 1}
-                className="size-8 rounded-lg grid place-items-center hover:bg-[#F1F5F9] text-[#64748B] disabled:opacity-40"
-                aria-label="Previous page"
-              >
-                <ChevronLeft size={14} />
-              </button>
-              <button
-                onClick={() => setPage(page)}
-                className="size-8 rounded-lg font-semibold text-[12.5px] bg-[#2563EB] text-white"
-              >
-                {page}
-              </button>
-              <button
-                onClick={() => page < totalPages && setPage(page + 1)}
-                disabled={page >= totalPages}
-                className="size-8 rounded-lg grid place-items-center hover:bg-[#F1F5F9] text-[#64748B] disabled:opacity-40"
-                aria-label="Next page"
-              >
-                <ChevronRight size={14} />
-              </button>
-            </div>
-          </div>
+              <div className="mt-4 flex items-center gap-4 text-sm">
+                <div>
+                  <p className="text-xs text-[#64748B]">Documents</p>
+                  <p className="font-semibold text-[#0F172A]">
+                    {(kb.document_count || 0).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-auto pt-4 flex items-center gap-2">
+                <Link
+                  to={`/app/knowledge-base/${kb.id}`}
+                  className="flex-1 text-center px-3 py-2 rounded-xl border border-[#E2E8F0] hover:bg-[#F8FAFC] text-sm font-medium text-[#0F172A]"
+                  data-testid={`kb-open-${kb.id}`}
+                >
+                  Open
+                </Link>
+                <button
+                  onClick={() => remove(kb)}
+                  className="size-9 rounded-xl border border-[#E2E8F0] hover:bg-red-50 hover:border-red-200 grid place-items-center text-red-500"
+                  aria-label="Delete"
+                  data-testid={`kb-delete-${kb.id}`}
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </motion.div>
+          ))}
         </div>
-      </div>
+      )}
+
+      {creating && (
+        <CreateKnowledgeBaseModal
+          onClose={() => setCreating(false)}
+          onCreated={() => {
+            setCreating(false);
+            load();
+          }}
+        />
+      )}
     </div>
   );
 }
 
-/* ---------- Subcomponents ---------- */
+function CreateKnowledgeBaseModal({ onClose, onCreated }) {
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [status, setStatus] = useState("active");
+  const [busy, setBusy] = useState(false);
 
-function SourcePill({ icon: Icon, color, bg, label, testId }) {
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    setBusy(true);
+    try {
+      await api.post("/knowledge-bases", {
+        name: name.trim(),
+        description: description.trim() || null,
+        status,
+      });
+      toast.success("Knowledge base created");
+      onCreated();
+    } catch (err) {
+      toast.error(formatApiError(err.response?.data?.detail));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
-    <button
-      type="button"
-      data-testid={testId}
-      className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-[#E2E8F0] hover:border-[#CBD5E1] hover:bg-[#F8FAFC] transition-colors"
+    <div
+      className="fixed inset-0 z-50 bg-black/50 grid place-items-center p-4"
+      role="dialog"
+      data-testid="kb-create-modal"
     >
-      <span className="size-6 rounded-md grid place-items-center" style={{ background: bg }}>
-        <Icon size={13} style={{ color }} />
-      </span>
-      <span className="text-[12.5px] font-medium text-[#0F172A]">{label}</span>
-    </button>
-  );
-}
+      <form
+        onSubmit={submit}
+        className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 space-y-4"
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-[#0F172A]">
+            New Knowledge Base
+          </h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1 rounded-lg hover:bg-[#F1F5F9]"
+            aria-label="Close"
+            data-testid="kb-create-close"
+          >
+            <X size={18} />
+          </button>
+        </div>
 
-/** Custom DOCX icon — looks like a "W" inside a document frame. */
-function FileTextDocx({ size = 18, color = "#2563EB" }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <path d="M14 2v6h6" />
-      <path d="M8 14l1.5 4 1.5-3 1.5 3L14 14" />
-    </svg>
+        <div>
+          <label className="block text-sm font-medium text-[#0F172A] mb-1.5">
+            Name
+          </label>
+          <input
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. Product Docs"
+            className="w-full rounded-xl border border-[#E2E8F0] px-4 py-2.5 text-sm"
+            data-testid="kb-create-name"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-[#0F172A] mb-1.5">
+            Description
+          </label>
+          <textarea
+            rows={3}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="What's in this knowledge base?"
+            className="w-full rounded-xl border border-[#E2E8F0] px-4 py-2.5 text-sm"
+            data-testid="kb-create-desc"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-[#0F172A] mb-1.5">
+            Status
+          </label>
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="w-full rounded-xl border border-[#E2E8F0] px-4 py-2.5 text-sm bg-white"
+            data-testid="kb-create-status"
+          >
+            <option value="draft">Draft</option>
+            <option value="active">Active</option>
+            <option value="archived">Archived</option>
+          </select>
+        </div>
+
+        <div className="flex justify-end gap-2 pt-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 rounded-xl border border-[#E2E8F0] hover:bg-[#F8FAFC] text-sm font-semibold"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={busy || !name.trim()}
+            className="px-5 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold disabled:opacity-60"
+            data-testid="kb-create-submit"
+          >
+            {busy ? "Creating…" : "Create"}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
