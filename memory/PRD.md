@@ -35,6 +35,27 @@ the app runs anywhere without breaking after `git pull && run`.
 - GET /api/health → 200, GET /api/health/db → 200 against local PG
 - `tests/audit_phase2_postgres.py` (run with `OVERRIDE_DATABASE_URL=...`)
 
+### Phase 5 (Multi-Tenant Foundation) — 12/12 PASS — 2026-06-22
+Suite split into two layers, both green:
+
+**Unit + integration tests** (`tests/test_phase5_org_isolation.py`) — 5/5
+- `OrgScopedRepository` rejects tenant-less models at construction
+- `add_for_org()` raises `PermissionError` on cross-org write attempts
+- `add_for_org()` auto-stamps `organization_id` on fresh instances
+- Repo-layer: Org A cannot read/list/mutate Org B's agents (live PG)
+- HTTP-layer via `httpx.AsyncClient + ASGITransport`: Bob 404s on Alice's
+  agent id for GET / DELETE / list, Alice gets her own row back
+
+**Live HTTP cross-tenant audit** (`tests/audit_phase5_isolation.py`) — 7/7
+Run against the real backend with two real Cognito users:
+- Provisioned Alice + Bob get distinct orgs from `/api/auth/identity`
+- Alice creates an agent
+- Bob GET /api/agents/{alice_id} → 404 (no read leak)
+- Bob DELETE /api/agents/{alice_id} → 404 (no write leak)
+- Bob's `/api/agents` list excludes Alice's row
+- Alice can still fetch her own row
+- `X-Org-Id` spoof header is ignored (server resolves org from token+DB only)
+
 ### Phase 4 (Frontend Identity Integration) — 14/14 PASS — 2026-06-22
 Verified via real Playwright browser flow against preview pod with PG backend:
 - **AuthProvider state**: `identity`, `organization`, `membership`, `organizationId`,
@@ -83,6 +104,14 @@ Verified via real Playwright browser flow against preview pod with PG backend:
    when the actual engine used `DATABASE_URL` (so `localhost:5432` looked
    like `oraone-postgres.rds.amazonaws.com`). Now logs the real URL with
    password redacted.
+7. **Flaky integration test `test_org_isolation_http_layer`** —
+   `starlette.TestClient` is sync and spawns a fresh event loop per request,
+   colliding with the asyncpg pool from the prior async fixture
+   ("Future attached to a different loop"). Fixed by switching to
+   `httpx.AsyncClient + ASGITransport` and adding engine dispose/recreate
+   around the `db_session` fixture. **Important — this test was silently
+   failing CI**, meaning tenant-isolation regressions could have slipped
+   through unnoticed.
 
 ### Env files (six total)
 - `backend/.env` ............... live values (current preview)

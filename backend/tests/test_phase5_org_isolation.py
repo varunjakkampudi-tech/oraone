@@ -142,15 +142,26 @@ REQUIRES_DB = pytest.mark.skipif(
 
 @pytest_asyncio.fixture
 async def db_session() -> AsyncIterator:
-    from app.database.session import AsyncSessionLocal, init_engine
+    """Yield a fresh AsyncSession bound to the current test's event loop.
 
-    if AsyncSessionLocal is None:
-        init_engine()
-    from app.database.session import AsyncSessionLocal as Maker  # re-import after init
+    pytest-asyncio gives each test its own loop, but asyncpg connections
+    are loop-bound — so we must dispose & re-create the engine per test.
+    Otherwise the second DB test inherits a pool from a now-closed loop
+    and crashes with 'Future attached to a different loop'.
+    """
+    from app.database import session as db_session_module
+    from app.database.session import dispose_engine, init_engine
 
-    async with Maker() as s:  # type: ignore[misc]
+    await dispose_engine()
+    init_engine()
+    Maker = db_session_module.AsyncSessionLocal
+    assert Maker is not None
+
+    async with Maker() as s:
         yield s
         await s.rollback()
+
+    await dispose_engine()
 
 
 async def _seed_org_with_user(session, *, email: str, slug_hint: str):
@@ -226,7 +237,9 @@ async def test_org_isolation_repo_layer(db_session):
 @pytest.mark.asyncio
 async def test_org_isolation_http_layer(db_session):
     """HTTP-level proof: Bob (Org B) cannot read/delete Alice's (Org A) agent
-    via /api/v2/agents/{id}, even if he supplies the exact UUID."""
+    via /api/agents/{id}, even if he supplies the exact UUID."""
+    from httpx import ASGITransport, AsyncClient
+
     from app.database.models.agent import Agent, AgentStatus, AgentType
     from app.middleware.org_context import OrgContext, get_current_organization
     from server import app
@@ -254,17 +267,18 @@ async def test_org_isolation_http_layer(db_session):
 
     app.dependency_overrides[get_current_organization] = _override
     try:
-        with TestClient(app) as client:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
             # Bob (Org B) tries to read Alice's agent → 404
-            r = client.get(f"/api/agents/{alices_agent.id}")
+            r = await client.get(f"/api/agents/{alices_agent.id}")
             assert r.status_code == 404, r.text
 
             # And to delete it → 404 (must not leak via 403/200)
-            r = client.delete(f"/api/agents/{alices_agent.id}")
+            r = await client.delete(f"/api/agents/{alices_agent.id}")
             assert r.status_code == 404, r.text
 
             # His own list never contains Alice's agent
-            r = client.get("/api/agents")
+            r = await client.get("/api/agents")
             assert r.status_code == 200
             assert all(a["id"] != str(alices_agent.id) for a in r.json()["items"])
 
@@ -272,7 +286,7 @@ async def test_org_isolation_http_layer(db_session):
             current_ctx["v"] = OrgContext(
                 user_id=user_a.id, cognito_sub="a", organization_id=org_a.id, membership_role="owner",
             )
-            r = client.get(f"/api/agents/{alices_agent.id}")
+            r = await client.get(f"/api/agents/{alices_agent.id}")
             assert r.status_code == 200, r.text
             assert r.json()["id"] == str(alices_agent.id)
     finally:
