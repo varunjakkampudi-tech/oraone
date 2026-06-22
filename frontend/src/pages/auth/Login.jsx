@@ -26,6 +26,15 @@ export default function Login() {
       return;
     }
 
+    if (res.identityError) {
+      // Authentication succeeded but workspace context didn't load.
+      // Surface the issue rather than dropping the user into a broken dashboard.
+      setError(
+        `Signed in, but we couldn't load your workspace: ${res.identityError}. Please retry in a moment.`
+      );
+      return;
+    }
+
     nav("/app/overview", { replace: true });
   };
 

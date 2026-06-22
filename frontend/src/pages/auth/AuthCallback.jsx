@@ -8,7 +8,7 @@ import { exchangeCodeForSession } from "@/lib/cognito";
 export default function AuthCallback() {
   const nav = useNavigate();
   const location = useLocation();
-  const { fetchMe } = useAuth();
+  const { fetchMe, fetchIdentity } = useAuth();
 
   const [errorMsg, setErrorMsg] = useState(null);
   const exchanged = useRef(false); // guard against double-execution in StrictMode
@@ -36,6 +36,14 @@ export default function AuthCallback() {
           // Clean the ?code= from the URL immediately
           window.history.replaceState({}, document.title, window.location.pathname);
           await fetchMe();
+          // Block redirect on identity hydration (Phase 4 requirement #6).
+          const identityResult = await fetchIdentity();
+          if (!identityResult.ok) {
+            setErrorMsg(
+              `Signed in, but we couldn't load your workspace: ${identityResult.error}`
+            );
+            return;
+          }
           nav("/app/overview", { replace: true });
         } catch (e) {
           setErrorMsg(e.message || "Authentication failed. Please try again.");
@@ -48,7 +56,7 @@ export default function AuthCallback() {
     if (!code) {
       setErrorMsg("Missing authorization code in callback URL.");
     }
-  }, [location.search, fetchMe, nav]);
+  }, [location.search, fetchMe, fetchIdentity, nav]);
 
   // --- Error state ---
   if (errorMsg) {

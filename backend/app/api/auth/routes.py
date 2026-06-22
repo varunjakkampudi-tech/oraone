@@ -53,10 +53,10 @@ def _looks_like_email(value: str | None) -> bool:
 
 def _resolve_email_and_name(
     claims: dict, access_token: str
-) -> tuple[str | None, str | None, str]:
-    """Resolve a real email + display name for the caller.
+) -> tuple[str | None, str | None, str | None, str]:
+    """Resolve a real email + display name(s) for the caller.
 
-    Returns ``(email, full_name, source)``. Tries, in order:
+    Returns ``(email, full_name, given_name, source)``. Tries, in order:
       1. ``claims['email']`` (only id tokens carry it; access tokens don't)
       2. AWS Cognito ``GetUser`` API with the raw access token
       3. The existing DynamoDB user profile (keyed by sub == userId)
@@ -68,8 +68,9 @@ def _resolve_email_and_name(
     # 1) Claims
     claim_email = (claims.get("email") or "").strip()
     if _looks_like_email(claim_email):
-        full_name = claims.get("name") or claims.get("given_name") or None
-        return claim_email, full_name, "claims"
+        full_name = claims.get("name") or None
+        given_name = claims.get("given_name") or None
+        return claim_email, full_name, given_name, "claims"
 
     # 2) Cognito GetUser
     try:
@@ -77,12 +78,14 @@ def _resolve_email_and_name(
         attrs = {a["Name"]: a["Value"] for a in resp.get("UserAttributes", [])}
         cognito_email = (attrs.get("email") or "").strip()
         if _looks_like_email(cognito_email):
-            name = (
+            given_name = attrs.get("given_name") or None
+            family_name = attrs.get("family_name") or None
+            full_name = (
                 attrs.get("name")
-                or " ".join(p for p in [attrs.get("given_name"), attrs.get("family_name")] if p).strip()
+                or " ".join(p for p in [given_name, family_name] if p).strip()
                 or None
             )
-            return cognito_email, name, "cognito_get_user"
+            return cognito_email, full_name, given_name, "cognito_get_user"
         log.warning(
             "identity_email_lookup sub=%s cognito_get_user returned no email (attrs=%s)",
             sub, list(attrs.keys()),
@@ -99,14 +102,14 @@ def _resolve_email_and_name(
             item = users_table.get_item(Key={"userId": sub}).get("Item") or {}
             ddb_email = (item.get("email") or "").strip()
             if _looks_like_email(ddb_email):
-                return ddb_email, item.get("name") or None, "dynamodb"
+                return ddb_email, item.get("name") or None, item.get("given_name") or None, "dynamodb"
         except (ClientError, BotoCoreError) as e:
             log.warning(
                 "identity_email_lookup sub=%s dynamodb_failed: %s: %s",
                 sub, type(e).__name__, e,
             )
 
-    return None, None, "unresolved"
+    return None, None, None, "unresolved"
 
 
 @router.post("/signup", response_model=MessageResponse)
@@ -205,7 +208,7 @@ async def identity(
             detail="Invalid token claims.",
         )
 
-    email, full_name, source = _resolve_email_and_name(claims, access_token)
+    email, full_name, given_name, source = _resolve_email_and_name(claims, access_token)
     log.info(
         "identity_resolve sub=%s email=%s source=%s",
         cognito_sub, email, source,
@@ -227,6 +230,7 @@ async def identity(
             cognito_sub=cognito_sub,
             email=email,
             full_name=full_name,
+            given_name=given_name,
         )
         await session.commit()
     except Exception as exc:  # surface DB unreachable / migration-not-applied clearly

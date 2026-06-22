@@ -1,8 +1,10 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { api, formatApiError, setTokens, clearTokens, getToken } from "./api";
 import { logoutHostedUI } from "@/lib/cognito";
 
 const AuthContext = createContext(null);
+
+const IDENTITY_KEY = "oraone_identity";
 
 function normalizeUser(profile) {
   if (!profile) return false;
@@ -17,13 +19,100 @@ function normalizeUser(profile) {
   };
 }
 
+// ---------------- Identity (Phase 4) ----------------
+const safeStorageGet = (key) => {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+const safeStorageSet = (key, value) => {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    /* ignore */
+  }
+};
+const safeStorageRemove = (key) => {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    /* ignore */
+  }
+};
+
+function loadIdentityFromStorage() {
+  const raw = safeStorageGet(IDENTITY_KEY);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && parsed.user && parsed.organization && parsed.membership) {
+      return parsed;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null); // null=checking, false=out, object=in
   const [loading, setLoading] = useState(true);
 
+  // Phase 4 — organization + membership context
+  const initialIdentity = loadIdentityFromStorage();
+  const [identity, setIdentity] = useState(initialIdentity); // { user, organization, membership, is_new_user } | null
+  const [identityLoading, setIdentityLoading] = useState(false);
+  const [identityError, setIdentityError] = useState(null);
+  const identityInFlight = useRef(null);
+
+  const clearIdentity = useCallback(() => {
+    setIdentity(null);
+    setIdentityError(null);
+    safeStorageRemove(IDENTITY_KEY);
+  }, []);
+
+  const fetchIdentity = useCallback(async () => {
+    if (!getToken()) {
+      clearIdentity();
+      return { ok: false, error: "Not signed in." };
+    }
+
+    if (identityInFlight.current) {
+      return identityInFlight.current;
+    }
+
+    setIdentityLoading(true);
+    setIdentityError(null);
+
+    const promise = (async () => {
+      try {
+        const { data } = await api.get("/auth/identity");
+        setIdentity(data);
+        safeStorageSet(IDENTITY_KEY, JSON.stringify(data));
+        return { ok: true, identity: data };
+      } catch (e) {
+        const msg =
+          formatApiError(e?.response?.data?.detail) ||
+          e?.message ||
+          "Could not load your workspace.";
+        setIdentityError(msg);
+        return { ok: false, error: msg };
+      } finally {
+        setIdentityLoading(false);
+        identityInFlight.current = null;
+      }
+    })();
+
+    identityInFlight.current = promise;
+    return promise;
+  }, [clearIdentity]);
+
   const fetchMe = useCallback(async () => {
     if (!getToken()) {
       setUser(false);
+      clearIdentity();
       setLoading(false);
       return;
     }
@@ -31,23 +120,27 @@ export function AuthProvider({ children }) {
     try {
       const { data } = await api.get("/auth/me");
       setUser(normalizeUser(data));
+      // Hydrate identity in the background; we don't block /auth/me on it.
+      fetchIdentity();
     } catch {
       clearTokens();
       setUser(false);
+      clearIdentity();
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [fetchIdentity, clearIdentity]);
 
   useEffect(() => {
     if (!getToken()) {
       setUser(false);
+      clearIdentity();
       setLoading(false);
       return;
     }
 
     fetchMe();
-  }, [fetchMe]);
+  }, [fetchMe, clearIdentity]);
 
   const _err = (e) =>
     formatApiError(e?.response?.data?.detail) || e?.message || "Something went wrong.";
@@ -68,11 +161,17 @@ export function AuthProvider({ children }) {
 
       setTokens(data.access_token, data.refresh_token ?? null, { persistent: true });
       await fetchMe();
-      return { ok: true };
+      // Block resolution on identity so the caller can redirect *only after*
+      // user + organization context are ready (Phase 4 requirement #6).
+      const identityResult = await fetchIdentity();
+      if (!identityResult.ok) {
+        return { ok: true, identityError: identityResult.error };
+      }
+      return { ok: true, identity: identityResult.identity };
     } catch (e) {
       return { ok: false, error: _err(e) };
     }
-  }, [fetchMe]);
+  }, [fetchMe, fetchIdentity]);
 
   const signup = useCallback(async ({ email, password, name } = {}) => {
     const normalizedEmail = String(email || "").trim().toLowerCase();
@@ -148,16 +247,24 @@ export function AuthProvider({ children }) {
 
     clearTokens();
     setUser(false);
+    clearIdentity();
 
     if (hosted) {
       logoutHostedUI();
     }
-  }, []);
+  }, [clearIdentity]);
 
   const refresh = fetchMe;
   const refreshSession = fetchMe;
   const getCurrentUser = fetchMe;
   const isAuthenticated = !!user;
+
+  // Phase 4 — convenience accessors (read-only views into identity)
+  const organization = identity?.organization || null;
+  const membership = identity?.membership || null;
+  const organizationId = organization?.id || null;
+  const organizationName = organization?.name || null;
+  const membershipRole = membership?.role || null;
 
   return (
     <AuthContext.Provider
@@ -165,6 +272,17 @@ export function AuthProvider({ children }) {
         user,
         loading,
         isAuthenticated,
+        // Phase 4
+        identity,
+        organization,
+        membership,
+        organizationId,
+        organizationName,
+        membershipRole,
+        identityLoading,
+        identityError,
+        fetchIdentity,
+        // existing
         signup,
         verify,
         resend,
