@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Sparkles, CheckCircle2, Check, Rocket, TrendingUp, Building2,
-  Shield, FileText, ArrowUpCircle, Headphones,
+  Shield, FileText, ArrowUpCircle, Headphones, ArrowRight,
 } from "lucide-react";
 import { useSEO } from "@/lib/seo";
 
@@ -19,9 +19,19 @@ const TIERS = [
     slug: "starter",
     name: "Starter",
     tagline: "Perfect for trying out OraOne",
-    icon: Rocket, iconBg: "#EFF6FF", iconColor: "#2563EB",
+    icon: Rocket,
+    iconBg: "#EFF6FF",
+    iconColor: "#2563EB",
     priceColor: "text-[#2563EB]",
-    features: ["1 AI Agent", "500 conversations/mo", "Email support", "Basic analytics"],
+    postPrice: "$29",
+    postPriceUnit: "/mo after launch",
+    features: [
+      "1 AI Agent",
+      "500 conversations/mo",
+      "Email support",
+      "Basic analytics",
+      "Standard knowledge base",
+    ],
     cta: { label: "Start Free", to: "/signup", style: "bg-[#2563EB] hover:bg-[#1D4ED8] text-white" },
     dark: false,
   },
@@ -29,9 +39,20 @@ const TIERS = [
     slug: "growth",
     name: "Growth",
     tagline: "For growing teams that need scale",
-    icon: TrendingUp, iconBg: "#2563EB", iconColor: "#FFFFFF",
+    icon: TrendingUp,
+    iconBg: "#2563EB",
+    iconColor: "#FFFFFF",
     priceColor: "text-white",
-    features: ["5 AI Agents", "10,000 conversations/mo", "Priority support", "Advanced analytics", "CRM Integrations"],
+    postPrice: "Pricing TBD",
+    postPriceUnit: "announced at launch",
+    features: [
+      "5 AI Agents",
+      "10,000 conversations/mo",
+      "Priority support",
+      "Advanced analytics",
+      "CRM integrations (Salesforce, HubSpot, Zoho)",
+      "Custom knowledge base",
+    ],
     cta: { label: "Start Free", to: "/signup", style: "bg-white hover:bg-white/90 text-[#0F172A]" },
     dark: true,
     badge: "MOST POPULAR",
@@ -40,35 +61,64 @@ const TIERS = [
     slug: "enterprise",
     name: "Enterprise",
     tagline: "Custom solutions for large teams",
-    icon: Building2, iconBg: "#F3E8FF", iconColor: "#7C3AED",
+    icon: Building2,
+    iconBg: "#F3E8FF",
+    iconColor: "#7C3AED",
     priceColor: "text-[#7C3AED]",
-    features: ["Unlimited agents", "Unlimited conversations", "Dedicated CSM", "SSO + RBAC", "Custom integrations"],
+    postPrice: "Custom",
+    postPriceUnit: "Contact Sales",
+    features: [
+      "Unlimited AI Agents",
+      "Unlimited conversations",
+      "Custom integrations",
+      "Dedicated support & CSM",
+      "SLA options (uptime + response)",
+      "SSO + RBAC + Audit logs",
+    ],
     cta: { label: "Contact Sales", to: "/contact", style: "bg-[#7C3AED] hover:bg-[#6D28D9] text-white" },
     dark: false,
   },
 ];
 
 const TRUST = [
-  { icon: Shield,       title: "100% Secure",     desc: "Enterprise-grade security to protect your data.",     color: "#2563EB", bg: "#EFF6FF" },
-  { icon: FileText,     title: "No Hidden Fees",  desc: "Transparent pricing with no surprise charges.",       color: "#22C55E", bg: "#ECFDF5" },
-  { icon: ArrowUpCircle, title: "Scale Anytime",  desc: "Upgrade or downgrade as your needs change.",          color: "#F59E0B", bg: "#FEF3C7" },
-  { icon: Headphones,   title: "24/7 Support",    desc: "We're here to help you succeed always.",              color: "#8B5CF6", bg: "#F3E8FF" },
+  { icon: Shield,        title: "Enterprise-Grade Security", desc: "AES-256, TLS 1.3, RBAC and audit logs — built for serious businesses.", color: "#2563EB", bg: "#EFF6FF" },
+  { icon: FileText,      title: "No Hidden Fees",             desc: "Transparent pricing — no setup fees, no surprise overages.",            color: "#22C55E", bg: "#ECFDF5" },
+  { icon: ArrowUpCircle, title: "Scale Anytime",              desc: "Upgrade, downgrade or pause as your business changes.",                 color: "#F59E0B", bg: "#FEF3C7" },
+  { icon: Headphones,    title: "Real Human Support",         desc: "Email + chat support on every plan. Dedicated CSM on Enterprise.",      color: "#8B5CF6", bg: "#F3E8FF" },
+];
+
+const FAQ_PRICING = [
+  {
+    q: "Is OraOne really free during Beta?",
+    a: "Yes — Beta Access is completely free. No credit card required, no overage charges, no commitments. You can stay on Beta until we publicly launch, after which you'll be invited to migrate to the appropriate paid tier with founder pricing.",
+  },
+  {
+    q: "What happens to my account after Beta?",
+    a: "You'll get 30 days' notice before pricing kicks in. Beta users get early-adopter pricing — Starter from $29/month. You can keep, change or cancel your plan at that time.",
+  },
+  {
+    q: "Do you offer custom plans for Enterprise?",
+    a: "Absolutely. Enterprise plans include custom integrations, SSO, dedicated CSM, uptime + response SLA options, custom data residency and procurement-friendly contracts. Contact Sales to discuss.",
+  },
+  {
+    q: "What's included with Enterprise SLA?",
+    a: "Enterprise SLA options cover 99.9% uptime guarantee, priority response (under 1 hour for severity 1 issues), dedicated escalation channel, quarterly business reviews and custom data-retention controls.",
+  },
 ];
 
 export default function PricingPage() {
   useSEO({
-    title: "Pricing",
-    description: "Free Beta Access — no credit card required. Simple, transparent pricing. Pay only when you're ready to scale.",
+    title: "Pricing — Free during Beta · From $29/mo",
+    description:
+      "OraOne is free during Beta Access. From $29/month after launch. Simple, transparent pricing with no hidden fees. Custom plans for Enterprise.",
   });
 
   return (
     <div className="bg-white">
       {/* ====== HERO ====== */}
-      <section className="relative pt-24 pb-16 overflow-hidden bg-gradient-to-b from-[#F8FAFC] via-white to-white">
-        {/* Decorative wave dots (sides) */}
+      <section className="relative pt-24 pb-12 overflow-hidden bg-gradient-to-b from-[#F8FAFC] via-white to-white">
         <WaveDots side="left" />
         <WaveDots side="right" />
-        {/* Sparkle accents */}
         <Sparkle top="22%" left="11%" color="#8B5CF6" />
         <Sparkle top="40%" left="6%" color="#06B6D4" />
         <Sparkle top="28%" right="10%" color="#2563EB" />
@@ -76,21 +126,50 @@ export default function PricingPage() {
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.span {...fadeUp} className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#EFF6FF] text-xs font-bold tracking-[0.2em] text-[#2563EB]">
-            <Sparkles size={12} /> FREE BETA ACCESS
+            <Sparkles size={12} /> BETA ACCESS · FREE DURING BETA
           </motion.span>
           <motion.h1 {...fadeUp} className="mt-6 text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tighter text-[#0F172A]">
             Simple, transparent <span className="gradient-text">pricing</span>
           </motion.h1>
-          <motion.p {...fadeUp} className="mt-5 text-[#64748B] max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
-            Get started for free during our beta. Pay only when you're ready to scale.
+          <motion.p {...fadeUp} className="mt-5 text-[#475569] max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
+            OraOne is free for everyone during our Beta. After launch, pricing starts at{" "}
+            <span className="font-semibold text-[#0F172A]">$29/month</span> — with custom Enterprise plans available.
           </motion.p>
 
           <motion.div {...fadeUp} className="mt-6 flex flex-wrap items-center justify-center gap-6 text-sm">
-            {["No credit card required", "Cancel anytime", "Upgrade in seconds"].map((t) => (
+            {["Free during Beta", "No credit card required", "Cancel anytime"].map((t) => (
               <span key={t} className="inline-flex items-center gap-1.5 text-[#475569]">
                 <CheckCircle2 size={16} className="text-[#22C55E]" /> {t}
               </span>
             ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ====== PRICING BANNER ====== */}
+      <section className="pb-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            {...fadeUp}
+            className="rounded-2xl border border-[#2563EB]/20 bg-[#EFF6FF]/60 px-5 sm:px-7 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+          >
+            <div className="flex items-start sm:items-center gap-3">
+              <span className="px-2.5 py-1 rounded-md bg-[#2563EB] text-white text-[10px] font-bold tracking-[0.18em]">
+                BETA
+              </span>
+              <p className="text-[13.5px] text-[#0F172A]">
+                <span className="font-semibold">Free during Beta Access.</span>{" "}
+                <span className="text-[#475569]">
+                  Indicative post-beta pricing starts at $29/mo — Beta users get early-adopter pricing at launch.
+                </span>
+              </p>
+            </div>
+            <Link
+              to="/contact"
+              className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#2563EB] hover:underline whitespace-nowrap"
+            >
+              Talk to Sales <ArrowRight size={13} />
+            </Link>
           </motion.div>
         </div>
       </section>
@@ -130,10 +209,16 @@ export default function PricingPage() {
                   </div>
                 </div>
 
-                {/* Price */}
-                <div className="mt-7 flex items-baseline gap-2">
-                  <span className={`text-6xl font-black tracking-tighter ${t.priceColor}`}>$0</span>
-                  <span className={`text-sm ${t.dark ? "text-white/65" : "text-[#64748B]"}`}>during beta</span>
+                {/* Price block — Beta hero + post-beta line */}
+                <div className="mt-7">
+                  <div className="flex items-baseline gap-2">
+                    <span className={`text-6xl font-black tracking-tighter ${t.priceColor}`}>$0</span>
+                    <span className={`text-sm ${t.dark ? "text-white/65" : "text-[#64748B]"}`}>during Beta</span>
+                  </div>
+                  <p className={`mt-2 text-[12.5px] ${t.dark ? "text-white/60" : "text-[#64748B]"}`}>
+                    <span className={`font-semibold ${t.dark ? "text-white/85" : "text-[#0F172A]"}`}>{t.postPrice}</span>{" "}
+                    {t.postPriceUnit}
+                  </p>
                 </div>
 
                 {/* Divider */}
@@ -159,7 +244,9 @@ export default function PricingPage() {
                 >
                   {t.cta.label}
                 </Link>
-                <p className={`mt-3 text-center text-xs ${t.dark ? "text-white/55" : "text-[#94A3B8]"}`}>Free during beta</p>
+                <p className={`mt-3 text-center text-xs ${t.dark ? "text-white/55" : "text-[#94A3B8]"}`}>
+                  Free during Beta — no credit card
+                </p>
               </motion.div>
             ))}
           </div>
@@ -167,7 +254,7 @@ export default function PricingPage() {
       </section>
 
       {/* ====== TRUST STRIP ====== */}
-      <section className="pb-24">
+      <section className="pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div {...fadeUp} className="rounded-3xl bg-[#F8FAFC] border border-[#E2E8F0] px-6 sm:px-8 py-7">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -184,6 +271,34 @@ export default function PricingPage() {
               ))}
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      {/* ====== PRICING FAQ ====== */}
+      <section className="pb-24">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div {...fadeUp} className="text-center mb-10">
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tighter text-[#0F172A]">
+              Pricing Questions, Answered
+            </h2>
+            <p className="mt-3 text-[#64748B]">Everything you need to know about Beta Access and post-launch pricing.</p>
+          </motion.div>
+          <div className="space-y-3">
+            {FAQ_PRICING.map((f, i) => (
+              <details
+                key={i}
+                className="group rounded-2xl bg-white border border-[#E2E8F0] hover:border-[#2563EB]/30 transition-colors"
+              >
+                <summary className="list-none p-5 flex items-center justify-between cursor-pointer gap-3">
+                  <span className="text-[15px] font-semibold text-[#0F172A]">{f.q}</span>
+                  <span className="text-[#64748B] group-open:rotate-180 transition-transform shrink-0">
+                    <ArrowRight size={16} className="rotate-90" />
+                  </span>
+                </summary>
+                <div className="px-5 pb-5 text-[#475569] text-[14px] leading-relaxed">{f.a}</div>
+              </details>
+            ))}
+          </div>
         </div>
       </section>
     </div>

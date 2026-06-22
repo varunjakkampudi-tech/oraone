@@ -30,6 +30,7 @@ const columns = [
       { to: "/documentation", label: "Documentation" },
       { to: "/case-studies", label: "Case Studies" },
       { to: "/integrations", label: "Integrations" },
+      { to: "/security", label: "Security & Trust" },
       { to: "/contact", label: "Help Center" },
     ],
   },
@@ -122,6 +123,7 @@ export default function Footer() {
           <div className="flex items-center gap-5">
             <Link to="/privacy" className="text-xs text-white/55 hover:text-white">Privacy Policy</Link>
             <Link to="/terms" className="text-xs text-white/55 hover:text-white">Terms of Service</Link>
+            <Link to="/security" className="text-xs text-white/55 hover:text-white">Security</Link>
             <Link to="/cookie-policy" className="text-xs text-white/55 hover:text-white">Cookie Policy</Link>
             <Link to="/data-deletion" className="text-xs text-white/55 hover:text-white">Data Deletion</Link>
           </div>

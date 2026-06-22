@@ -7,6 +7,25 @@ export const HOME = {
   navLogin: "nav-login",
   navStartFree: "nav-start-free",
   navBookDemo: "nav-book-demo",
+
+  // Trust & Social Proof
+  trustSection: "home-trust-section",
+  trustMetric: "home-trust-metric",
+  trustPillar: "home-trust-pillar",
+
+  // Live Product Demo tabs
+  demoSection: "home-demo-section",
+  demoTabVoice: "home-demo-tab-voice",
+  demoTabChat: "home-demo-tab-chat",
+  demoTabWhatsapp: "home-demo-tab-whatsapp",
+
+  // Pricing snippet
+  pricingSnippet: "home-pricing-snippet",
+  pricingSnippetCta: "home-pricing-snippet-cta",
+
+  // Case studies snippet
+  caseStudiesSnippet: "home-case-studies-snippet",
+  caseStudiesSnippetCta: "home-case-studies-snippet-cta",
 };
 
 export const NAV = {

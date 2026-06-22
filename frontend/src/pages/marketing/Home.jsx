@@ -4,16 +4,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
   Phone,
-  PhoneCall,
   Mail,
   MessageSquare,
   MessageCircle,
-  Calendar,
   Clock,
   Sparkles,
-  Globe2,
-  Puzzle,
-  Code2,
   ShieldCheck,
   Stethoscope,
   Home as HomeIcon,
@@ -23,14 +18,7 @@ import {
   ShoppingBag,
   CheckCircle2,
   ChevronDown,
-  ChevronRight,
-  Star,
   Lock,
-  KeyRound,
-  FileCheck2,
-  Cloud,
-  Activity,
-  ClipboardList,
   Layers,
   BookOpen,
   UserPlus,
@@ -39,19 +27,24 @@ import {
   Bot,
   Plug,
   Rocket,
-  Mic,
   TrendingUp,
-  Filter,
-  Download,
-  Search,
-  MoreHorizontal,
-  Shield,
-  Crown,
-  Eye,
+  Headphones,
+  Activity,
+  Star,
+  Quote,
+  Building2,
+  ArrowUpRight,
+  Zap,
+  Network,
 } from "lucide-react";
 import HeroOrb from "@/components/marketing/HeroOrb";
+import {
+  VoiceAgentDemo,
+  ChatAgentDemo,
+  WhatsAppAgentDemo,
+} from "@/components/marketing/ProductLiveDemos";
 import { useSEO } from "@/lib/seo";
-import { FAQ, TESTIMONIALS, LIVE_TRANSCRIPT } from "@/lib/mockData";
+import { FAQ } from "@/lib/mockData";
 import { HOME } from "@/constants/testIds";
 
 const fadeUp = {
@@ -61,12 +54,58 @@ const fadeUp = {
   transition: { duration: 0.55, ease: [0.25, 0.1, 0.25, 1] },
 };
 
-const STATS = [
-  { value: "10,000+", label: "Businesses Served" },
-  { value: "50M+", label: "Conversations Handled" },
-  { value: "24/7", label: "AI Agent Availability" },
-  { value: "90%", label: "Queries Resolved Instantly" },
-  { value: "3X", label: "More Conversions" },
+/* ─────────────────────────────────  Data  ───────────────────────────────── */
+
+const PLATFORM_METRICS = [
+  {
+    value: "10,000+",
+    label: "Conversations Automated",
+    sub: "Across voice, chat & WhatsApp",
+    note: "Platform metric",
+  },
+  {
+    value: "500+",
+    label: "Businesses Exploring OraOne",
+    sub: "Currently in private & open beta",
+    note: "Beta metric",
+  },
+  {
+    value: "95%",
+    label: "Faster Response Times",
+    sub: "vs. traditional support workflows",
+    note: "Platform metric",
+  },
+];
+
+const TRUST_PILLARS = [
+  {
+    icon: Clock,
+    title: "24/7 AI Availability",
+    desc: "Agents never sleep — answer customers instantly, day or night.",
+    color: "#2563EB",
+    bg: "#EFF6FF",
+  },
+  {
+    icon: Activity,
+    title: "99.9% Uptime",
+    desc: "Built on AWS with redundancy and continuous health monitoring.",
+    color: "#16A34A",
+    bg: "#ECFDF5",
+  },
+  {
+    icon: Network,
+    title: "Multi-Channel Support",
+    desc: "One AI brain. Voice, chat and WhatsApp — synced and consistent.",
+    color: "#7C3AED",
+    bg: "#F5F3FF",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Enterprise-Grade Security",
+    desc: "AES-256, TLS 1.3, RBAC, audit logs — built for serious businesses.",
+    color: "#0EA5E9",
+    bg: "#ECFEFF",
+  },
 ];
 
 const BENEFITS = [
@@ -114,60 +153,160 @@ const BENEFITS = [
   },
 ];
 
-const INDUSTRIES = [
-  { icon: Stethoscope, name: "Healthcare", sub: "Improve patient experience" },
-  { icon: HomeIcon, name: "Real Estate", sub: "Capture & qualify more leads" },
-  { icon: GraduationCap, name: "Education", sub: "Engage students & parents" },
-  { icon: ShieldCheck, name: "Insurance", sub: "Support, renewals & claims" },
-  { icon: Wallet, name: "Finance", sub: "Onboard, support & reduce churn" },
-  { icon: ShoppingBag, name: "Retail", sub: "Increase sales & customer loyalty" },
-];
-
 const INDUSTRY_USE_CASES = [
-  { icon: Stethoscope, name: "Dental Clinics", desc: "Appointments & reminders." },
-  { icon: HomeIcon, name: "Real Estate", desc: "Lead qualification & site visits." },
-  { icon: GraduationCap, name: "Education", desc: "Admissions & student support." },
-  { icon: ShieldCheck, name: "Insurance", desc: "Policy support & renewals." },
-  { icon: Car, name: "Automotive", desc: "Service booking & support." },
-  { icon: Wallet, name: "Finance", desc: "KYC, onboarding & customer support." },
+  { icon: Stethoscope, name: "Healthcare", desc: "Appointments, reminders & patient triage." },
+  { icon: HomeIcon, name: "Real Estate", desc: "Lead qualification & site-visit scheduling." },
+  { icon: GraduationCap, name: "Education", desc: "Admissions & student/parent support." },
+  { icon: ShieldCheck, name: "Insurance", desc: "Policy support, claims & renewals." },
+  { icon: Car, name: "Automotive", desc: "Service booking & test-drive scheduling." },
+  { icon: Wallet, name: "Finance & Lending", desc: "KYC, onboarding & customer support." },
+  { icon: ShoppingBag, name: "Retail & D2C", desc: "Order updates, returns & loyalty." },
+  { icon: Headphones, name: "Customer Support", desc: "Tier-1 deflection & escalation routing." },
 ];
 
-const SUPPORTED_INTEGRATIONS = [
-  { name: "WhatsApp", sub: "Business", color: "#25D366", glyph: "whatsapp" },
-  { name: "Google", sub: "Login", color: "#4285F4", glyph: "google" },
-  { name: "Gmail", sub: "Notifications", color: "#EA4335", glyph: "gmail" },
-  { name: "CSV Export", sub: "(Leads)", color: "#2563EB", glyph: "csv" },
-  { name: "REST API", sub: "(Coming Soon)", color: "#7C3AED", glyph: "api" },
+const CASE_STUDY_HIGHLIGHTS = [
+  {
+    industry: "Healthcare",
+    metric: "3.2×",
+    result: "more appointments booked after deploying the Voice Agent on inbound calls.",
+    icon: Stethoscope,
+    color: "#2563EB",
+    bg: "#EFF6FF",
+  },
+  {
+    industry: "Real Estate",
+    metric: "62%",
+    result: "of incoming WhatsApp leads qualified before a human agent stepped in.",
+    icon: HomeIcon,
+    color: "#7C3AED",
+    bg: "#F5F3FF",
+  },
+  {
+    industry: "Finance",
+    metric: "<30s",
+    result: "average first-response time across web chat — down from 6+ minutes.",
+    icon: Wallet,
+    color: "#16A34A",
+    bg: "#ECFDF5",
+  },
 ];
 
-const WORKS = [
-  { num: 1, title: "Create Agent",     desc: "Pick Voice, Chat or WhatsApp and configure your AI in minutes.", icon: Bot },
-  { num: 2, title: "Connect Channels", desc: "Plug in your phone number, website widget or WhatsApp Business.", icon: Plug },
-  { num: 3, title: "Upload Knowledge", desc: "Drop in PDFs, FAQs and docs — your agent learns instantly.",     icon: BookOpen },
-  { num: 4, title: "Go Live",          desc: "Launch your AI agent and start capturing conversations 24/7.",   icon: Rocket },
+const PRICING_PEEK = [
+  {
+    name: "Starter",
+    line: "1 AI Agent · 500 conversations/mo",
+    post: "From $29/mo after launch",
+    icon: Rocket,
+    color: "#2563EB",
+    bg: "#EFF6FF",
+  },
+  {
+    name: "Growth",
+    line: "5 AI Agents · 10,000 conversations/mo",
+    post: "Indicative post-beta pricing announced at launch",
+    icon: TrendingUp,
+    color: "#7C3AED",
+    bg: "#F5F3FF",
+    featured: true,
+  },
+  {
+    name: "Enterprise",
+    line: "Unlimited agents · SSO · SLA · Dedicated CSM",
+    post: "Custom · Contact Sales",
+    icon: Building2,
+    color: "#0F172A",
+    bg: "#F1F5F9",
+  },
 ];
 
-const SECURITY = [
-  { icon: Lock, title: "AES-256", sub: "Encryption" },
-  { icon: KeyRound, title: "Secure", sub: "Authentication" },
-  { icon: FileCheck2, title: "GDPR", sub: "Ready" },
-  { icon: Cloud, title: "AWS", sub: "Hosted" },
-  { icon: Clock, title: "99.9%", sub: "Uptime" },
-  { icon: ClipboardList, title: "Audit Logs", sub: "& Monitoring" },
+/* ───────────────────────────  Live Demo Tabs  ─────────────────────────── */
+
+const DEMO_TABS = [
+  { id: "voice", label: "Voice Agent", icon: Phone, testId: HOME.demoTabVoice },
+  { id: "chat", label: "Chat Agent", icon: MessageSquare, testId: HOME.demoTabChat },
+  { id: "whatsapp", label: "WhatsApp Agent", icon: MessageCircle, testId: HOME.demoTabWhatsapp },
 ];
+
+function LiveDemoSection() {
+  const [tab, setTab] = useState("voice");
+  return (
+    <section
+      id="live-demo"
+      data-testid={HOME.demoSection}
+      className="bg-white border-t border-[#E2E8F0]"
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20">
+        <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto">
+          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#EFF6FF] text-[11px] font-bold tracking-[0.2em] text-[#2563EB]">
+            <Sparkles size={11} /> TRY ORAONE LIVE
+          </span>
+          <h2 className="mt-4 text-4xl sm:text-5xl font-bold tracking-tighter text-[#0F172A]">
+            See the AI in action.
+          </h2>
+          <p className="mt-4 text-[#64748B] leading-relaxed">
+            Switch between channels to watch a real conversation play out — transcripts,
+            lead capture and dashboard updates, in real time.
+          </p>
+        </motion.div>
+
+        {/* Tabs */}
+        <div className="mt-8 flex justify-center">
+          <div className="inline-flex p-1.5 rounded-2xl bg-[#F1F5F9] border border-[#E2E8F0]">
+            {DEMO_TABS.map((t) => {
+              const active = tab === t.id;
+              return (
+                <button
+                  key={t.id}
+                  data-testid={t.testId}
+                  onClick={() => setTab(t.id)}
+                  className={`inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-[13px] font-semibold transition-all ${
+                    active
+                      ? "bg-white text-[#0F172A] shadow-premium"
+                      : "text-[#64748B] hover:text-[#0F172A]"
+                  }`}
+                  aria-pressed={active}
+                >
+                  <t.icon size={14} />
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Demo body */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={tab}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.35 }}
+        >
+          {tab === "voice" && <VoiceAgentDemo />}
+          {tab === "chat" && <ChatAgentDemo />}
+          {tab === "whatsapp" && <WhatsAppAgentDemo />}
+        </motion.div>
+      </AnimatePresence>
+    </section>
+  );
+}
+
+/* ─────────────────────────────────  Page  ───────────────────────────────── */
 
 export default function HomePage() {
   const nav = useNavigate();
   useSEO({
-    title: "OraOne — AI Voice, Chat & WhatsApp Agents for Modern Businesses",
+    title: "OraOne — Never Miss A Lead. Never Miss A Sale.",
     description:
-      "OraOne is an AI Agent Platform that answers calls, replies on chat and WhatsApp instantly, books appointments and captures leads 24/7.",
+      "AI Voice, Chat and WhatsApp Agents that answer, qualify and convert customers 24/7 — so your business grows even when your team is offline.",
   });
 
   return (
     <div className="bg-white">
       {/* ====================== HERO ====================== */}
-      <section className="relative pt-8 pb-10 sm:pt-10 sm:pb-12 overflow-hidden bg-[#F8FAFC]">
+      <section className="relative pt-10 pb-12 sm:pt-12 sm:pb-16 overflow-hidden bg-[#F8FAFC]">
         <div className="absolute inset-0 grid-bg opacity-60 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
@@ -177,13 +316,14 @@ export default function HomePage() {
                 <Sparkles size={11} className="text-[#2563EB]" />
                 AI AGENTS FOR MODERN BUSINESSES
               </span>
-              <h1 className="mt-6 text-5xl sm:text-6xl lg:text-7xl font-black tracking-tighter leading-[1.02] text-[#0F172A]">
-                One AI.
+              <h1 className="mt-6 text-[2.75rem] sm:text-5xl lg:text-[3.75rem] font-black tracking-tighter leading-[1.05] text-[#0F172A]">
+                Never Miss A Lead.
                 <br />
-                <span className="text-[#2563EB]">Every Conversation.</span>
+                <span className="text-[#2563EB]">Never Miss A Sale.</span>
               </h1>
-              <p className="mt-5 text-base sm:text-lg text-[#64748B] leading-relaxed max-w-md">
-                AI Voice Agents, Chat Agents and WhatsApp Agents that answer, engage and convert — 24/7.
+              <p className="mt-5 text-base sm:text-lg text-[#475569] leading-relaxed max-w-xl">
+                AI Voice, Chat and WhatsApp Agents that answer, qualify and convert
+                customers 24/7 — so your business grows even when your team is offline.
               </p>
 
               {/* Agent cards */}
@@ -192,21 +332,21 @@ export default function HomePage() {
                   {
                     icon: Phone,
                     label: "Voice Agent",
-                    sub: "AI calls, answers and talks like a human.",
+                    sub: "Answers calls and talks like a human.",
                     iconBg: "#EDE9FE",
                     iconColor: "#7C3AED",
                   },
                   {
                     icon: MessageSquare,
                     label: "Chat Agent",
-                    sub: "AI chats on your website in real time.",
+                    sub: "Live website chat in real time.",
                     iconBg: "#DBEAFE",
                     iconColor: "#2563EB",
                   },
                   {
                     icon: MessageCircle,
                     label: "WhatsApp Agent",
-                    sub: "AI replies on WhatsApp and engages instantly.",
+                    sub: "Replies and engages instantly.",
                     iconBg: "#DCFCE7",
                     iconColor: "#16A34A",
                   },
@@ -231,20 +371,20 @@ export default function HomePage() {
               <div className="mt-7 flex flex-wrap items-center gap-3">
                 <button
                   data-testid={HOME.heroCtaPrimary}
-                  onClick={() => nav("/contact")}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] hover:shadow-[0_12px_32px_-6px_rgba(37,99,235,0.6)] hover:-translate-y-0.5 transition-all"
-                >
-                  Book a Demo
-                </button>
-                <button
-                  data-testid={HOME.heroCtaSecondary}
                   onClick={() => nav("/signup")}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white border-2 border-[#2563EB] text-[#2563EB] hover:bg-[#EFF6FF] text-sm font-semibold transition-colors"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] hover:shadow-[0_12px_32px_-6px_rgba(37,99,235,0.6)] hover:-translate-y-0.5 transition-all"
                 >
                   Start Free
                 </button>
+                <button
+                  data-testid={HOME.heroCtaSecondary}
+                  onClick={() => nav("/contact")}
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white border-2 border-[#2563EB] text-[#2563EB] hover:bg-[#EFF6FF] text-sm font-semibold transition-colors"
+                >
+                  Book Demo
+                </button>
                 <span className="text-xs text-[#64748B] inline-flex items-center gap-1">
-                  <CheckCircle2 size={14} className="text-[#10B981]" /> No credit card required
+                  <CheckCircle2 size={14} className="text-[#10B981]" /> Free during Beta · No credit card
                 </span>
               </div>
             </motion.div>
@@ -262,72 +402,120 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ====================== BUILT FOR MODERN BUSINESSES ====================== */}
-      <section className="py-8 sm:py-10 bg-[#F8FAFC]">
+      {/* ====================== TRUST & SOCIAL PROOF ====================== */}
+      <section
+        data-testid={HOME.trustSection}
+        className="py-16 sm:py-20 bg-white border-t border-[#E2E8F0]"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-[11px] uppercase tracking-[0.25em] text-[#64748B] font-semibold">
-            Built for Modern Businesses
-          </p>
-          <div className="mt-7 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            {INDUSTRIES.map((ind) => (
-              <div
-                key={ind.name}
-                className="flex items-start gap-3 p-3 rounded-xl bg-white border border-[#E2E8F0]/70"
+          <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F1F5F9] text-[11px] font-bold tracking-[0.2em] text-[#475569] border border-[#E2E8F0]">
+              <Zap size={11} /> WHY TEAMS TRUST ORAONE
+            </span>
+            <h2 className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter text-[#0F172A]">
+              Built for businesses that can&apos;t afford to miss a customer.
+            </h2>
+            <p className="mt-4 text-[#64748B] leading-relaxed">
+              OraOne is designed for reliability, scale and enterprise-grade trust —
+              from day one of your beta.
+            </p>
+          </motion.div>
+
+          {/* Platform metrics */}
+          <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {PLATFORM_METRICS.map((m, i) => (
+              <motion.div
+                key={m.label}
+                data-testid={HOME.trustMetric}
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.1 }}
+                transition={{ delay: i * 0.06 }}
+                className="rounded-2xl bg-white border border-[#E2E8F0] p-6 sm:p-7 hover:border-[#2563EB]/30 hover:shadow-premium transition-all"
               >
-                <div className="size-10 rounded-lg bg-[#EFF6FF] grid place-items-center shrink-0">
-                  <ind.icon size={18} className="text-[#2563EB]" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[13px] font-semibold text-[#0F172A] truncate">{ind.name}</p>
-                  <p className="text-[11px] text-[#64748B] leading-snug">{ind.sub}</p>
-                </div>
-              </div>
+                <p className="text-[10px] font-bold tracking-[0.18em] text-[#64748B] uppercase">
+                  {m.note}
+                </p>
+                <p className="mt-3 text-4xl sm:text-5xl font-black tracking-tighter text-[#0F172A]">
+                  {m.value}
+                </p>
+                <p className="mt-2 text-[15px] font-semibold text-[#0F172A]">{m.label}</p>
+                <p className="mt-1 text-[12.5px] text-[#64748B] leading-snug">{m.sub}</p>
+              </motion.div>
             ))}
+          </div>
+
+          {/* Trust pillars */}
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {TRUST_PILLARS.map((p, i) => (
+              <motion.div
+                key={p.title}
+                data-testid={HOME.trustPillar}
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.1 }}
+                transition={{ delay: i * 0.05 }}
+                className="rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] p-5"
+              >
+                <div
+                  className="size-11 rounded-xl grid place-items-center"
+                  style={{ background: p.bg }}
+                >
+                  <p.icon size={20} style={{ color: p.color }} />
+                </div>
+                <p className="mt-4 text-[15px] font-semibold text-[#0F172A]">{p.title}</p>
+                <p className="mt-1.5 text-[12.5px] text-[#64748B] leading-snug">{p.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Security CTA strip */}
+          <div className="mt-8 rounded-2xl border border-[#E2E8F0] bg-[#0F172A] text-white px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="size-10 rounded-xl bg-white/10 grid place-items-center">
+                <ShieldCheck size={18} className="text-[#60A5FA]" />
+              </div>
+              <div>
+                <p className="text-[14px] font-semibold">
+                  GDPR · India DPDP · AES-256 · TLS 1.3 · RBAC
+                </p>
+                <p className="text-[12px] text-white/65 mt-0.5">
+                  Read how we secure your data and your customers&apos; data.
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/security"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white text-[#0F172A] text-[13px] font-semibold hover:bg-white/90 transition-colors"
+            >
+              Security &amp; Trust <ArrowRight size={14} />
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* ====================== STATS ====================== */}
-      <section className="py-10 sm:py-12 bg-[#F8FAFC]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            {...fadeUp}
-            className="rounded-3xl bg-gradient-to-br from-[#2563EB] to-[#1E40AF] px-6 sm:px-12 py-10 text-white relative overflow-hidden shadow-premium-lg"
-          >
-            <div className="absolute -top-20 -right-20 size-72 rounded-full bg-white/5" />
-            <div className="absolute -bottom-20 -left-20 size-72 rounded-full bg-white/5" />
-            <div className="relative grid grid-cols-2 md:grid-cols-5 gap-6 sm:gap-8">
-              {STATS.map((s, i) => (
-                <div
-                  key={s.label}
-                  className={`text-center ${i > 0 ? "md:border-l md:border-white/15 md:pl-4" : ""}`}
-                >
-                  <div className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tighter">{s.value}</div>
-                  <p className="mt-2 text-[12.5px] text-white/85">{s.label}</p>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </section>
+      {/* ====================== LIVE PRODUCT DEMO (tabs) ====================== */}
+      <LiveDemoSection />
 
-      {/* ====================== WHY CHOOSE ====================== */}
-      <section className="py-14 sm:py-16 bg-white">
+      {/* ====================== CORE FEATURES (Why OraOne) ====================== */}
+      <section className="py-14 sm:py-16 bg-[#F8FAFC] border-t border-[#E2E8F0]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto">
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EFF6FF] text-[12px] font-semibold text-[#2563EB] tracking-wide uppercase">
-              <Sparkles size={13} /> Why OraOne
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EFF6FF] text-[11px] font-bold text-[#2563EB] tracking-[0.18em] uppercase">
+              <Sparkles size={11} /> Why OraOne
             </span>
-            <h2 className="mt-4 text-4xl sm:text-5xl font-bold tracking-tighter text-[#0F172A]">
-              Why Businesses Choose OraOne
+            <h2 className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter text-[#0F172A]">
+              One platform. Every channel. Every conversation.
             </h2>
-            <p className="mt-4 text-[#64748B]">Everything you need to launch enterprise-grade AI agents — in one platform.</p>
+            <p className="mt-4 text-[#64748B] leading-relaxed">
+              Everything you need to launch enterprise-grade AI agents — in one platform.
+            </p>
           </motion.div>
           <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {BENEFITS.map((b, i) => (
               <motion.div
                 key={b.title}
-                initial={{ opacity: 0, y: 24 }}
+                initial={{ opacity: 0, y: 22 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.05 }}
                 transition={{ duration: 0.45, delay: i * 0.05 }}
@@ -348,369 +536,193 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ====================== LIVE CONVERSATIONS (DARK + side text) ====================== */}
-      <section className="py-14 sm:py-16 bg-[#F8FAFC]">
+      {/* ====================== INDUSTRY USE CASES ====================== */}
+      <section className="py-14 sm:py-16 bg-white border-t border-[#E2E8F0]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div {...fadeUp} className="grid lg:grid-cols-[1.4fr_1fr] gap-10 items-center">
-            {/* Dark dashboard mockup */}
-            <div className="bg-[#0F172A] rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
-              <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[440px]">
-                {/* Sidebar */}
-                <div className="lg:col-span-3 border-r border-white/10 p-5 hidden lg:flex flex-col gap-1">
-                  <div className="flex items-center gap-2 mb-5 text-white">
-                    <div className="size-7 rounded-lg gradient-bg" />
-                    <span className="font-semibold text-sm">OraOne</span>
-                  </div>
-                  {["Overview", "Conversations", "Leads", "Analytics", "Agents", "Templates", "Settings"].map((l, i) => (
-                    <div
-                      key={l}
-                      className={`px-3 py-2 rounded-lg text-[13px] ${
-                        i === 0 ? "bg-[#2563EB] text-white" : "text-white/60"
-                      }`}
-                    >
-                      {l}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Transcript */}
-                <div className="lg:col-span-6 p-5 border-r border-white/10">
-                  <p className="text-[10px] font-semibold text-white/50 tracking-wider mb-3">LIVE CONVERSATION</p>
-                  <div className="space-y-2.5 max-h-[360px] overflow-hidden">
-                    {LIVE_TRANSCRIPT.slice(0, 6).map((m, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, y: 8 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, amount: 0.05 }}
-                        transition={{ delay: i * 0.08 }}
-                        className={`flex ${m.who === "customer" ? "justify-end" : "justify-start"}`}
-                      >
-                        <div
-                          className={`max-w-[88%] rounded-xl px-3.5 py-2 text-[12.5px] ${
-                            m.who === "customer" ? "bg-[#2563EB] text-white" : "bg-white/10 text-white"
-                          }`}
-                        >
-                          <p className="text-[9px] text-white/60 mb-0.5 uppercase tracking-wider">
-                            {m.who} · {m.time}
-                          </p>
-                          {m.text}
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Lead details */}
-                <div className="lg:col-span-3 p-5 bg-black/10">
-                  <p className="text-[10px] font-semibold text-white/50 tracking-wider mb-3">LEAD DETAILS (LIVE)</p>
-                  <div className="space-y-2.5 text-[12.5px]">
-                    <div>
-                      <p className="text-white/50 text-[10px]">Name</p>
-                      <p className="text-white font-medium">Rahul Sharma</p>
-                    </div>
-                    <div>
-                      <p className="text-white/50 text-[10px]">Phone</p>
-                      <p className="text-white font-medium">+91 98765 43210</p>
-                    </div>
-                    <div>
-                      <p className="text-white/50 text-[10px]">Intent</p>
-                      <p className="text-white font-medium">Book Appointment</p>
-                    </div>
-                    <div>
-                      <p className="text-white/50 text-[10px]">Sentiment</p>
-                      <p className="text-green-400 font-medium flex items-center gap-1.5">
-                        <span className="size-1.5 rounded-full bg-green-400" /> Positive
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-white/50 text-[10px]">Lead Score</p>
-                      <p className="text-white font-medium">92 / 100</p>
-                    </div>
-                    <div>
-                      <p className="text-white/50 text-[10px]">Status</p>
-                      <p className="text-green-400 font-medium">Qualified</p>
-                    </div>
-                  </div>
-                  <button className="mt-4 w-full py-2 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[12px] font-medium">
-                    Add to CRM
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Side text */}
-            <div>
-              <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#EFF6FF] text-[10px] font-bold tracking-[0.2em] text-[#2563EB]">
-                <Sparkles size={11} /> SEE ORAONE IN ACTION
-              </span>
-              <h2 className="mt-5 text-4xl sm:text-5xl font-bold tracking-tighter text-[#0F172A] leading-[1.1]">
-                Live conversations.
-                <br />
-                Real-time insights.
-                <br />
-                Automated results.
-              </h2>
-              <p className="mt-5 text-[#64748B] leading-relaxed max-w-md">
-                Watch how OraOne AI agents handle calls, qualify leads and book appointments — in real time.
-              </p>
-              <ul className="mt-6 space-y-3">
-                {[
-                  "Live call & chat transcripts",
-                  "Lead qualification in real time",
-                  "Automatic CRM sync",
-                  "Actionable analytics",
-                ].map((f) => (
-                  <li key={f} className="flex items-start gap-2.5 text-[14px] text-[#0F172A]">
-                    <span className="mt-0.5 size-5 rounded-full bg-[#2563EB] grid place-items-center shrink-0">
-                      <CheckCircle2 size={12} className="text-white" />
-                    </span>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <button
-                onClick={() => nav("/contact")}
-                className="mt-7 inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] transition-all"
-              >
-                Book a Demo <ArrowRight size={16} />
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ====================== INDUSTRY USE CASES + SUPPORTED INTEGRATIONS ====================== */}
-      <section className="py-14 sm:py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 lg:gap-16">
-          {/* Use cases */}
-          <motion.div {...fadeUp}>
-            <div className="flex items-end justify-between mb-7">
-              <h2 className="text-3xl sm:text-4xl font-bold tracking-tighter text-[#0F172A]">Industry Use Cases</h2>
-              <Link to="/solutions" className="text-sm font-medium text-[#2563EB] hover:underline whitespace-nowrap">
-                View all solutions →
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {INDUSTRY_USE_CASES.map((ind) => (
-                <Link
-                  key={ind.name}
-                  to="/solutions"
-                  className="flex items-start gap-3 p-4 rounded-2xl bg-white border border-[#E2E8F0] hover:border-[#2563EB]/30 hover:shadow-premium transition-all"
-                >
-                  <div className="size-10 rounded-xl bg-[#EFF6FF] grid place-items-center shrink-0">
-                    <ind.icon size={18} className="text-[#2563EB]" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-[#0F172A]">{ind.name}</p>
-                    <p className="text-[12px] text-[#64748B] mt-0.5 leading-snug">{ind.desc}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Supported integrations */}
-          <motion.div {...fadeUp}>
-            <div className="flex items-end justify-between mb-7">
-              <h2 className="text-3xl sm:text-4xl font-bold tracking-tighter text-[#0F172A]">
-                Supported Integrations
-              </h2>
-              <Link to="/integrations" className="text-sm font-medium text-[#2563EB] hover:underline whitespace-nowrap">
-                View all integrations →
-              </Link>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {SUPPORTED_INTEGRATIONS.map((ig) => (
-                <div
-                  key={ig.name}
-                  className="aspect-square rounded-2xl bg-white border border-[#E2E8F0] hover:border-[#2563EB]/30 hover:shadow-premium transition-all p-3 flex flex-col items-center justify-center text-center"
-                >
-                  <div
-                    className="size-11 rounded-xl grid place-items-center mb-2 shrink-0"
-                    style={{ background: `${ig.color}15` }}
-                  >
-                    <IntegrationGlyph slug={ig.glyph} color={ig.color} />
-                  </div>
-                  <p className="text-[12px] font-semibold text-[#0F172A] leading-tight">{ig.name}</p>
-                  <p className="text-[10px] text-[#64748B] mt-0.5">{ig.sub}</p>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ====================== GET STARTED IN MINUTES (STEPPER) ====================== */}
-      <section className="py-14 sm:py-16 bg-[#F8FAFC]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto mb-14">
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EFF6FF] text-[12px] font-semibold text-[#2563EB] tracking-wide uppercase">
-              <Rocket size={13} /> How OraOne Works
-            </span>
-            <h2 className="mt-4 text-4xl sm:text-5xl font-bold tracking-tighter text-[#0F172A]">
-              Get Started in Minutes
+          <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto mb-10">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter text-[#0F172A]">
+              Built for every industry.
             </h2>
-            <p className="mt-4 text-[#64748B]">
-              From signup to your first live AI conversation in four simple steps.
+            <p className="mt-4 text-[#64748B] leading-relaxed">
+              Pre-configured agents that understand your industry&apos;s vocabulary,
+              workflows and compliance needs.
             </p>
           </motion.div>
 
-          {/* ---- Desktop / tablet stepper ---- */}
-          <div className="hidden md:block relative">
-            {/* Connecting dashed track behind icons */}
-            <div
-              aria-hidden="true"
-              className="absolute left-[10%] right-[10%] top-7 h-px"
-              style={{
-                backgroundImage:
-                  "repeating-linear-gradient(to right, #CBD5E1 0 6px, transparent 6px 12px)",
-              }}
-            />
-            <ol className="grid grid-cols-4 gap-6 relative">
-              {WORKS.map((w, i) => (
-                <motion.li
-                  key={w.num}
-                  initial={{ opacity: 0, y: 18 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.05 }}
-                  transition={{ delay: i * 0.08, duration: 0.45 }}
-                  className="text-center"
-                  data-testid={`step-card-${w.num}`}
-                >
-                  <div className="relative mx-auto size-14 rounded-2xl gradient-bg grid place-items-center shadow-[0_10px_24px_-8px_rgba(37,99,235,0.55)] ring-4 ring-[#F8FAFC]">
-                    <w.icon size={22} className="text-white" aria-hidden="true" />
-                    <span className="absolute -bottom-1.5 -right-1.5 size-6 rounded-full bg-white border border-[#E2E8F0] grid place-items-center text-[11px] font-bold text-[#2563EB]">
-                      {w.num}
-                    </span>
-                  </div>
-                  <h3 className="mt-5 text-base font-semibold text-[#0F172A]">{w.title}</h3>
-                  <p className="mt-1.5 text-[13px] leading-relaxed text-[#64748B] max-w-[16rem] mx-auto">
-                    {w.desc}
-                  </p>
-                </motion.li>
-              ))}
-            </ol>
-          </div>
-
-          {/* ---- Mobile vertical stepper ---- */}
-          <ol className="md:hidden relative pl-6 border-l-2 border-dashed border-[#CBD5E1] space-y-7">
-            {WORKS.map((w, i) => (
-              <motion.li
-                key={w.num}
-                initial={{ opacity: 0, x: -12 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, amount: 0.05 }}
-                transition={{ delay: i * 0.06 }}
-                className="relative"
-                data-testid={`step-card-mobile-${w.num}`}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {INDUSTRY_USE_CASES.map((ind) => (
+              <Link
+                key={ind.name}
+                to="/solutions"
+                className="group flex items-start gap-3 p-5 rounded-2xl bg-white border border-[#E2E8F0] hover:border-[#2563EB]/30 hover:shadow-premium transition-all"
               >
-                <div className="absolute -left-[33px] top-0 size-11 rounded-2xl gradient-bg grid place-items-center shadow-[0_10px_24px_-8px_rgba(37,99,235,0.55)] ring-4 ring-[#F8FAFC]">
-                  <w.icon size={18} className="text-white" aria-hidden="true" />
-                </div>
-                <p className="text-[10px] font-bold text-[#2563EB] tracking-[0.2em]">STEP {w.num}</p>
-                <h3 className="mt-1 text-base font-semibold text-[#0F172A]">{w.title}</h3>
-                <p className="mt-1 text-[13px] text-[#64748B] leading-relaxed">{w.desc}</p>
-              </motion.li>
-            ))}
-          </ol>
-
-          {/* CTA under stepper */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.05 }}
-            className="mt-12 flex flex-wrap items-center justify-center gap-3"
-          >
-            <Link
-              to="/signup"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold transition-colors"
-              data-testid="get-started-cta"
-            >
-              Start Free <ArrowRight size={15} />
-            </Link>
-            <Link
-              to="/contact"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white border border-[#E2E8F0] hover:bg-[#F1F5F9] text-sm font-semibold text-[#0F172A] transition-colors"
-              data-testid="get-started-demo"
-            >
-              Book a Demo
-            </Link>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ====================== ENTERPRISE-GRADE SECURITY ====================== */}
-      <section className="py-12 sm:py-14 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div {...fadeUp} className="text-center mb-10">
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tighter text-[#0F172A]">
-              Enterprise-Grade Security
-            </h2>
-          </motion.div>
-          <div className="rounded-3xl bg-[#F8FAFC] border border-[#E2E8F0] p-6 sm:p-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            {SECURITY.map((s) => (
-              <div key={s.title} className="flex items-center gap-3">
                 <div className="size-11 rounded-xl bg-[#EFF6FF] grid place-items-center shrink-0">
-                  <s.icon size={18} className="text-[#2563EB]" />
+                  <ind.icon size={20} className="text-[#2563EB]" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-[#0F172A] leading-tight">{s.title}</p>
-                  <p className="text-[11.5px] text-[#64748B] leading-snug">{s.sub}</p>
+                  <p className="text-sm font-semibold text-[#0F172A]">{ind.name}</p>
+                  <p className="text-[12.5px] text-[#64748B] mt-1 leading-snug">{ind.desc}</p>
                 </div>
-              </div>
+              </Link>
             ))}
+          </div>
+
+          <div className="mt-8 text-center">
+            <Link
+              to="/solutions"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#2563EB] hover:underline"
+            >
+              View all solutions <ArrowRight size={14} />
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* ====================== TESTIMONIALS ====================== */}
-      <section className="py-14 sm:py-16 bg-[#F8FAFC]">
+      {/* ====================== CASE STUDIES / RESULTS ====================== */}
+      <section
+        data-testid={HOME.caseStudiesSnippet}
+        className="py-14 sm:py-16 bg-[#F8FAFC] border-t border-[#E2E8F0]"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto mb-12">
-            <h2 className="text-4xl sm:text-5xl font-bold tracking-tighter text-[#0F172A]">
-              Real Results from Real Businesses
+          <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto mb-10">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F1F5F9] text-[11px] font-bold tracking-[0.18em] text-[#475569] border border-[#E2E8F0] uppercase">
+              <Star size={11} /> Real Results
+            </span>
+            <h2 className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter text-[#0F172A]">
+              Outcomes from real teams.
             </h2>
+            <p className="mt-4 text-[#64748B] leading-relaxed">
+              Anonymised highlights from teams using OraOne in production.
+              Industry-level metrics shared with permission.
+            </p>
           </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {TESTIMONIALS.map((t, i) => (
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            {CASE_STUDY_HIGHLIGHTS.map((c, i) => (
               <motion.div
-                key={i}
+                key={c.industry}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.05 }}
-                transition={{ delay: i * 0.08 }}
-                className="p-6 rounded-2xl bg-white border border-[#E2E8F0] shadow-premium"
+                transition={{ delay: i * 0.06 }}
+                className="rounded-2xl bg-white border border-[#E2E8F0] p-6 hover:border-[#2563EB]/30 hover:shadow-premium transition-all"
               >
-                <div className="flex gap-1 text-yellow-400 mb-3">
-                  {[1, 2, 3, 4, 5].map((s) => (
-                    <Star key={s} size={14} fill="currentColor" />
-                  ))}
+                <div className="flex items-center gap-3">
+                  <div
+                    className="size-10 rounded-xl grid place-items-center shrink-0"
+                    style={{ background: c.bg }}
+                  >
+                    <c.icon size={18} style={{ color: c.color }} />
+                  </div>
+                  <p className="text-[12px] font-bold tracking-[0.16em] text-[#64748B] uppercase">
+                    {c.industry}
+                  </p>
                 </div>
-                <p className="text-[#0F172A] leading-relaxed text-[15px]">&ldquo;{t.quote}&rdquo;</p>
-                <div className="mt-5 flex items-center gap-3">
-                  <div className="size-10 rounded-full bg-gradient-to-br from-[#3B82F6] to-[#06B6D4] grid place-items-center text-white text-sm font-semibold">
-                    {t.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
+                <p className="mt-5 text-5xl font-black tracking-tighter text-[#0F172A]">
+                  {c.metric}
+                </p>
+                <p className="mt-3 text-[14px] text-[#475569] leading-relaxed">
+                  {c.result}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="mt-10 text-center">
+            <Link
+              to="/case-studies"
+              data-testid={HOME.caseStudiesSnippetCta}
+              className="inline-flex items-center gap-1.5 px-5 py-3 rounded-xl bg-white border border-[#E2E8F0] hover:border-[#2563EB]/40 text-sm font-semibold text-[#0F172A] transition-colors"
+            >
+              Explore all case studies <ArrowRight size={14} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ====================== PRICING SNIPPET ====================== */}
+      <section
+        data-testid={HOME.pricingSnippet}
+        className="py-14 sm:py-16 bg-white border-t border-[#E2E8F0]"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div {...fadeUp} className="text-center max-w-2xl mx-auto mb-10">
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#EFF6FF] text-[11px] font-bold tracking-[0.18em] text-[#2563EB] uppercase">
+              <Sparkles size={11} /> Free During Beta
+            </span>
+            <h2 className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter text-[#0F172A]">
+              Simple, transparent pricing.
+            </h2>
+            <p className="mt-4 text-[#64748B] leading-relaxed">
+              Use OraOne free during Beta Access. From <span className="font-semibold text-[#0F172A]">$29/month after launch</span> — no hidden fees, cancel anytime.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            {PRICING_PEEK.map((p, i) => (
+              <motion.div
+                key={p.name}
+                initial={{ opacity: 0, y: 22 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.05 }}
+                transition={{ delay: i * 0.06 }}
+                className={`rounded-2xl border p-6 sm:p-7 flex flex-col ${
+                  p.featured
+                    ? "border-[#2563EB] bg-[#F8FAFC] shadow-premium-lg"
+                    : "border-[#E2E8F0] bg-white"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="size-11 rounded-xl grid place-items-center shrink-0"
+                    style={{ background: p.bg }}
+                  >
+                    <p.icon size={18} style={{ color: p.color }} />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-[#0F172A]">{t.name}</p>
-                    <p className="text-xs text-[#64748B]">{t.role}</p>
+                    <p className="text-[16px] font-semibold text-[#0F172A]">{p.name}</p>
+                    {p.featured && (
+                      <p className="text-[10px] font-bold tracking-[0.18em] text-[#2563EB] uppercase mt-0.5">
+                        Most Popular
+                      </p>
+                    )}
                   </div>
+                </div>
+                <p className="mt-4 text-[13px] text-[#475569] leading-relaxed">{p.line}</p>
+                <div className="mt-5 pt-5 border-t border-[#E2E8F0]">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-black tracking-tighter text-[#0F172A]">$0</span>
+                    <span className="text-[12px] text-[#64748B]">/ during Beta</span>
+                  </div>
+                  <p className="mt-1 text-[11.5px] text-[#64748B]">{p.post}</p>
                 </div>
               </motion.div>
             ))}
           </div>
+
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              to="/pricing"
+              data-testid={HOME.pricingSnippetCta}
+              className="inline-flex items-center gap-1.5 px-5 py-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold shadow-[0_8px_24px_-6px_rgba(37,99,235,0.5)] transition-all"
+            >
+              See full pricing <ArrowRight size={14} />
+            </Link>
+            <Link
+              to="/contact"
+              className="inline-flex items-center gap-1.5 px-5 py-3 rounded-xl bg-white border border-[#E2E8F0] hover:bg-[#F1F5F9] text-sm font-semibold text-[#0F172A] transition-colors"
+            >
+              Contact Sales
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* ====================== FAQ (2-COLUMN) ====================== */}
-      <section className="py-14 sm:py-16 bg-white">
+      {/* ====================== FAQ ====================== */}
+      <section className="py-14 sm:py-16 bg-[#F8FAFC] border-t border-[#E2E8F0]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div {...fadeUp} className="text-center mb-12">
-            <h2 className="text-4xl sm:text-5xl font-bold tracking-tighter text-[#0F172A]">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter text-[#0F172A]">
               Frequently Asked Questions
             </h2>
           </motion.div>
@@ -732,23 +744,26 @@ export default function HomePage() {
       </section>
 
       {/* ====================== FINAL CTA ====================== */}
-      <section className="pb-14 sm:pb-16 bg-white">
+      <section className="pb-16 sm:pb-20 bg-white border-t border-[#E2E8F0] pt-14 sm:pt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             {...fadeUp}
             className="relative rounded-3xl p-10 sm:p-14 overflow-hidden text-white shadow-premium-lg"
-            style={{ background: "linear-gradient(135deg, #2563EB 0%, #1E40AF 100%)" }}
+            style={{ background: "linear-gradient(135deg, #0F172A 0%, #1E40AF 100%)" }}
           >
             <div className="absolute -top-20 -right-20 size-80 rounded-full bg-white/10" />
             <div className="absolute -bottom-32 -left-32 size-96 rounded-full bg-white/5" />
             <div className="relative grid lg:grid-cols-2 gap-10 items-center">
               <div>
-                <h2 className="text-4xl sm:text-5xl font-bold tracking-tighter leading-tight">
-                  Ready to Never Miss
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter leading-tight">
+                  Stop missing customers.
                   <br />
-                  Another Customer?
+                  Start growing 24/7.
                 </h2>
-                <p className="mt-4 text-white/85 max-w-md">Deploy your AI agents in days, not months.</p>
+                <p className="mt-4 text-white/85 max-w-md leading-relaxed">
+                  Deploy your AI Voice, Chat and WhatsApp agents in days, not months —
+                  free during Beta Access.
+                </p>
                 <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2">
                   {["Free Beta Access", "No credit card required", "Cancel anytime"].map((b) => (
                     <li key={b} className="flex items-center gap-2 text-white/90 text-sm">
@@ -758,18 +773,18 @@ export default function HomePage() {
                 </ul>
                 <div className="mt-8 flex flex-wrap gap-3">
                   <button
-                    onClick={() => nav("/contact")}
-                    className="px-5 py-3 rounded-xl bg-white text-[#2563EB] font-semibold text-sm hover:bg-white/90 transition-colors"
-                    data-testid="cta-book-demo"
-                  >
-                    Book a Demo
-                  </button>
-                  <button
                     onClick={() => nav("/signup")}
-                    className="px-5 py-3 rounded-xl border border-white/30 hover:bg-white/10 font-semibold text-sm transition-colors"
+                    className="px-5 py-3 rounded-xl bg-white text-[#0F172A] font-semibold text-sm hover:bg-white/90 transition-colors"
                     data-testid="cta-start-free"
                   >
                     Start Free
+                  </button>
+                  <button
+                    onClick={() => nav("/contact")}
+                    className="px-5 py-3 rounded-xl border border-white/30 hover:bg-white/10 font-semibold text-sm transition-colors"
+                    data-testid="cta-book-demo"
+                  >
+                    Book Demo
                   </button>
                 </div>
               </div>
@@ -782,92 +797,4 @@ export default function HomePage() {
       </section>
     </div>
   );
-}
-
-/* =============================== Subcomponents =============================== */
-
-function LiveAgentActivity() {
-  const steps = [
-    { icon: PhoneCall, title: "Incoming Call", sub: "+91 98765 43210", color: "#3B82F6" },
-    { icon: MessageSquare, title: "AI Answered", sub: "in 2.3 sec", color: "#8B5CF6" },
-    { icon: Star, title: "Lead Qualified", sub: "Interested in Dental Appointment", color: "#F59E0B" },
-    { icon: Calendar, title: "Appointment Booked", sub: "Today, 4:30 PM", color: "#10B981" },
-  ];
-  return (
-    <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-premium-lg p-5">
-      <p className="text-sm font-bold text-[#0F172A]">Live Agent Activity</p>
-      <ul className="mt-4 space-y-3">
-        {steps.map((s, i) => (
-          <li key={s.title} className="relative flex items-start gap-3">
-            <div
-              className="size-9 rounded-xl grid place-items-center shrink-0"
-              style={{ background: `${s.color}1A`, color: s.color }}
-            >
-              <s.icon size={16} />
-            </div>
-            <div className="min-w-0 flex-1 pb-1">
-              <p className="text-[13px] font-semibold text-[#0F172A] leading-tight">{s.title}</p>
-              <p className="text-[11.5px] text-[#64748B] leading-snug mt-0.5">{s.sub}</p>
-            </div>
-            {i < steps.length - 1 && (
-              <span
-                className="absolute left-[17px] top-9 w-px h-5"
-                style={{ background: "linear-gradient(180deg,#E2E8F0,#E2E8F0)" }}
-              />
-            )}
-          </li>
-        ))}
-      </ul>
-      <Link
-        to="/app/conversations"
-        className="mt-5 inline-flex items-center gap-1 text-[12.5px] font-semibold text-[#2563EB] hover:underline"
-      >
-        View Details <ArrowRight size={13} />
-      </Link>
-    </div>
-  );
-}
-
-function IntegrationGlyph({ slug, color }) {
-  const common = { width: 22, height: 22, fill: color };
-  switch (slug) {
-    case "whatsapp":
-      return (
-        <svg {...common} viewBox="0 0 24 24">
-          <path d="M20.52 3.48A11.84 11.84 0 0 0 12.06 0C5.53 0 .22 5.31.22 11.84c0 2.09.55 4.13 1.6 5.93L0 24l6.39-1.78a11.83 11.83 0 0 0 5.67 1.45h.01c6.53 0 11.84-5.31 11.84-11.84 0-3.17-1.23-6.14-3.39-8.35Zm-8.46 18.02h-.01a9.66 9.66 0 0 1-4.93-1.35l-.35-.21-3.79 1.06 1.07-3.69-.23-.37a9.66 9.66 0 0 1-1.5-5.1c0-5.34 4.35-9.69 9.69-9.69 2.59 0 5.02 1.01 6.85 2.84a9.62 9.62 0 0 1 2.84 6.86c0 5.34-4.35 9.65-9.64 9.65Z" />
-        </svg>
-      );
-    case "google":
-      return (
-        <svg width="22" height="22" viewBox="0 0 48 48">
-          <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 8 3l5.7-5.7C34.5 6.1 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z" />
-          <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3.1 0 5.8 1.2 8 3l5.7-5.7C34.5 6.1 29.5 4 24 4 16.3 4 9.7 8.4 6.3 14.7z" />
-          <path fill="#4CAF50" d="M24 44c5.4 0 10.3-2 14-5.4l-6.5-5.5c-2 1.4-4.5 2.3-7.5 2.3-5.2 0-9.6-3.3-11.2-8l-6.5 5C9.5 39.5 16.2 44 24 44z" />
-          <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.7 2.1-2 4-3.8 5.4l6.5 5.5C42.6 35.6 44 30.1 44 24c0-1.3-.1-2.4-.4-3.5z" />
-        </svg>
-      );
-    case "gmail":
-      return (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <path d="M22 6.5v11A2.5 2.5 0 0 1 19.5 20H17V10.5L12 14 7 10.5V20H4.5A2.5 2.5 0 0 1 2 17.5v-11A2.5 2.5 0 0 1 4.5 4H5l7 5 7-5h.5A2.5 2.5 0 0 1 22 6.5Z" fill="#EA4335" />
-        </svg>
-      );
-    case "csv":
-      return (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8">
-          <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
-          <path d="M14 3v6h6" />
-          <path d="M9 14h6M9 17h4" strokeLinecap="round" />
-        </svg>
-      );
-    case "api":
-      return (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="16 18 22 12 16 6" />
-          <polyline points="8 6 2 12 8 18" />
-        </svg>
-      );
-    default:
-      return <Mail size={18} style={{ color }} />;
-  }
 }

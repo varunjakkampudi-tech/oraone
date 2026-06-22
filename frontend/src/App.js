@@ -27,6 +27,7 @@ const Documentation = lazy(() => import("@/pages/marketing/Documentation"));
 const CaseStudies = lazy(() => import("@/pages/marketing/CaseStudies"));
 const About = lazy(() => import("@/pages/marketing/About"));
 const Contact = lazy(() => import("@/pages/marketing/Contact"));
+const Security = lazy(() => import("@/pages/marketing/Security"));
 const Privacy = lazy(() => import("@/pages/legal/Legal").then((m) => ({ default: m.Privacy })));
 const Terms = lazy(() => import("@/pages/legal/Legal").then((m) => ({ default: m.Terms })));
 const Cookie = lazy(() => import("@/pages/legal/Legal").then((m) => ({ default: m.Cookie })));
@@ -98,6 +99,7 @@ function App() {
                 <Route path="/case-studies" element={<CaseStudies />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
+                <Route path="/security" element={<Security />} />
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/cookie-policy" element={<Cookie />} />
