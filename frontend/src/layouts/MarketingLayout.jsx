@@ -2,7 +2,6 @@ import React from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "@/components/marketing/Navbar";
 import Footer from "@/components/marketing/Footer";
-import TalkToOraOne from "@/components/marketing/TalkToOraOne";
 
 export default function MarketingLayout() {
   const { pathname } = useLocation();
@@ -24,8 +23,6 @@ export default function MarketingLayout() {
         <Outlet />
       </main>
       <Footer />
-      {/* Floating "Talk to OraOne" widget — chat + voice + WhatsApp demos */}
-      <TalkToOraOne />
     </div>
   );
 }
