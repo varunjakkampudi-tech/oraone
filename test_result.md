@@ -101,3 +101,141 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: |
+  OraOne homepage conversion makeover (homepage rewrite + Security page + Pricing clarity).
+  Specific asks:
+  1. Hero rewrite — "Never Miss A Lead. Never Miss A Sale." / "AI Voice, Chat and WhatsApp Agents that answer, qualify and convert customers 24/7."
+  2. Trust & Social Proof section (no fake logos, no fake testimonials) — platform metrics + trust pillars.
+  3. Live Product Demo on homepage (Voice / Chat / WhatsApp tabs).
+  4. Pricing clarity — Free during Beta · From $29/mo after launch · Enterprise SLA.
+  5. New /security page (GDPR, India DPDP, AES-256, TLS 1.3, RBAC, audit logs, retention, sub-processor transparency, SOC 2 in-progress).
+  6. Homepage section re-order: Hero → Trust → Demo → Features → Industries → Case Studies → Pricing → FAQ → CTA.
+  7. Smoke-test all pages and refresh desktop screenshots in /app/test_reports/screenshots/desktop/.
+
+frontend:
+  - task: "Hero rewrite — Never Miss A Lead. Never Miss A Sale."
+    implemented: true
+    working: true
+    file: "frontend/src/pages/marketing/Home.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "New headline + sub copy + Start Free / Book Demo CTAs + 3 agent cards + 'Free during Beta · No credit card' trust line. Visual verification via desktop screenshot done. data-testid hooks: hero-cta-primary, hero-cta-secondary."
+
+  - task: "Trust & Social Proof section (no fake logos / no fake testimonials)"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/marketing/Home.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Replaces old Stats + Testimonials. 3 platform metrics with explicit 'Platform Metric' / 'Beta Metric' labels (10,000+ Conversations Automated, 500+ Businesses Exploring OraOne, 95% Faster Response Times). 4 trust pillars (24/7 AI Availability, 99.9% Uptime, Multi-Channel Support, Enterprise-Grade Security). Security CTA strip linking to /security. data-testid: home-trust-section, home-trust-metric, home-trust-pillar."
+
+  - task: "Live Product Demo on homepage (Voice / Chat / WhatsApp tabs)"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/marketing/Home.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Tabbed embed of existing ProductLiveDemos (VoiceAgentDemo / ChatAgentDemo / WhatsAppAgentDemo) with AnimatePresence transitions. All 3 tabs manually clicked and verified to render correct content. data-testid: home-demo-section, home-demo-tab-voice|chat|whatsapp."
+
+  - task: "Pricing — Free during Beta · From $29/mo after launch · Enterprise SLA"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/marketing/Pricing.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Beta banner above cards. All 3 tiers show $0 / during Beta hero price + post-beta line (Starter $29/mo, Growth Pricing TBD, Enterprise Custom · Contact Sales). Enterprise card now lists SLA options (uptime + response), SSO + RBAC + Audit logs, Dedicated CSM. Trust strip + Pricing FAQ retained. data-testid: pricing-card-{starter|growth|enterprise}, pricing-{slug}-cta."
+
+  - task: "New /security page"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/marketing/Security.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Full page created with hero + Trust Center vault visual, 6 security control cards (AES-256 at rest, TLS 1.3 in transit, RBAC, Audit Logs, Data Retention Controls, Secure Cloud Infrastructure), 6 compliance items with honest status badges (GDPR Active, India DPDP Active, SOC 2 Type II In Progress, ISO 27001 Planned, HIPAA On Request, PCI-DSS N/A), 6 engineering practices, 6 data-subject rights (GDPR/DPDP), sub-processor transparency table (AWS, MongoDB Atlas, Twilio, Meta WhatsApp, Resend/SES, Sentry), procurement CTA to security@oraone.ai. Route registered in App.js (lazy). Linked from Footer Resources column + bottom legal strip. data-testid: security-contact-cta."
+
+  - task: "Homepage section re-order (Hero → Trust → Demo → Features → Industries → Case Studies → Pricing → FAQ → CTA)"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/marketing/Home.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Sections reordered. Removed inflated old stats bar (10,000+ Businesses Served / 50M+ Conversations), removed fake testimonial section (Suresh Khanna / Anjali Iyer etc.) per 'no fake testimonials' guideline. Added new Case Studies snippet (3 anonymised industry metric cards) and Pricing snippet (3 tier preview + 'Free during Beta · From $29/mo' positioning)."
+
+  - task: "Footer — Security link in Resources column + bottom legal strip"
+    implemented: true
+    working: true
+    file: "frontend/src/components/marketing/Footer.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Added 'Security & Trust' link to Resources column and 'Security' link to the bottom legal strip."
+
+  - task: "Smoke-test all 35 routes + refresh desktop screenshots"
+    implemented: true
+    working: true
+    file: "scripts/capture_all_pages.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Updated capture script — BASE now reads REACT_APP_BACKEND_URL from /app/frontend/.env (no hardcoded URL), added /security route, added --desktop-only flag. Ran script: 35/35 routes captured OK with 0 failures at 1440x900. Auth pre-seed via /api/auth/login worked so /app/* + /onboarding/* show authenticated content (verified dashboard-overview shows KPIs/leaderboard/live activity, onboarding-agent shows step 1 selection). Summary written to /app/test_reports/screenshots/summary.json. Screenshots written to /app/test_reports/screenshots/desktop/<slug>.png."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.1"
+  test_sequence: 1
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "Hero rewrite — Never Miss A Lead. Never Miss A Sale."
+    - "Trust & Social Proof section (no fake logos / no fake testimonials)"
+    - "Live Product Demo on homepage (Voice / Chat / WhatsApp tabs)"
+    - "Pricing — Free during Beta · From $29/mo after launch · Enterprise SLA"
+    - "New /security page"
+    - "Homepage section re-order (Hero → Trust → Demo → Features → Industries → Case Studies → Pricing → FAQ → CTA)"
+    - "Smoke-test all 35 routes + refresh desktop screenshots"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: |
+      Homepage conversion makeover completed in one iteration. All 7 frontend tasks marked working: hero rewrite, trust & social proof, live product demo tabs, pricing clarity, /security page, section re-order, footer security link.
+
+      One trap encountered & resolved: there are TWO testIds modules in the codebase — /app/frontend/src/constants/testIds.js (file, live) and /app/frontend/src/constants/testIds/ (folder, dormant). The file shadows the folder. Initial testId updates to the folder had no effect — fixed by updating the file. All new home-* testIds are now in the bundle and verified.
+
+      Smoke test: 35/35 routes captured cleanly at 1440x900. Auth pre-seed working for /app/* and /onboarding/* routes. Key new pages spot-verified with AI image analysis — home shows correct hero + demo + pricing + Beta positioning; security page shows hero + controls + compliance + sub-processor table; dashboard-overview shows authenticated content. No console errors observed.
+
+      No backend changes in this round — backend testing not needed.

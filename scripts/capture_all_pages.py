@@ -1,18 +1,29 @@
 """
-Capture full-page screenshots of every OraOne route at desktop + mobile widths.
+Capture full-page screenshots of every OraOne route at desktop (and optionally mobile) widths.
 Outputs into /app/test_reports/screenshots/{desktop,mobile}/<slug>.png
 
-Run: python3 /app/scripts/capture_all_pages.py
+Run: python3 /app/scripts/capture_all_pages.py [--desktop-only]
 """
 import asyncio
 import os
+import sys
 import json
 from pathlib import Path
 from playwright.async_api import async_playwright
 
-BASE = "https://varunjakkampudi-dev.preview.emergentagent.com"
+# Read the preview URL from frontend/.env so we don't hardcode it.
+def _read_base():
+    env_path = Path("/app/frontend/.env")
+    if env_path.exists():
+        for line in env_path.read_text().splitlines():
+            if line.startswith("REACT_APP_BACKEND_URL="):
+                return line.split("=", 1)[1].strip()
+    return "http://localhost:3000"
+
+BASE = os.environ.get("ORAONE_BASE_URL") or _read_base()
 EMAIL = "admin@oraone.ai"
 PASSWORD = "OraOne@2026"
+DESKTOP_ONLY = "--desktop-only" in sys.argv
 
 OUT_DIR = Path("/app/test_reports/screenshots")
 (OUT_DIR / "desktop").mkdir(parents=True, exist_ok=True)
@@ -26,6 +37,7 @@ ROUTES = [
     ("integrations-marketing", "/integrations"),
     ("templates", "/templates"),
     ("pricing", "/pricing"),
+    ("security", "/security"),
     ("documentation", "/documentation"),
     ("case-studies", "/case-studies"),
     ("about", "/about"),
@@ -112,10 +124,12 @@ async def run_for_viewport(playwright, viewport, label, results):
 async def main():
     results = {}
     async with async_playwright() as pw:
+        print(f"=== BASE: {BASE} ===")
         print("=== Desktop 1440x900 ===")
         await run_for_viewport(pw, {"width": 1440, "height": 900}, "desktop", results)
-        print("=== Mobile 390x844 ===")
-        await run_for_viewport(pw, {"width": 390, "height": 844}, "mobile", results)
+        if not DESKTOP_ONLY:
+            print("=== Mobile 390x844 ===")
+            await run_for_viewport(pw, {"width": 390, "height": 844}, "mobile", results)
 
     # Summary
     summary = {
