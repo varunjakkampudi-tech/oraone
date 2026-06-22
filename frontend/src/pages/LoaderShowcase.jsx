@@ -8,15 +8,12 @@ import OraOneLoader, {
   InlineLoader,
   DotsLoader,
   ChatTyping,
-  Skeleton,
   CardSkeleton,
   TableSkeleton,
   EmptyStateLoader,
   ProgressStages,
   TopProgressBar,
-  PageTransition,
 } from "@/components/ui/OraOneLoader";
-import { BRAND_MARK_URL } from "@/components/marketing/Logo";
 
 export default function LoaderShowcase() {
   return (
@@ -98,34 +95,67 @@ export default function LoaderShowcase() {
       {/* Page Transition */}
       <Section title="09 · Page Transition (Soft Loader)">
         <div className="relative rounded-2xl border border-[#E2E8F0] overflow-hidden h-[280px] bg-white/85 backdrop-blur-sm grid place-items-center">
-          {/* Inlined version of PageTransition body so it doesn't fixed-overlay the showcase */}
-          <div className="relative">
-            {[1, 2, 3].map((n) => (
-              <span
-                key={n}
-                className="absolute rounded-full border border-[#2563EB]/40 animate-ping-slow"
-                style={{
-                  top: -16 * n,
-                  left: -16 * n,
-                  width: 56 + 32 * n,
-                  height: 56 + 32 * n,
-                  animationDelay: `${n * 0.25}s`,
-                }}
-              />
-            ))}
-            <div className="relative size-16 rounded-2xl overflow-hidden bg-[#0F172A] shadow-[0_10px_30px_-10px_rgba(37,99,235,0.55)]">
-              <img
-                src={BRAND_MARK_URL}
-                alt=""
-                aria-hidden="true"
-                draggable="false"
-                className="w-full h-full object-cover"
-                style={{ objectPosition: "center 18%", transform: "scale(1.8)", transformOrigin: "center 32%" }}
-              />
-            </div>
-          </div>
+          <AuraOrbInline />
         </div>
       </Section>
+    </div>
+  );
+}
+
+// Inline copy of AuraOrb for the showcase, since the exported PageTransition
+// uses fixed positioning which would overlay the entire showcase page.
+function AuraOrbInline() {
+  const id = React.useId();
+  return (
+    <div className="relative grid place-items-center" style={{ width: 120, height: 120 }}>
+      {[0, 0.6, 1.2].map((delay, i) => (
+        <span
+          key={i}
+          aria-hidden="true"
+          className="absolute inset-0 rounded-full aura-ripple"
+          style={{
+            animationDelay: `${delay}s`,
+            border: "1.5px solid rgba(37,99,235,0.45)",
+            background:
+              "radial-gradient(circle, rgba(6,182,212,0.16) 0%, rgba(37,99,235,0) 60%)",
+          }}
+        />
+      ))}
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 100 100"
+        className="absolute inset-0 w-full h-full animate-spin"
+        style={{ animationDuration: "3.2s" }}
+      >
+        <defs>
+          <linearGradient id={`${id}-arc`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#2563EB" />
+            <stop offset="55%" stopColor="#06B6D4" />
+            <stop offset="100%" stopColor="#2563EB" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <circle
+          cx="50"
+          cy="50"
+          r="46"
+          fill="none"
+          stroke={`url(#${id}-arc)`}
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeDasharray="120 200"
+        />
+      </svg>
+      <div
+        className="relative rounded-full aura-breathe"
+        style={{
+          width: 72,
+          height: 72,
+          background:
+            "radial-gradient(circle at 35% 30%, #FFFFFF 0%, #93C5FD 28%, #2563EB 70%, #1E40AF 100%)",
+          boxShadow:
+            "0 0 30px 2px rgba(37,99,235,0.42), inset 0 0 14px rgba(6,182,212,0.55)",
+        }}
+      />
     </div>
   );
 }
