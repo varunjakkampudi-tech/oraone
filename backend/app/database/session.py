@@ -63,8 +63,18 @@ def init_engine(echo: bool = False) -> AsyncEngine:
         expire_on_commit=False,
         class_=AsyncSession,
     )
-    log.info("Postgres engine initialised (host=%s)", os.environ.get("DB_HOST", "?"))
+    log.info("Postgres engine initialised (url=%s)", _redact(url))
     return engine
+
+
+def _redact(url: str) -> str:
+    """Hide password in a SQLAlchemy URL for logs."""
+    try:
+        from sqlalchemy.engine.url import make_url
+        u = make_url(url)
+        return str(u.set(password="***" if u.password else None))
+    except Exception:
+        return "<unparseable>"
 
 
 async def dispose_engine() -> None:

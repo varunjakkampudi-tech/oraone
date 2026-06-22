@@ -35,6 +35,19 @@ the app runs anywhere without breaking after `git pull && run`.
 - GET /api/health → 200, GET /api/health/db → 200 against local PG
 - `tests/audit_phase2_postgres.py` (run with `OVERRIDE_DATABASE_URL=...`)
 
+### Phase 3 (Identity Layer) — 8/8 PASS — 2026-06-22
+- All required columns present:
+  - `users`: id, cognito_sub, email, full_name, avatar_url, role, status, created_at, last_login_at
+  - `organizations`: id, name, slug, plan, owner_user_id, created_at
+  - `organization_members`: id, organization_id, user_id, role, status, joined_at
+- `GET /api/auth/identity` returns `{user, organization, membership, is_new_user}`
+- First call auto-creates the triple (user + workspace + owner membership)
+- Workspace name derives from first name ("Alice Tester" → "Alice Workspace"),
+  never from the Cognito sub (UUID guard verified)
+- Second call is idempotent: `is_new_user=false`, same ids, no duplicates
+- 401 without Bearer token; `joined_at` stamped on membership
+- `tests/audit_phase3_identity.py` (re-runnable, env-portable)
+
 ### Bugs found & fixed
 1. **`config.py` had hardcoded AWS fallbacks** → rewrote with `_required()`
    helper so missing env raises at import time. No more silent talk-to-the-
@@ -47,6 +60,10 @@ the app runs anywhere without breaking after `git pull && run`.
    added `backend/conftest.py` that loads `.env` before any app import.
 5. **`pytest.ini` for test discovery** → tests now run without
    `export PYTHONPATH=$(pwd)`.
+6. **Misleading log line in `session.py`** — logged `DB_HOST` env var even
+   when the actual engine used `DATABASE_URL` (so `localhost:5432` looked
+   like `oraone-postgres.rds.amazonaws.com`). Now logs the real URL with
+   password redacted.
 
 ### Env files (six total)
 - `backend/.env` ............... live values (current preview)
