@@ -56,6 +56,10 @@ class DocumentRead(BaseModel):
     s3_key: str
     status: str
     chunk_count: int = 0
+    processing_started_at: Optional[datetime] = None
+    processing_completed_at: Optional[datetime] = None
+    processing_error: Optional[str] = None
+    processing_time_ms: Optional[int] = None
     created_at: datetime
     updated_at: datetime
 

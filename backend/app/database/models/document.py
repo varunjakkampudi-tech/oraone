@@ -7,9 +7,10 @@ from __future__ import annotations
 
 import enum
 import uuid
+from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import BigInteger, Enum, ForeignKey, Index, String
+from sqlalchemy import BigInteger, DateTime, Enum, ForeignKey, Index, String
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -57,6 +58,15 @@ class Document(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
         nullable=False,
         default=DocumentStatus.pending,
     )
+
+    # Processing telemetry (Phase 7)
+    processing_started_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True)
+    )
+    processing_completed_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True)
+    )
+    processing_error: Mapped[Optional[str]] = mapped_column(String(1000))
 
     knowledge_base: Mapped["KnowledgeBase"] = relationship(back_populates="documents")
     chunks: Mapped[list["DocumentChunk"]] = relationship(

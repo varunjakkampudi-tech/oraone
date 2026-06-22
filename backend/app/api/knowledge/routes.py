@@ -25,6 +25,7 @@ from typing import Optional
 
 from fastapi import (
     APIRouter,
+    BackgroundTasks,
     Depends,
     File,
     Form,
@@ -58,6 +59,24 @@ from app.schemas.knowledge import (
 )
 from app.services import storage
 from app.services.audit import audit
+from app.services.document_processing import process_document
+
+
+def _doc_to_read(doc: Document, *, chunk_count: int) -> DocumentRead:
+    """Compose the DocumentRead payload, deriving ``processing_time_ms``."""
+    elapsed_ms = None
+    if doc.processing_started_at and doc.processing_completed_at:
+        elapsed_ms = int(
+            (doc.processing_completed_at - doc.processing_started_at).total_seconds()
+            * 1000
+        )
+    return DocumentRead.model_validate(
+        {
+            **doc.__dict__,
+            "chunk_count": chunk_count,
+            "processing_time_ms": elapsed_ms,
+        }
+    )
 
 
 router = APIRouter(tags=["knowledge"])
@@ -332,6 +351,7 @@ _DEFAULT_MAX_BYTES = 25 * 1024 * 1024  # 25 MiB
     ),
 )
 async def upload_document(
+    background_tasks: BackgroundTasks,
     knowledge_base_id: uuid.UUID = Form(..., description="Target knowledge base UUID."),
     file: UploadFile = File(..., description="Source file (PDF, TXT, DOCX, etc.)."),
     ctx: OrgContext = Depends(get_current_organization),
@@ -388,7 +408,14 @@ async def upload_document(
             "knowledge_base_id": str(doc.knowledge_base_id),
         },
     )
-    return DocumentRead.model_validate({**doc.__dict__, "chunk_count": 0})
+
+    # Phase 7: kick off processing in the background. The HTTP response
+    # returns immediately while the worker chunks the file. Subsequent
+    # polls of /api/documents/{id} or /api/documents/{id}/chunks show
+    # the live status transition pending → processing → processed.
+    background_tasks.add_task(process_document, doc.id)
+
+    return _doc_to_read(doc, chunk_count=0)
 
 
 @router.get(
@@ -432,9 +459,7 @@ async def list_documents(
     items: list[DocumentRead] = []
     for d in rows:
         items.append(
-            DocumentRead.model_validate(
-                {**d.__dict__, "chunk_count": await _chunk_count_for_doc(session, d.id)}
-            )
+            _doc_to_read(d, chunk_count=await _chunk_count_for_doc(session, d.id))
         )
 
     return DocumentListResponse(items=items, total=total, limit=limit, offset=offset)
@@ -453,9 +478,51 @@ async def get_document(
     doc = await _doc_for_org(session, doc_id=document_id, organization_id=ctx.organization_id)
     if doc is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found.")
-    return DocumentRead.model_validate(
-        {**doc.__dict__, "chunk_count": await _chunk_count_for_doc(session, doc.id)}
+    return _doc_to_read(doc, chunk_count=await _chunk_count_for_doc(session, doc.id))
+
+
+@router.post(
+    "/api/documents/{document_id}/process",
+    response_model=DocumentRead,
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="(Re)trigger processing for a document",
+    description=(
+        "Kicks off the extract → normalise → chunk pipeline in the "
+        "background. The response is the current document state with "
+        "`status='processing'`; poll `GET /api/documents/{id}` or "
+        "`/chunks` for progress. Reprocessing wipes any existing chunks "
+        "for this document and rebuilds them from the source file."
+    ),
+)
+async def process_document_endpoint(
+    document_id: uuid.UUID,
+    background_tasks: BackgroundTasks,
+    ctx: OrgContext = Depends(get_current_organization),
+    session: AsyncSession = Depends(get_db),
+) -> DocumentRead:
+    doc = await _doc_for_org(session, doc_id=document_id, organization_id=ctx.organization_id)
+    if doc is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found.")
+
+    # Flip status optimistically so polling sees movement immediately.
+    doc.status = DocumentStatus.processing
+    doc.processing_started_at = datetime.now(timezone.utc)
+    doc.processing_completed_at = None
+    doc.processing_error = None
+    await session.commit()
+    await session.refresh(doc)
+
+    audit(
+        "process",
+        resource="document",
+        resource_id=str(doc.id),
+        organization_id=str(ctx.organization_id),
+        user_id=str(ctx.user_id),
+        meta={"trigger": "manual"},
     )
+
+    background_tasks.add_task(process_document, doc.id)
+    return _doc_to_read(doc, chunk_count=await _chunk_count_for_doc(session, doc.id))
 
 
 @router.get(

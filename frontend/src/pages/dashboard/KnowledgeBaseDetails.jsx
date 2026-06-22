@@ -66,6 +66,17 @@ export default function KnowledgeBaseDetails() {
     load();
   }, [load]);
 
+  // Poll while any document is still being processed so the UI reflects
+  // status transitions (pending → processing → processed) without a refresh.
+  useEffect(() => {
+    const inFlight = docs.some(
+      (d) => d.status === "pending" || d.status === "processing"
+    );
+    if (!inFlight) return undefined;
+    const t = setInterval(load, 1500);
+    return () => clearInterval(t);
+  }, [docs, load]);
+
   const upload = async (files) => {
     const list = Array.from(files || []);
     if (list.length === 0) return;
@@ -217,16 +228,50 @@ export default function KnowledgeBaseDetails() {
                   </p>
                   <p className="text-xs text-[#64748B] mt-0.5 truncate">
                     {d.file_type || "Unknown"} · {humanSize(d.file_size)} ·{" "}
+                    {(d.chunk_count || 0).toLocaleString()} chunks
+                    {d.processing_time_ms != null && (
+                      <> · {d.processing_time_ms < 1000
+                        ? `${d.processing_time_ms} ms`
+                        : `${(d.processing_time_ms / 1000).toFixed(1)} s`} processing</>
+                    )}
+                    {" · "}
                     {new Date(d.created_at).toLocaleString()}
                   </p>
+                  {d.processing_error && (
+                    <p
+                      className="text-xs text-red-600 mt-1 truncate"
+                      title={d.processing_error}
+                      data-testid={`kb-doc-error-${d.id}`}
+                    >
+                      Error: {d.processing_error}
+                    </p>
+                  )}
                 </div>
                 <span
                   className={`text-[10px] px-2 py-0.5 rounded-full font-semibold capitalize ${
                     STATUS_BADGE[d.status] || STATUS_BADGE.pending
                   }`}
+                  data-testid={`kb-doc-status-${d.id}`}
                 >
                   {d.status}
                 </span>
+                {d.status === "failed" && (
+                  <button
+                    onClick={async () => {
+                      try {
+                        await api.post(`/documents/${d.id}/process`);
+                        toast.success("Reprocessing started");
+                        load();
+                      } catch (err) {
+                        toast.error(formatApiError(err.response?.data?.detail));
+                      }
+                    }}
+                    className="px-3 py-1.5 rounded-xl border border-[#E2E8F0] hover:bg-[#F8FAFC] text-xs font-medium text-[#0F172A]"
+                    data-testid={`kb-doc-retry-${d.id}`}
+                  >
+                    Retry
+                  </button>
+                )}
                 <button
                   onClick={() => remove(d)}
                   className="size-9 rounded-xl border border-[#E2E8F0] hover:bg-red-50 hover:border-red-200 grid place-items-center text-red-500"
