@@ -69,7 +69,9 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           <div className="lg:col-span-4">
-            <Logo light />
+            <div className="h-11 w-[168px] overflow-hidden flex items-center">
+              <Logo className="size-full object-cover object-center" />
+            </div>
             <p className="mt-5 text-sm text-white/70 leading-relaxed max-w-sm">
               AI agents for calls, chats and WhatsApp. Automate conversations, capture leads, book appointments — grow your business 24/7.
             </p>

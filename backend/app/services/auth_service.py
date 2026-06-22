@@ -7,6 +7,7 @@ profile in DynamoDB on every successful login (and refreshes lastLogin).
 from datetime import datetime, timezone
 from typing import Dict
 
+import requests
 from botocore.exceptions import ClientError
 from fastapi import HTTPException, status
 from jose import jwt as jose_jwt
@@ -15,10 +16,12 @@ from app.core.cognito import cognito_client
 from app.core.config import settings
 from app.database.dynamodb import users_table
 from app.schemas.auth import (
+    CodeExchangeRequest,
     ConfirmForgotPasswordRequest,
     ConfirmSignUpRequest,
     ForgotPasswordRequest,
     LoginRequest,
+    RefreshTokenRequest,
     ResendConfirmationRequest,
     SignUpRequest,
     TokensResponse,
@@ -93,6 +96,7 @@ def confirm_sign_up(data: ConfirmSignUpRequest) -> None:
             Username=data.email,
             ConfirmationCode=data.code,
         )
+        _ensure_profile_from_cognito_username(data.email)
     except ClientError as e:
         _raise_cognito_error(e)
 
@@ -152,6 +156,71 @@ def login(data: LoginRequest) -> TokensResponse:
     )
 
 
+def exchange_authorization_code(data: CodeExchangeRequest) -> TokensResponse:
+    redirect_uri = data.redirect_uri or settings.cognito_redirect_uri
+    token_url = f"{settings.cognito_domain.rstrip('/')}/oauth2/token"
+
+    payload = {
+        "grant_type": "authorization_code",
+        "client_id": settings.cognito_app_client_id,
+        "code": data.code,
+        "redirect_uri": redirect_uri,
+    }
+
+    try:
+        response = requests.post(
+            token_url,
+            data=payload,
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            timeout=15,
+        )
+    except requests.RequestException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Unable to reach Cognito token endpoint.",
+        ) from exc
+
+    if response.status_code >= 400:
+        err = {}
+        try:
+            err = response.json()
+        except ValueError:
+            pass
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=err.get("error_description") or err.get("error") or "Code exchange failed.",
+        )
+
+    data_json = response.json()
+    access_token = data_json.get("access_token")
+    id_token = data_json.get("id_token", "")
+    refresh_token = data_json.get("refresh_token")
+    expires_in = int(data_json.get("expires_in", 3600))
+    token_type = data_json.get("token_type", "Bearer")
+
+    if not access_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Code exchange did not return an access token.",
+        )
+
+    claims = jose_jwt.get_unverified_claims(id_token) if id_token else {}
+    user_id = claims.get("sub")
+    email_claim = claims.get("email") or ""
+    name_claim = claims.get("name") or claims.get("cognito:username") or ""
+
+    if user_id:
+        _upsert_user_profile(user_id=user_id, email=email_claim, name=name_claim)
+
+    return TokensResponse(
+        access_token=access_token,
+        id_token=id_token,
+        refresh_token=refresh_token,
+        token_type=token_type,
+        expires_in=expires_in,
+    )
+
+
 def forgot_password(data: ForgotPasswordRequest) -> dict:
     try:
         response = cognito_client.forgot_password(
@@ -188,22 +257,66 @@ def global_sign_out(access_token: str) -> None:
         return
 
 
+def refresh_tokens(data: RefreshTokenRequest) -> TokensResponse:
+    try:
+        response = cognito_client.initiate_auth(
+            ClientId=settings.cognito_app_client_id,
+            AuthFlow="REFRESH_TOKEN_AUTH",
+            AuthParameters={
+                "REFRESH_TOKEN": data.refresh_token,
+            },
+        )
+    except ClientError as e:
+        _raise_cognito_error(e)
+
+    auth_result = response.get("AuthenticationResult") or {}
+    access_token = auth_result.get("AccessToken")
+    id_token = auth_result.get("IdToken", "")
+    if not access_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Session has expired. Please log in again.",
+        )
+
+    claims = jose_jwt.get_unverified_claims(id_token) if id_token else {}
+    user_id = claims.get("sub")
+    email_claim = claims.get("email")
+    name_claim = claims.get("name") or claims.get("cognito:username") or ""
+    if user_id:
+        _upsert_user_profile(user_id=user_id, email=email_claim or "", name=name_claim)
+
+    return TokensResponse(
+        access_token=access_token,
+        id_token=id_token,
+        refresh_token=data.refresh_token,
+        token_type=auth_result.get("TokenType", "Bearer"),
+        expires_in=auth_result.get("ExpiresIn", 3600),
+    )
+
+
 # ─────────────────────────────────────────────────────────────
 # DynamoDB profile upsert
 # ─────────────────────────────────────────────────────────────
 
 def _upsert_user_profile(user_id: str, email: str, name: str) -> None:
     now_iso = datetime.now(timezone.utc).isoformat()
+    split_name = (name or "").strip().split(" ", 1)
+    first_name = split_name[0] if split_name and split_name[0] else ""
+    last_name = split_name[1] if len(split_name) > 1 else ""
     try:
         users_table.update_item(
             Key={"userId": user_id},
             UpdateExpression=(
                 "SET email = :e, "
+                "emailVerified = if_not_exists(emailVerified, :ev), "
                 "#nm = if_not_exists(#nm, :n), "
+                "firstName = if_not_exists(firstName, :fn), "
+                "lastName = if_not_exists(lastName, :ln), "
                 "#rl = if_not_exists(#rl, :r), "
                 "#pl = if_not_exists(#pl, :p), "
                 "#st = if_not_exists(#st, :s), "
                 "createdAt = if_not_exists(createdAt, :c), "
+                "updatedAt = :u, "
                 "lastLogin = :l"
             ),
             ExpressionAttributeNames={
@@ -214,11 +327,15 @@ def _upsert_user_profile(user_id: str, email: str, name: str) -> None:
             },
             ExpressionAttributeValues={
                 ":e": email,
+                ":ev": True,
                 ":n": name or "",
-                ":r": "owner",
-                ":p": "beta",
+                ":fn": first_name,
+                ":ln": last_name,
+                ":r": "user",
+                ":p": "free",
                 ":s": "active",
                 ":c": now_iso,
+                ":u": now_iso,
                 ":l": now_iso,
             },
             ReturnValues="NONE",
@@ -226,3 +343,23 @@ def _upsert_user_profile(user_id: str, email: str, name: str) -> None:
     except ClientError:
         # Profile upsert is best-effort — never block login on DDB hiccups.
         pass
+
+
+def _ensure_profile_from_cognito_username(username: str) -> None:
+    """Create user profile in DynamoDB immediately after email verification."""
+    try:
+        response = cognito_client.admin_get_user(
+            UserPoolId=settings.cognito_user_pool_id,
+            Username=username,
+        )
+    except ClientError:
+        return
+
+    attrs = {a.get("Name"): a.get("Value") for a in response.get("UserAttributes", [])}
+    user_id = attrs.get("sub")
+    email = attrs.get("email") or username
+    name = attrs.get("name") or ""
+    if not user_id:
+        return
+
+    _upsert_user_profile(user_id=user_id, email=email, name=name)

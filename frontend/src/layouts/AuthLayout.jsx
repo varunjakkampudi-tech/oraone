@@ -38,26 +38,7 @@ export default function AuthLayout() {
         />
 
         {/* Top: brand */}
-        <Link to="/" className="relative z-10 flex items-center gap-3" data-testid="auth-brand-link">
-          <SmartImg
-            src={BRAND_MARK_URL}
-            alt="OraOne"
-            eager
-            className="size-14 rounded-2xl object-cover"
-            style={{ objectPosition: "center 22%" }}
-            draggable="false"
-          />
-          <div className="leading-none">
-            <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-extrabold tracking-tight text-white">Ora</span>
-              <span className="text-2xl font-extrabold tracking-tight text-[#60A5FA]">One</span>
-            </div>
-            <p className="mt-1.5 text-[11px] tracking-wider text-white/55">
-              One AI. Every Conversation.
-              <span className="ml-1 inline-block w-3 h-px bg-white/40 align-middle" />
-            </p>
-          </div>
-        </Link>
+        <Link to="/" className="relative z-10" data-testid="auth-brand-link" />
 
         {/* Headline + description */}
         <motion.div
@@ -145,16 +126,7 @@ export default function AuthLayout() {
               className="lg:hidden mb-8 inline-flex items-center gap-2.5"
               data-testid="auth-brand-link-mobile"
             >
-              <SmartImg
-                src={BRAND_MARK_URL}
-                alt="OraOne"
-                eager
-                className="size-10 rounded-xl object-cover"
-                style={{ objectPosition: "center 22%" }}
-              />
-              <span className="text-lg font-extrabold tracking-tight text-[#0F172A]">
-                Ora<span className="text-[#2563EB]">One</span>
-              </span>
+              {/* brand mark placeholder */}
             </Link>
 
             <Outlet />
@@ -317,19 +289,7 @@ function CenterPedestal() {
           border: "1px solid rgba(255,255,255,0.18)",
         }}
       >
-        <SmartImg
-          src={BRAND_MARK_URL}
-          alt="OraOne mark"
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{
-            objectPosition: "center 18%",
-            transform: "scale(2.3)",
-            transformOrigin: "center 32%",
-            mixBlendMode: "screen",
-            opacity: 0.95,
-          }}
-          draggable="false"
-        />
+        {/* brand mark placeholder */}
         {/* gloss */}
         <div
           className="absolute inset-0 pointer-events-none"

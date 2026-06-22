@@ -73,7 +73,7 @@ export default function SEOLanding({ config }) {
         availability: "https://schema.org/InStock",
         price: "0",
         priceCurrency: "USD",
-        url: `https://oraone.ai/${slug}`,
+        url: `https://oraone.in/${slug}`,
       },
     },
   });

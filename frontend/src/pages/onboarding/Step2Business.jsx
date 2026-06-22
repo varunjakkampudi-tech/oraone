@@ -30,7 +30,7 @@ export default function Step2Business() {
       <div className="mt-8 space-y-4">
         <div>
           <label className="block text-sm font-medium text-[#0F172A] mb-1.5">Business Name</label>
-          <input required value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })} data-testid={ONBOARDING.step2CompanyName} placeholder="Bright Dental Clinic" className="w-full rounded-xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm focus:border-[#2563EB] focus:outline-none focus:ring-4 focus:ring-[#2563EB]/10" />
+          <input required value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })} data-testid={ONBOARDING.step2CompanyName} placeholder="Your Business Name" className="w-full rounded-xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm focus:border-[#2563EB] focus:outline-none focus:ring-4 focus:ring-[#2563EB]/10" />
         </div>
         <div>
           <label className="block text-sm font-medium text-[#0F172A] mb-1.5">Industry</label>
@@ -40,15 +40,15 @@ export default function Step2Business() {
         </div>
         <div>
           <label className="block text-sm font-medium text-[#0F172A] mb-1.5">Business Phone</label>
-          <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} data-testid={ONBOARDING.step2Phone} placeholder="+91 98765 43210" className="w-full rounded-xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm focus:border-[#2563EB] focus:outline-none focus:ring-4 focus:ring-[#2563EB]/10" />
+          <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} data-testid={ONBOARDING.step2Phone} placeholder="+1 (555) 123-4567" className="w-full rounded-xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm focus:border-[#2563EB] focus:outline-none focus:ring-4 focus:ring-[#2563EB]/10" />
         </div>
         <div>
           <label className="block text-sm font-medium text-[#0F172A] mb-1.5">Business Website (Optional)</label>
-          <input value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} data-testid={ONBOARDING.step2Website} placeholder="https://brightdental.com" className="w-full rounded-xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm focus:border-[#2563EB] focus:outline-none focus:ring-4 focus:ring-[#2563EB]/10" />
+          <input value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} data-testid={ONBOARDING.step2Website} placeholder="https://www.yourbusiness.com" className="w-full rounded-xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm focus:border-[#2563EB] focus:outline-none focus:ring-4 focus:ring-[#2563EB]/10" />
         </div>
         <div>
           <label className="block text-sm font-medium text-[#0F172A] mb-1.5">Business Email (Optional)</label>
-          <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} data-testid={ONBOARDING.step2Email} placeholder="hello@brightdental.com" className="w-full rounded-xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm focus:border-[#2563EB] focus:outline-none focus:ring-4 focus:ring-[#2563EB]/10" />
+          <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} data-testid={ONBOARDING.step2Email} placeholder="contact@yourbusiness.com" className="w-full rounded-xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm focus:border-[#2563EB] focus:outline-none focus:ring-4 focus:ring-[#2563EB]/10" />
         </div>
       </div>
 

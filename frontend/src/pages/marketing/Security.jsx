@@ -384,7 +384,7 @@ export default function SecurityPage() {
                 Under GDPR, the India DPDP Act and our own customer commitments, you have
                 full rights to your data. Exercise them anytime via your account or by
                 emailing{" "}
-                <a className="underline" href="mailto:privacy@oraone.ai">privacy@oraone.ai</a>.
+                <a className="underline" href="mailto:privacy@oraone.in">privacy@oraone.in</a>.
               </p>
             </div>
             <ul className="space-y-3">
@@ -481,10 +481,10 @@ export default function SecurityPage() {
                   Contact Security <ArrowRight size={14} />
                 </Link>
                 <a
-                  href="mailto:security@oraone.ai"
+                  href="mailto:security@oraone.in"
                   className="px-5 py-3 rounded-xl border border-white/30 hover:bg-white/10 font-semibold text-sm transition-colors inline-flex items-center gap-2"
                 >
-                  <Mail size={14} /> security@oraone.ai
+                  <Mail size={14} /> security@oraone.in
                 </a>
               </div>
             </div>

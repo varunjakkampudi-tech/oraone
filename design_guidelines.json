@@ -121,17 +121,17 @@
     "avatars": [
       {
         "url": "https://images.pexels.com/photos/10816007/pexels-photo-10816007.jpeg",
-        "description": "Professional man in grey suit - Use for testimonials and team members"
+        "description": "Professional man in grey suit - Use for testimonials and team members (replace with real photo)"
       },
       {
         "url": "https://images.pexels.com/photos/29852895/pexels-photo-29852895.jpeg",
-        "description": "Professional woman in black suit - Use for testimonials and user profile"
+        "description": "Professional woman in black suit - Use for testimonials and user profile (replace with real photo)"
       }
     ],
     "logos": [
       {
         "url": "https://images.pexels.com/photos/21898300/pexels-photo-21898300.jpeg",
-        "description": "Placeholder integration logo (Pexels) - To be used in integration grids"
+        "description": "Integration logo - Use in integration grids and partner sections"
       }
     ]
   },
@@ -141,7 +141,7 @@
     "Implement the 'White Theme' for the main application, utilizing #F8FAFC for backgrounds and #FFFFFF for cards, accented with #E2E8F0 borders.",
     "Components must use generous border radii: rounded-2xl for cards and panels, rounded-xl for buttons, inputs, and dropdowns.",
     "Apply generous whitespace (p-6 to p-8 inside cards, py-24 to py-32 for marketing sections). Do not cram content.",
-    "The Live Product Demo Preview on the Landing Page MUST be a dark-themed mock UI inside the light page to create contrast.",
+    "The Live Product Demo Preview on the Landing Page should showcase real product functionality with contrasting dark theme.",
     "Use Framer Motion for entrance animations (fade up), staggered lists, and premium micro-interactions on hover.",
     "Always add 'data-testid' attributes to all interactive elements, buttons, inputs, and navigational links.",
     "Use lucide-react for all iconography to maintain a clean, consistent, professional look."

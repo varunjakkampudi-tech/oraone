@@ -17,7 +17,7 @@ const SAMPLE_DOCS = [
   { id: "d1", title: "Product Catalog 2024.pdf",  type: "PDF",  size: "2.4 MB", date: "May 26, 2024", status: "Indexed" },
   { id: "d2", title: "Service Policies.docx",     type: "DOCX", size: "1.8 MB", date: "May 25, 2024", status: "Indexed" },
   { id: "d3", title: "FAQs - Customer Support",   type: "MD",   size: "45 KB",  date: "May 24, 2024", status: "Processing" },
-  { id: "d4", title: "https://oraone.ai/docs",    type: "URL",  size: "Indexed",date: "May 23, 2024", status: "Indexed" },
+  { id: "d4", title: "https://oraone.in/docs",    type: "URL",  size: "Indexed",date: "May 23, 2024", status: "Indexed" },
 ];
 
 const TYPE_META = {

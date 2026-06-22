@@ -1,6 +1,6 @@
 """
 Capture full-page screenshots of every OraOne route at desktop (and optionally mobile) widths.
-Outputs into /app/test_reports/screenshots/{desktop,mobile}/<slug>.png
+Outputs into /app/docs/qa/test_reports/screenshots/{desktop,mobile}/<slug>.png
 
 Run: python3 /app/scripts/capture_all_pages.py [--desktop-only]
 """
@@ -21,11 +21,11 @@ def _read_base():
     return "http://localhost:3000"
 
 BASE = os.environ.get("ORAONE_BASE_URL") or _read_base()
-EMAIL = "admin@oraone.ai"
+EMAIL = "admin@oraone.in"
 PASSWORD = "OraOne@2026"
 DESKTOP_ONLY = "--desktop-only" in sys.argv
 
-OUT_DIR = Path("/app/test_reports/screenshots")
+OUT_DIR = Path("/app/docs/qa/test_reports/screenshots")
 (OUT_DIR / "desktop").mkdir(parents=True, exist_ok=True)
 (OUT_DIR / "mobile").mkdir(parents=True, exist_ok=True)
 

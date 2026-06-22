@@ -7,9 +7,9 @@ import os
 import pytest
 import requests
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://varunjakkampudi-dev.preview.emergentagent.com").rstrip("/")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "http://localhost:8000").rstrip("/")
 
-ADMIN_EMAIL = "admin@oraone.ai"
+ADMIN_EMAIL = "admin@oraone.in"
 ADMIN_PASSWORD = "OraOne@2026"
 
 
@@ -31,7 +31,7 @@ class TestSecurityHeaders:
         # Send an invalid login to confirm headers still apply on error paths
         r = requests.post(
             f"{BASE_URL}/api/auth/login",
-            json={"email": "nope@example.com", "password": "wrong"},
+            json={"email": "invalid@example.com", "password": "wrong"},
             timeout=15,
         )
         h = {k.lower(): v for k, v in r.headers.items()}

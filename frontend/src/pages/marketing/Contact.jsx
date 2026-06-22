@@ -147,7 +147,7 @@ export default function ContactPage() {
 
           {/* Contact info cards */}
           <div className="mt-10 space-y-4 max-w-md">
-            <InfoCard icon={Mail} label="Email" value="sales@oraone.ai" />
+            <InfoCard icon={Mail} label="Email" value="sales@oraone.in" />
             <InfoCard icon={Phone} label="Phone" value="+91 98765 43210" />
             <InfoCard icon={MapPin} label="Office" value="Mumbai, India" />
           </div>

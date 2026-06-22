@@ -4,10 +4,10 @@ import uuid
 import pytest
 import requests
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://varunjakkampudi-dev.preview.emergentagent.com").rstrip("/")
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "http://localhost:8000").rstrip("/")
 API = f"{BASE_URL}/api"
 
-ADMIN_EMAIL = "admin@oraone.ai"
+ADMIN_EMAIL = "admin@oraone.in"
 ADMIN_PASSWORD = "OraOne@2026"
 
 

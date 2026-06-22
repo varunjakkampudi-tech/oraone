@@ -207,7 +207,7 @@ export function ForgotPassword() {
 
 export function ResetPassword() {
   useSEO({ title: "Reset Password", description: "Set a new OraOne password." });
-  const { resetPassword } = useAuth();
+  const { resetPassword, forgotPassword } = useAuth();
   const nav = useNavigate();
   const [params] = useSearchParams();
 
@@ -217,6 +217,7 @@ export function ResetPassword() {
   const [confirm, setConfirm] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [resending, setResending] = useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -236,6 +237,23 @@ export function ResetPassword() {
       nav("/login");
     } else {
       toast.error(res.error || "Reset failed");
+    }
+  };
+
+  const resendCode = async () => {
+    if (!email) {
+      toast.error("Enter your email first");
+      return;
+    }
+
+    setResending(true);
+    const res = await forgotPassword({ email: email.trim().toLowerCase() });
+    setResending(false);
+
+    if (res.ok) {
+      toast.success("A new verification code has been sent.");
+    } else {
+      toast.error(res.error || "Could not resend code");
     }
   };
 
@@ -330,6 +348,15 @@ export function ResetPassword() {
           className="w-full py-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-sm disabled:opacity-60"
         >
           {busy ? "Saving..." : "Update Password"}
+        </button>
+
+        <button
+          type="button"
+          onClick={resendCode}
+          disabled={resending}
+          className="w-full py-3 rounded-xl border border-[#E2E8F0] text-[#0F172A] font-semibold text-sm hover:bg-[#F8FAFC] disabled:opacity-60"
+        >
+          {resending ? "Sending..." : "Resend Code"}
         </button>
       </form>
 

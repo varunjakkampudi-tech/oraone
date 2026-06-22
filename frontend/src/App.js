@@ -47,6 +47,7 @@ const AIAppointmentBookingPage = lazy(() => import("@/pages/marketing/SeoPages")
 const AICustomerSupportPage    = lazy(() => import("@/pages/marketing/SeoPages").then((m) => ({ default: m.AICustomerSupportPage })));
 
 // Auth — lazy
+const AuthCallback = lazy(() => import("@/pages/auth/AuthCallback"));
 const Login = lazy(() => import("@/pages/auth/Login"));
 const Signup = lazy(() => import("@/pages/auth/Signup"));
 const VerifyEmail = lazy(() => import("@/pages/auth/Recovery").then((m) => ({ default: m.VerifyEmail })));
@@ -119,6 +120,9 @@ function App() {
                 <Route path="*" element={<NotFound />} />
               </Route>
 
+              {/* Cognito Hosted UI callback — no layout wrapper, handles its own full-page UI */}
+              <Route path="/auth/callback" element={<AuthCallback />} />
+
               {/* Auth */}
               <Route element={<AuthLayout />}>
                 <Route path="/login" element={<Login />} />
@@ -150,6 +154,17 @@ function App() {
                 <Route path="/app/integrations" element={<IntegrationsDash />} />
                 <Route path="/app/team" element={<Team />} />
                 <Route path="/app/settings" element={<Settings />} />
+                {/* protected aliases */}
+                <Route path="/dashboard" element={<Navigate to="/app/overview" replace />} />
+                <Route path="/dashboard/*" element={<Navigate to="/app/overview" replace />} />
+                <Route path="/agents" element={<Navigate to="/app/agents" replace />} />
+                <Route path="/agents/*" element={<Navigate to="/app/agents" replace />} />
+                <Route path="/settings" element={<Navigate to="/app/settings" replace />} />
+                <Route path="/settings/*" element={<Navigate to="/app/settings" replace />} />
+                <Route path="/analytics" element={<Navigate to="/app/analytics" replace />} />
+                <Route path="/analytics/*" element={<Navigate to="/app/analytics" replace />} />
+                <Route path="/integrations-dashboard" element={<Navigate to="/app/integrations" replace />} />
+                <Route path="/integrations/*" element={<Navigate to="/app/integrations" replace />} />
               </Route>
             </Routes>
           </Suspense>

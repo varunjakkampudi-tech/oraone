@@ -114,16 +114,16 @@ const API_ENDPOINTS = [
     path: "All requests",
     desc: "Authenticate every request with your API key in the Authorization header.",
     examples: {
-      curl: `curl https://api.oraone.ai/v1/agents \\
+      curl: `curl https://api.oraone.in/v1/agents \\
   -H "Authorization: Bearer YOUR_API_KEY"`,
-      js: `const res = await fetch("https://api.oraone.ai/v1/agents", {
+      js: `const res = await fetch("https://api.oraone.in/v1/agents", {
   headers: { Authorization: "Bearer YOUR_API_KEY" }
 });
 const data = await res.json();`,
       python: `import requests
 
 res = requests.get(
-    "https://api.oraone.ai/v1/agents",
+    "https://api.oraone.in/v1/agents",
     headers={"Authorization": "Bearer YOUR_API_KEY"},
 )
 print(res.json())`,
@@ -136,7 +136,7 @@ print(res.json())`,
     path: "/v1/agents",
     desc: "Spin up a new Voice, Chat or WhatsApp agent programmatically.",
     examples: {
-      curl: `curl -X POST https://api.oraone.ai/v1/agents \\
+      curl: `curl -X POST https://api.oraone.in/v1/agents \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -144,7 +144,7 @@ print(res.json())`,
     "type": "voice",
     "language": "en-IN"
   }'`,
-      js: `await fetch("https://api.oraone.ai/v1/agents", {
+      js: `await fetch("https://api.oraone.in/v1/agents", {
   method: "POST",
   headers: {
     Authorization: "Bearer YOUR_API_KEY",
@@ -157,7 +157,7 @@ print(res.json())`,
   }),
 });`,
       python: `requests.post(
-    "https://api.oraone.ai/v1/agents",
+    "https://api.oraone.in/v1/agents",
     headers={"Authorization": "Bearer YOUR_API_KEY"},
     json={"name": "Sales Assistant", "type": "voice", "language": "en-IN"},
 )`,
@@ -170,14 +170,14 @@ print(res.json())`,
     path: "/v1/conversations",
     desc: "Fetch, search and export conversations across all channels.",
     examples: {
-      curl: `curl "https://api.oraone.ai/v1/conversations?limit=50&channel=whatsapp" \\
+      curl: `curl "https://api.oraone.in/v1/conversations?limit=50&channel=whatsapp" \\
   -H "Authorization: Bearer YOUR_API_KEY"`,
       js: `const res = await fetch(
-  "https://api.oraone.ai/v1/conversations?limit=50&channel=whatsapp",
+  "https://api.oraone.in/v1/conversations?limit=50&channel=whatsapp",
   { headers: { Authorization: "Bearer YOUR_API_KEY" } }
 );`,
       python: `requests.get(
-    "https://api.oraone.ai/v1/conversations",
+    "https://api.oraone.in/v1/conversations",
     headers={"Authorization": "Bearer YOUR_API_KEY"},
     params={"limit": 50, "channel": "whatsapp"},
 )`,
@@ -190,7 +190,7 @@ print(res.json())`,
     path: "/v1/leads",
     desc: "Push captured leads into OraOne or pull lead details for sync.",
     examples: {
-      curl: `curl -X POST https://api.oraone.ai/v1/leads \\
+      curl: `curl -X POST https://api.oraone.in/v1/leads \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -199,7 +199,7 @@ print(res.json())`,
     "source": "whatsapp",
     "intent": "demo-request"
   }'`,
-      js: `await fetch("https://api.oraone.ai/v1/leads", {
+      js: `await fetch("https://api.oraone.in/v1/leads", {
   method: "POST",
   headers: {
     Authorization: "Bearer YOUR_API_KEY",
@@ -213,7 +213,7 @@ print(res.json())`,
   }),
 });`,
       python: `requests.post(
-    "https://api.oraone.ai/v1/leads",
+    "https://api.oraone.in/v1/leads",
     headers={"Authorization": "Bearer YOUR_API_KEY"},
     json={
         "name": "Aarav Mehta",
@@ -366,7 +366,7 @@ const FAQS = [
   },
   {
     q: "Why is my website widget offline?",
-    a: "Confirm the embed snippet is present in the <head> tag and that your domain is added to the allow-list in Settings → Channels → Web. CSP rules blocking *.oraone.ai are the most common cause.",
+    a: "Confirm the embed snippet is present in the <head> tag and that your domain is added to the allow-list in Settings → Channels → Web. CSP rules blocking *.oraone.in are the most common cause.",
   },
   {
     q: "Can I export all my conversations?",
@@ -834,7 +834,7 @@ export default function DocumentationPage() {
               <SectionHeader
                 eyebrow="HELP CENTER"
                 title="Answers to the most asked questions."
-                subtitle="Can't find what you need? Email support@oraone.ai and we'll respond within 4 business hours."
+                subtitle="Can't find what you need? Email support@oraone.in and we'll respond within 4 business hours."
               />
 
               {/* search */}
@@ -955,8 +955,8 @@ export default function DocumentationPage() {
                   icon={Mail}
                   title="Support Email"
                   desc="Reach us anytime — average response 4 business hours."
-                  cta="support@oraone.ai"
-                  href="mailto:support@oraone.ai"
+                  cta="support@oraone.in"
+                  href="mailto:support@oraone.in"
                   testid="support-email"
                 />
                 <SupportCard

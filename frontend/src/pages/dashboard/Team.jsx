@@ -59,12 +59,12 @@ const ROLE_ICONS = {
 /*  Team data                                                           */
 /* ──────────────────────────────────────────────────────────────────── */
 const MEMBERS = [
-  { id: "m1", name: "OraOne Admin",  email: "admin@oraone.ai",  role: "Owner",   status: "Active",  lastActive: "2 mins ago",  initials: "OA", color: "#2563EB", isYou: true },
-  { id: "m2", name: "Rahul Sharma",  email: "rahul@oraone.ai",  role: "Admin",   status: "Active",  lastActive: "12 mins ago", initials: "RS", color: "#7C3AED" },
-  { id: "m3", name: "Priya Patel",   email: "priya@oraone.ai",  role: "Manager", status: "Active",  lastActive: "1 hour ago",  initials: "PP", color: "#0EA5E9" },
-  { id: "m4", name: "Amit Verma",    email: "amit@oraone.ai",   role: "Manager", status: "Active",  lastActive: "3 hours ago", initials: "AV", color: "#F59E0B" },
-  { id: "m5", name: "Neha Gupta",    email: "neha@oraone.ai",   role: "Viewer",  status: "Active",  lastActive: "Yesterday",   initials: "NG", color: "#16A34A" },
-  { id: "m6", name: "David Kumar",   email: "david@oraone.ai",  role: "Viewer",  status: "Inactive",lastActive: "3 days ago",  initials: "DK", color: "#64748B" },
+  { id: "m1", name: "OraOne Admin",  email: "admin@oraone.in",  role: "Owner",   status: "Active",  lastActive: "2 mins ago",  initials: "OA", color: "#2563EB", isYou: true },
+  { id: "m2", name: "Rahul Sharma",  email: "rahul@oraone.in",  role: "Admin",   status: "Active",  lastActive: "12 mins ago", initials: "RS", color: "#7C3AED" },
+  { id: "m3", name: "Priya Patel",   email: "priya@oraone.in",  role: "Manager", status: "Active",  lastActive: "1 hour ago",  initials: "PP", color: "#0EA5E9" },
+  { id: "m4", name: "Amit Verma",    email: "amit@oraone.in",   role: "Manager", status: "Active",  lastActive: "3 hours ago", initials: "AV", color: "#F59E0B" },
+  { id: "m5", name: "Neha Gupta",    email: "neha@oraone.in",   role: "Viewer",  status: "Active",  lastActive: "Yesterday",   initials: "NG", color: "#16A34A" },
+  { id: "m6", name: "David Kumar",   email: "david@oraone.in",  role: "Viewer",  status: "Inactive",lastActive: "3 days ago",  initials: "DK", color: "#64748B" },
 ];
 
 const INVITATIONS = [

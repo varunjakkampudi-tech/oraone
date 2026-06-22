@@ -27,7 +27,7 @@ export function Privacy() {
       <h2 className="text-xl font-semibold text-[#0F172A]">4. Data Security</h2>
       <p>Encrypted in transit (TLS 1.3) and at rest (AES-256). Audit logs, access controls and OWASP-aligned security practices are enforced.</p>
       <h2 className="text-xl font-semibold text-[#0F172A]">5. Your Rights</h2>
-      <p>You may access, export, correct, or delete your data at any time via your account settings or by contacting privacy@oraone.ai.</p>
+      <p>You may access, export, correct, or delete your data at any time via your account settings or by contacting privacy@oraone.in.</p>
       <h2 className="text-xl font-semibold text-[#0F172A]">6. Cookies</h2>
       <p>We use first-party cookies to keep you logged in and analytics cookies (anonymised) to improve the product. See our Cookie Policy.</p>
       <h2 className="text-xl font-semibold text-[#0F172A]">7. Changes to This Policy</h2>

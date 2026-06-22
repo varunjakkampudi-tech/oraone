@@ -1,7 +1,6 @@
 import React from "react";
 import { Phone, MessageCircle, MessageSquare, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
-import { BRAND_MARK_URL } from "@/components/marketing/Logo";
 import SmartImg from "@/components/ui/SmartImg";
 
 /**
@@ -78,42 +77,38 @@ export default function HeroOrb() {
         <MessageCircle size={22} />
       </FloatIcon>
 
-      {/* Centre — OraOne brand mark */}
-      <motion.div
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-        animate={{ scale: [1, 1.04, 1] }}
-        transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
-      >
-        <div
-          className="relative size-44 sm:size-52 rounded-full grid place-items-center"
-          style={{
-            background:
-              "radial-gradient(circle at 50% 40%, #DBEAFE 0%, #EEF2FF 55%, transparent 80%)",
-          }}
+      {/* Centre — brand orb (logo placeholder) */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+        <motion.div
+          animate={{ scale: [1, 1.04, 1] }}
+          transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
         >
           <div
-            className="relative size-36 sm:size-44 rounded-full overflow-hidden grid place-items-center"
+            className="relative size-44 sm:size-52 rounded-full grid place-items-center"
             style={{
-              boxShadow:
-                "0 22px 60px -12px rgba(37,99,235,0.35), inset 0 0 0 1px rgba(255,255,255,0.5)",
-              background: "linear-gradient(135deg, #EFF6FF 0%, #FFFFFF 100%)",
+              background:
+                "radial-gradient(circle at 50% 40%, #DBEAFE 0%, #EEF2FF 55%, transparent 80%)",
             }}
           >
-            <SmartImg
-              src={BRAND_MARK_URL}
-              alt="OraOne brand mark"
-              eager
-              className="w-full h-full object-cover"
+            <div
+              className="relative size-36 sm:size-44 rounded-full overflow-hidden grid place-items-center"
               style={{
-                objectPosition: "center 22%",
-                transform: "scale(2)",
-                transformOrigin: "center 32%",
+                boxShadow:
+                  "0 22px 60px -12px rgba(37,99,235,0.35), inset 0 0 0 1px rgba(255,255,255,0.5)",
+                background: "linear-gradient(135deg, #EFF6FF 0%, #FFFFFF 100%)",
               }}
-              draggable="false"
-            />
+            >
+              <SmartImg
+                src="/assets/image-3.png"
+                alt="OraOne brand"
+                className="size-full object-cover object-center"
+                loading="eager"
+                draggable={false}
+              />
+            </div>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
     </div>
   );
 }

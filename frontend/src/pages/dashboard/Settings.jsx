@@ -121,7 +121,7 @@ function ProfileSection() {
     .join("")
     .toUpperCase();
   const [name, setName] = useState(user?.full_name || "OraOne Admin");
-  const [email, setEmail] = useState(user?.email || "admin@oraone.ai");
+  const [email, setEmail] = useState(user?.email || "admin@oraone.in");
 
   return (
     <>

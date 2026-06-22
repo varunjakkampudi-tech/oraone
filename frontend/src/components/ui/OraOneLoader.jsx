@@ -52,14 +52,7 @@ function BrandHalo({ size = 96, dark = false }) {
           background: "#0F172A",
         }}
       >
-        <img
-          src={BRAND_MARK_URL}
-          alt=""
-          aria-hidden="true"
-          draggable="false"
-          className="w-full h-full object-cover"
-          style={{ objectPosition: "center 18%", transform: "scale(1.8)", transformOrigin: "center 32%" }}
-        />
+        {/* brand mark placeholder */}
       </div>
     </div>
   );
@@ -191,12 +184,7 @@ export function ChatTyping({ label = "OraOne is typing…" }) {
   return (
     <div className="flex items-center gap-3" data-testid="chat-typing">
       <span className="size-9 rounded-full bg-[#0F172A] overflow-hidden grid place-items-center flex-shrink-0">
-        <img
-          src={BRAND_MARK_URL}
-          alt=""
-          className="w-full h-full object-cover"
-          style={{ objectPosition: "center 18%", transform: "scale(1.8)", transformOrigin: "center 32%" }}
-        />
+        {/* brand mark placeholder */}
       </span>
       <div className="px-3.5 py-2.5 rounded-2xl rounded-tl-sm bg-[#F1F5F9] flex items-center gap-1.5">
         {[0, 1, 2].map((i) => (

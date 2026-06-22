@@ -16,7 +16,9 @@ export class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, info) {
-    console.error("[OraOne] Uncaught error:", error, info?.componentStack);
+    if (process.env.NODE_ENV === "development") {
+      console.error("[OraOne] Uncaught error:", error, info?.componentStack);
+    }
   }
 
   handleReset = () => {

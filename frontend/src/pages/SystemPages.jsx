@@ -71,7 +71,7 @@ export function Maintenance() {
     >
       <div className="mt-6 flex flex-wrap justify-center gap-2">
         <a
-          href="https://status.oraone.ai"
+          href="https://status.oraone.in"
           target="_blank"
           rel="noopener noreferrer"
           data-testid="maintenance-status"
@@ -80,7 +80,7 @@ export function Maintenance() {
           View Status Page
         </a>
         <a
-          href="mailto:support@oraone.ai"
+          href="mailto:support@oraone.in"
           data-testid="maintenance-contact"
           className="inline-flex items-center gap-1.5 px-5 py-3 rounded-xl border border-[#E2E8F0] hover:border-[#2563EB] hover:text-[#2563EB] text-[#0F172A] text-sm font-semibold"
         >

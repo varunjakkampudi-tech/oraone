@@ -5,21 +5,21 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 import os
-import jwt
-import bcrypt
-import secrets as pysecrets
 import uuid
 import logging
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from typing import List, Optional, Literal
 
-from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, Depends
+from fastapi import FastAPI, APIRouter, HTTPException, Request, Depends
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
 
 # Cognito auth router (new modular auth foundation)
 from app.api.auth.routes import router as cognito_auth_router
+from app.api.contact import register_contact_routes
+from app.api.dashboard import register_dashboard_routes
+from app.middleware.jwt_auth import get_current_user_claims
 
 
 # ---------- DB ----------
@@ -27,104 +27,20 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# ---------- Auth utils ----------
-JWT_ALGORITHM = "HS256"
-
-
-def get_jwt_secret() -> str:
-    return os.environ["JWT_SECRET"]
-
-
-def hash_password(password: str) -> str:
-    salt = bcrypt.gensalt()
-    return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
-
-
-def verify_password(plain: str, hashed: str) -> bool:
-    try:
-        return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
-    except Exception:
-        return False
-
-
-def create_access_token(user_id: str, email: str) -> str:
-    payload = {
-        "sub": user_id,
-        "email": email,
-        "exp": datetime.now(timezone.utc) + timedelta(minutes=60),
-        "type": "access",
-    }
-    return jwt.encode(payload, get_jwt_secret(), algorithm=JWT_ALGORITHM)
-
-
-def create_refresh_token(user_id: str) -> str:
-    payload = {
-        "sub": user_id,
-        "exp": datetime.now(timezone.utc) + timedelta(days=7),
-        "type": "refresh",
-    }
-    return jwt.encode(payload, get_jwt_secret(), algorithm=JWT_ALGORITHM)
-
-
-def set_auth_cookies(response: Response, access: str, refresh: str):
-    response.set_cookie("access_token", access, httponly=True, secure=True, samesite="none", max_age=3600, path="/")
-    response.set_cookie("refresh_token", refresh, httponly=True, secure=True, samesite="none", max_age=604800, path="/")
-
-
 async def get_current_user(request: Request) -> dict:
-    token = request.cookies.get("access_token")
-    if not token:
-        auth = request.headers.get("Authorization", "")
-        if auth.startswith("Bearer "):
-            token = auth[7:]
-    if not token:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    try:
-        payload = jwt.decode(token, get_jwt_secret(), algorithms=[JWT_ALGORITHM])
-        if payload.get("type") != "access":
-            raise HTTPException(status_code=401, detail="Invalid token type")
-        user = await db.users.find_one({"id": payload["sub"]}, {"_id": 0, "password_hash": 0})
-        if not user:
-            raise HTTPException(status_code=401, detail="User not found")
-        return user
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Token expired")
-    except jwt.InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+    """Compatibility adapter for legacy route handlers.
 
-
-# ---------- Models ----------
-class RegisterIn(BaseModel):
-    email: EmailStr
-    password: str = Field(min_length=8)
-    full_name: str
-    company_name: Optional[str] = None
-
-
-class LoginIn(BaseModel):
-    email: EmailStr
-    password: str
-
-
-class ForgotPasswordIn(BaseModel):
-    email: EmailStr
-
-
-class ResetPasswordIn(BaseModel):
-    token: str
-    password: str = Field(min_length=8)
-
-
-class UserOut(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-    id: str
-    email: str
-    full_name: str
-    role: str = "owner"
-    company_name: Optional[str] = None
-    onboarded: bool = False
-    avatar_url: Optional[str] = None
-    created_at: str
+    Enforces Cognito JWT validation through shared middleware and returns
+    the user shape expected by existing server.py routes.
+    """
+    claims = await get_current_user_claims(request)
+    user_id = claims.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token claims")
+    return {
+        "id": user_id,
+        "email": claims.get("email", ""),
+    }
 
 
 # Agents
@@ -314,54 +230,11 @@ async def delete_lead(lead_id: str, user: dict = Depends(get_current_user)):
 
 
 # ---------- Contact (marketing) ----------
-class ContactIn(BaseModel):
-    name: str
-    email: EmailStr
-    company: Optional[str] = None
-    message: str
-    type: Optional[str] = "contact"  # contact | demo | sales
-
-
-@api.post("/contact")
-async def submit_contact(payload: ContactIn):
-    doc = {
-        "id": str(uuid.uuid4()),
-        "created_at": datetime.now(timezone.utc).isoformat(),
-        **payload.model_dump(),
-    }
-    await db.contact_submissions.insert_one(doc)
-    doc.pop("_id", None)
-    return {"message": "Thanks! We'll be in touch shortly.", "id": doc["id"]}
-
-
-class NewsletterIn(BaseModel):
-    email: EmailStr
-
-
-@api.post("/newsletter")
-async def subscribe_newsletter(payload: NewsletterIn):
-    await db.newsletter.update_one(
-        {"email": payload.email.lower()},
-        {"$set": {"email": payload.email.lower(), "subscribed_at": datetime.now(timezone.utc).isoformat()}},
-        upsert=True,
-    )
-    return {"message": "Subscribed successfully"}
+register_contact_routes(api, db)
 
 
 # ---------- Stats / dashboard overview ----------
-@api.get("/dashboard/overview")
-async def dashboard_overview(user: dict = Depends(get_current_user)):
-    agents_count = await db.agents.count_documents({"user_id": user["id"]})
-    leads_count = await db.leads.count_documents({"user_id": user["id"]})
-    return {
-        "calls_answered": 1246,
-        "chats_handled": 2354,
-        "whatsapp_chats": 1890,
-        "leads_captured": max(689, leads_count),
-        "appointments_booked": 342,
-        "conversion_rate": 24.5,
-        "agents_count": agents_count,
-    }
+register_dashboard_routes(api, db, get_current_user)
 
 
 # ---------- Mount + middleware ----------

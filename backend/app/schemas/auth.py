@@ -25,6 +25,15 @@ class LoginRequest(BaseModel):
     password: str = Field(..., min_length=1)
 
 
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str = Field(..., min_length=1)
+
+
+class CodeExchangeRequest(BaseModel):
+    code: str = Field(..., min_length=1)
+    redirect_uri: Optional[str] = None
+
+
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 
@@ -47,8 +56,8 @@ class UserProfile(BaseModel):
     userId: str
     email: EmailStr
     name: str
-    role: str = "owner"
-    plan: str = "beta"
+    role: str = "user"
+    plan: str = "free"
     status: str = "active"
     createdAt: Optional[datetime] = None
     lastLogin: Optional[datetime] = None

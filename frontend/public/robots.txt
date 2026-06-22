@@ -17,4 +17,4 @@ Disallow: /
 User-agent: CCBot
 Disallow: /
 
-Sitemap: https://oraone.ai/sitemap.xml
+Sitemap: https://oraone.in/sitemap.xml

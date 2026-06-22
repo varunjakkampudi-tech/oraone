@@ -110,15 +110,15 @@ export const TESTIMONIALS = [
 ];
 
 export const TEAM_MEMBERS = [
-  { id: "t1", name: "OraOne Admin", email: "admin@oraone.ai", role: "Owner", status: "active" },
-  { id: "t2", name: "Sarah Connor", email: "sarah@oraone.ai", role: "Admin", status: "active" },
-  { id: "t3", name: "John Reese", email: "john@oraone.ai", role: "Manager", status: "active" },
-  { id: "t4", name: "Maya Singh", email: "maya@oraone.ai", role: "Viewer", status: "invited" },
+  { id: "t1", name: "OraOne Admin", email: "admin@oraone.in", role: "Owner", status: "active" },
+  { id: "t2", name: "Sarah Connor", email: "sarah@oraone.in", role: "Admin", status: "active" },
+  { id: "t3", name: "John Reese", email: "john@oraone.in", role: "Manager", status: "active" },
+  { id: "t4", name: "Maya Singh", email: "maya@oraone.in", role: "Viewer", status: "invited" },
 ];
 
 export const KNOWLEDGE_DOCS = [
   { id: "k1", name: "Product Catalog 2024.pdf", type: "PDF", size: "2.4 MB", uploaded: "May 20, 2024", status: "trained" },
   { id: "k2", name: "Service Policies.docx", type: "DOCX", size: "1.1 MB", uploaded: "May 18, 2024", status: "trained" },
   { id: "k3", name: "FAQs - Customer Support", type: "FAQ", size: "—", uploaded: "May 15, 2024", status: "training" },
-  { id: "k4", name: "https://oraone.ai/docs", type: "URL", size: "—", uploaded: "May 12, 2024", status: "trained" },
+  { id: "k4", name: "https://oraone.in/docs", type: "URL", size: "—", uploaded: "May 12, 2024", status: "trained" },
 ];

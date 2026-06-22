@@ -13,11 +13,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.middleware.jwt_auth import get_current_access_token, get_current_user_claims
 from app.schemas.auth import (
+    CodeExchangeRequest,
     ConfirmForgotPasswordRequest,
     ConfirmSignUpRequest,
     ForgotPasswordRequest,
     LoginRequest,
     MessageResponse,
+    RefreshTokenRequest,
     ResendConfirmationRequest,
     SignUpRequest,
     TokensResponse,
@@ -56,6 +58,16 @@ def resend(payload: ResendConfirmationRequest):
 @router.post("/login", response_model=TokensResponse)
 def login(payload: LoginRequest):
     return auth_service.login(payload)
+
+
+@router.post("/exchange", response_model=TokensResponse)
+def exchange_code(payload: CodeExchangeRequest):
+    return auth_service.exchange_authorization_code(payload)
+
+
+@router.post("/refresh", response_model=TokensResponse)
+def refresh(payload: RefreshTokenRequest):
+    return auth_service.refresh_tokens(payload)
 
 
 @router.post("/forgot-password", response_model=MessageResponse)

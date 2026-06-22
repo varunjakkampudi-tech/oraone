@@ -1,9 +1,8 @@
 import { useEffect } from "react";
 
-const SITE_NAME = "OraOne — One AI. Every Conversation.";
-const SITE_BASE = "https://oraone.ai";
-const DEFAULT_OG_IMAGE =
-  "https://customer-assets.emergentagent.com/job_ora-one-v1/artifacts/jozmlir6_ChatGPT%20Image%20Jun%2021%2C%202026%2C%2009_07_48%20PM.png";
+const SITE_NAME = "OraOne - One AI. Every Conversation.";
+const SITE_BASE = "https://oraone.in";
+const DEFAULT_OG_IMAGE = "/assets/logo-wordmark.png";
 
 const LD_ID = "oraone-page-jsonld";
 
@@ -109,3 +108,4 @@ export function useSEO({ title, description, ogImage, noindex, breadcrumbs, faq,
     }
   }, [title, description, ogImage, noindex, breadcrumbs, faq, jsonLd]);
 }
+
