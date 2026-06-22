@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useSEO } from "@/lib/seo";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { loginWithHostedUI } from "@/lib/cognito";
 
 export default function Signup() {
   useSEO({ title: "Sign up", description: "Create your OraOne account in minutes." });
@@ -88,16 +87,6 @@ export default function Signup() {
           <ArrowRight size={17} className="transition-transform group-hover:translate-x-0.5" />
         </button>
       </form>
-
-      <div className="mt-4">
-        <button
-          type="button"
-          onClick={() => loginWithHostedUI("signup")}
-          className="w-full py-3 rounded-xl border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[#0F172A] font-semibold text-sm"
-        >
-          Sign up with Cognito Hosted UI
-        </button>
-      </div>
 
       <div data-testid="signup-ai-disclaimer" className="mt-5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] p-3 flex gap-2.5">
         <ShieldCheck size={16} className="text-[#7C3AED] mt-0.5 flex-shrink-0" />
