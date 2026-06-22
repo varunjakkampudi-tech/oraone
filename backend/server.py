@@ -18,6 +18,9 @@ from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
 
+# Cognito auth router (new modular auth foundation)
+from app.api.auth.routes import router as cognito_auth_router
+
 
 # ---------- DB ----------
 mongo_url = os.environ['MONGO_URL']
@@ -213,114 +216,10 @@ async def health():
 
 
 # ---------- Auth endpoints ----------
-@api.post("/auth/register")
-async def register(payload: RegisterIn, response: Response):
-    email = payload.email.lower().strip()
-    existing = await db.users.find_one({"email": email})
-    if existing:
-        raise HTTPException(status_code=400, detail="An account with this email already exists.")
-    user_id = str(uuid.uuid4())
-    now = datetime.now(timezone.utc).isoformat()
-    doc = {
-        "id": user_id,
-        "email": email,
-        "password_hash": hash_password(payload.password),
-        "full_name": payload.full_name,
-        "company_name": payload.company_name,
-        "role": "owner",
-        "onboarded": False,
-        "avatar_url": None,
-        "created_at": now,
-    }
-    await db.users.insert_one(doc)
-    access = create_access_token(user_id, email)
-    refresh = create_refresh_token(user_id)
-    set_auth_cookies(response, access, refresh)
-    doc.pop("password_hash", None)
-    doc.pop("_id", None)
-    # Include tokens in the body so clients that can't use cross-origin cookies
-    # (CDN/ingress strips credentialed CORS) can fall back to Bearer auth.
-    return {**doc, "access_token": access, "refresh_token": refresh}
-
-
-@api.post("/auth/login")
-async def login(payload: LoginIn, response: Response):
-    email = payload.email.lower().strip()
-    user = await db.users.find_one({"email": email})
-    if not user or not verify_password(payload.password, user.get("password_hash", "")):
-        raise HTTPException(status_code=401, detail="Invalid email or password.")
-    access = create_access_token(user["id"], email)
-    refresh = create_refresh_token(user["id"])
-    set_auth_cookies(response, access, refresh)
-    user.pop("password_hash", None)
-    user.pop("_id", None)
-    return {**user, "access_token": access, "refresh_token": refresh}
-
-
-@api.post("/auth/logout")
-async def logout(response: Response):
-    response.delete_cookie("access_token", path="/")
-    response.delete_cookie("refresh_token", path="/")
-    return {"message": "Logged out"}
-
-
-@api.get("/auth/me", response_model=UserOut)
-async def me(user: dict = Depends(get_current_user)):
-    return user
-
-
-@api.post("/auth/refresh")
-async def refresh_token(request: Request, response: Response):
-    token = request.cookies.get("refresh_token")
-    if not token:
-        raise HTTPException(status_code=401, detail="No refresh token")
-    try:
-        payload = jwt.decode(token, get_jwt_secret(), algorithms=[JWT_ALGORITHM])
-        if payload.get("type") != "refresh":
-            raise HTTPException(status_code=401, detail="Invalid token type")
-        user = await db.users.find_one({"id": payload["sub"]}, {"_id": 0, "password_hash": 0})
-        if not user:
-            raise HTTPException(status_code=401, detail="User not found")
-        access = create_access_token(user["id"], user["email"])
-        response.set_cookie("access_token", access, httponly=True, secure=True, samesite="none", max_age=3600, path="/")
-        return {"message": "Token refreshed"}
-    except jwt.InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Invalid refresh token")
-
-
-@api.post("/auth/forgot-password")
-async def forgot_password(payload: ForgotPasswordIn):
-    email = payload.email.lower().strip()
-    user = await db.users.find_one({"email": email})
-    # Always return success to prevent enumeration
-    if user:
-        token = pysecrets.token_urlsafe(32)
-        await db.password_reset_tokens.insert_one({
-            "token": token,
-            "user_id": user["id"],
-            "expires_at": datetime.now(timezone.utc) + timedelta(hours=1),
-            "used": False,
-        })
-        logger.info(f"[Password Reset] Token for {email}: {token}")
-    return {"message": "If the email exists, a reset link has been sent."}
-
-
-@api.post("/auth/reset-password")
-async def reset_password(payload: ResetPasswordIn):
-    record = await db.password_reset_tokens.find_one({"token": payload.token, "used": False})
-    if not record:
-        raise HTTPException(status_code=400, detail="Invalid or expired token")
-    expires = record["expires_at"]
-    if isinstance(expires, str):
-        expires = datetime.fromisoformat(expires)
-    if expires.replace(tzinfo=timezone.utc) if expires.tzinfo is None else expires < datetime.now(timezone.utc):
-        raise HTTPException(status_code=400, detail="Token expired")
-    await db.users.update_one(
-        {"id": record["user_id"]},
-        {"$set": {"password_hash": hash_password(payload.password)}},
-    )
-    await db.password_reset_tokens.update_one({"token": payload.token}, {"$set": {"used": True}})
-    return {"message": "Password updated successfully"}
+# Auth is now handled by AWS Cognito + DynamoDB — see app/api/auth/routes.py.
+# All /api/auth/* endpoints are mounted from cognito_auth_router at the bottom of
+# this file (signup, verify, resend, login, forgot-password, reset-password,
+# logout, me).
 
 
 # ---------- Onboarding ----------
@@ -467,6 +366,8 @@ async def dashboard_overview(user: dict = Depends(get_current_user)):
 
 # ---------- Mount + middleware ----------
 app.include_router(api)
+# AWS Cognito + DynamoDB authentication
+app.include_router(cognito_auth_router)
 
 cors_origins_env = os.environ.get('CORS_ORIGINS', '*')
 allow_origins = ["*"] if cors_origins_env.strip() == "*" else [o.strip() for o in cors_origins_env.split(",") if o.strip()]
@@ -502,36 +403,11 @@ logger = logging.getLogger(__name__)
 @app.on_event("startup")
 async def startup():
     try:
-        await db.users.create_index("email", unique=True)
         await db.agents.create_index([("user_id", 1)])
         await db.leads.create_index([("user_id", 1), ("created_at", -1)])
-        await db.password_reset_tokens.create_index("expires_at", expireAfterSeconds=0)
     except Exception as e:
         logger.warning(f"Index creation issue: {e}")
-
-    # Seed admin
-    admin_email = os.environ.get("ADMIN_EMAIL", "admin@oraone.ai").lower()
-    admin_password = os.environ.get("ADMIN_PASSWORD", "OraOne@2026")
-    existing = await db.users.find_one({"email": admin_email})
-    if existing is None:
-        await db.users.insert_one({
-            "id": str(uuid.uuid4()),
-            "email": admin_email,
-            "password_hash": hash_password(admin_password),
-            "full_name": "OraOne Admin",
-            "company_name": "OraOne Technologies",
-            "role": "admin",
-            "onboarded": True,
-            "avatar_url": None,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-        })
-        logger.info(f"Seeded admin user: {admin_email}")
-    elif not verify_password(admin_password, existing.get("password_hash", "")):
-        await db.users.update_one(
-            {"email": admin_email},
-            {"$set": {"password_hash": hash_password(admin_password)}},
-        )
-        logger.info(f"Updated admin password for: {admin_email}")
+    # Auth (signup/login/seeding) is now handled by AWS Cognito — see app/api/auth/routes.py.
 
 
 @app.on_event("shutdown")

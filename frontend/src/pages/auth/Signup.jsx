@@ -17,7 +17,7 @@ import {
 
 export default function Signup() {
   useSEO({ title: "Sign up", description: "Create your OraOne account in minutes." });
-  const { register } = useAuth();
+  const { signup } = useAuth();
   const nav = useNavigate();
 
   const [form, setForm] = useState({
@@ -25,7 +25,6 @@ export default function Signup() {
     email: "",
     password: "",
     confirm: "",
-    company_name: "",
   });
   const [showPw, setShowPw] = useState(false);
   const [showCpw, setShowCpw] = useState(false);
@@ -43,12 +42,15 @@ export default function Signup() {
       return;
     }
     setBusy(true);
-    const { confirm, ...payload } = form;
-    const res = await register(payload);
+    const res = await signup({
+      name: form.full_name,
+      email: form.email.trim().toLowerCase(),
+      password: form.password,
+    });
     setBusy(false);
     if (res.ok) {
-      toast.success("Account created! Let's set up your first AI agent.");
-      nav("/onboarding/agent");
+      toast.success("Check your inbox for a 6-digit verification code.");
+      nav(`/verify-email?email=${encodeURIComponent(form.email.trim().toLowerCase())}`);
     } else {
       toast.error(res.error || "Sign up failed");
     }

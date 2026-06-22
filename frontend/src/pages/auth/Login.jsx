@@ -20,12 +20,19 @@ export default function Login() {
   const submit = async (e) => {
     e.preventDefault();
     setBusy(true);
-    const res = await login(email, password);
+    const res = await login(email.trim().toLowerCase(), password);
     setBusy(false);
     if (res.ok) {
       toast.success("Welcome back!");
-      nav(res.user.onboarded ? "/app/overview" : "/onboarding/agent");
+      nav("/app/overview");
     } else {
+      // If unverified, route the user to verification.
+      const msg = (res.error || "").toLowerCase();
+      if (msg.includes("not verified") || msg.includes("not confirmed")) {
+        toast.info("Email not verified yet — finishing verification first.");
+        nav(`/verify-email?email=${encodeURIComponent(email.trim().toLowerCase())}`);
+        return;
+      }
       toast.error(res.error || "Login failed");
     }
   };
@@ -161,10 +168,6 @@ export default function Login() {
         </div>
         <LockIllustration />
       </div>
-
-      <p className="mt-5 text-center text-[11px] text-[#94A3B8]">
-        Demo: admin@oraone.ai / OraOne@2026
-      </p>
     </div>
   );
 }
